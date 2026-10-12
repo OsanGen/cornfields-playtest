@@ -1,0 +1,670 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>New Cornfields · Asset credits</title><body><h1>New Cornfields · Asset credits and licenses</h1><p><a href="./index.html">Return to game</a></p><h2>Engine and hall assets</h2><pre style="white-space:pre-wrap">The MIT License
+
+Copyright © 2010-2025 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+V3.1 reuse: existing Cornfields player arms, service pistol, handheld flashlight and Pixelhouse zombie assets are referenced from the packaged story asset directory without duplicate models. Their original story/assets/field/LICENSES.md and sources.json are retained. Rabbit R1 is the user-approved existing custom project model, preserved unchanged (SHA256 d0167e7a7a9166c5814bb7196c7bfcecd407ab61d18f718ac00538bf9f227e11). Source and transfer provenance are recorded in data/reused-assets.json. No new third-party model was obtained.
+</pre><h2>story/releases/d0a95488ac63f5af/assets/field/LICENSES.md</h2><pre style="white-space:pre-wrap"># Field visual sources
+
+The Brown Mud, Wood Planks Dirt and Rusty Metal 02 maps are by Rob Tuytel / Poly Haven.
+Wood Planks is by Amal Kumar / Poly Haven. All these texture assets are
+licensed CC0-1.0. Commercial use and redistribution are permitted.
+
+- https://polyhaven.com/a/brown_mud
+- https://polyhaven.com/a/wood_planks_dirt
+- https://polyhaven.com/a/wood_planks
+- https://polyhaven.com/a/rusty_metal_02
+- https://polyhaven.com/license
+
+`sources.json` records exact downloaded files, sizes, URLs and SHA-256 hashes.
+Only 1K color, OpenGL normal and roughness maps are used. No displacement maps.
+
+Corn meshes, corn surface textures, fallen leaves and entrance geometry are
+original assets generated in Blender by `scripts/build-field-assets.py`.
+No BlendSwap model, paid assets, add-ons or external fonts are included.
+
+JamesWhite's CC0 Barbed Wire asset was evaluated as a reference:
+https://opengameart.org/content/barbed-wire
+Its original archive is retained under art/reference, outside the served paths.
+The asset uses a 128px texture and its horizontal mesh has 896 triangles; the
+runtime uses original 264-triangle geometric wire/barbs per panel instead, with
+the Poly Haven rust texture. The third-party wire mesh/texture is not shipped to
+the browser.
+
+The photographic sky uses Solitude Night by Andreas Mischok / Poly Haven,
+licensed CC0-1.0: https://polyhaven.com/a/solitude_night
+The original 2K HDR is retained in art/reference, outside the served paths.
+scripts/build-night-sky.py prepares the cropped/graded 2K JPEG in Blender and
+records its provenance, source and output hashes in sky-source.json. Only that
+JPEG is loaded by the game. It also supplies the lightweight puddle reflection
+map; it does not provide world lighting or a real-time reflection render.
+
+Zombie model, textures and walk animation: Pixelhouse, CC BY 3.0.
+Source: https://opengameart.org/content/zombie
+License: https://creativecommons.org/licenses/by/3.0/
+Original archive: https://opengameart.org/sites/default/files/zombie.zip
+Modified in Blender: texture grading and resizing, material setup, GLB conversion.
+Runtime adaptation: scale/ground alignment and removal of horizontal root motion.
+Original local runtime choreography adds the articulated backward arch, curled
+stagger/recovery, recoil, struggle and throw poses, plus head-attached eye geometry.
+The Pixelhouse lurch is supplemented by Fury and Collapse clips from the same
+source archive and license. Their sampled tracks and source hashes are recorded
+in zombie-clips.json. No Denys, Mixamo or Quaternius files are included.
+Attribution is also linked on the game's title screen. Exact source and output
+hashes, asset size and geometry count are recorded in zombie-source.json.
+
+Additional CC0-1.0 prop surfaces from Poly Haven:
+- Hessian 380: Rico Cilliers (processing), colormass (photography).
+  https://polyhaven.com/a/hessian_380
+- Blue Metal Plate: Rob Tuytel.
+  https://polyhaven.com/a/blue_metal_plate
+
+Only four 1K JPEGs are used: hessian color/normal and blue metal color/roughness.
+Exact files, source URLs, sizes and SHA-256 hashes are in prop-sources.json.
+Timber props, barrel bands and entrance iron reuse the existing field materials.
+# Creature vocal recordings
+
+`assets/audio/distress.wav` and `assets/audio/scream.wav` are selected, unmodified
+recordings from artisticdude's [Zombies Sound Pack](https://opengameart.org/content/zombies-sound-pack),
+released under CC0. Source filenames and SHA-256 hashes are in `assets/audio/sources.json`.
+Playback gain, rate, spatial position and fade are controlled by the game.
+
+# Original first-person hands (source reference)
+
+`hands.glb` and its embedded 1K skin atlas are original procedural geometry and
+texture work authored for CORNFIELDS with `scripts/build-hands.py`. This older
+asset contains no downloaded model and is retained as source reference; the
+current runtime uses the CC0 assets below. Its size, triangle count and hashes
+are recorded in `hands-source.json`.
+# Player viewmodel additions
+
+- Service Pistol by Mateusz Sadek / Poly Haven: https://polyhaven.com/a/service_pistol, CC0 1.0. Wood grip variant, separate slide, reduced source inventory and 1K textures. License: https://polyhaven.com/license
+- fps arms (rigged only) by para, using MakeHuman mesh and texture: https://opengameart.org/content/fps-arms-rigged-only, CC0 1.0. Split arms, grip poses, skin material and GLB export by this project.
+- Source hashes, exporter and runtime hashes: `player-viewmodel-source.json`. The original procedural hands remain available as reference; the new assets replace the normal first-person presentation.
+
+# Red return beacon
+
+`beacon-mist.png` is the unchanged `PNG/White puff/whitePuff07.png` from [Smoke Particles](https://kenney.nl/assets/smoke-particles) by Kenney Vleugels, licensed [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). It is tinted red at runtime. See `beacon-source.json` for download provenance and hashes. The sky beam and muzzle-flash textures are generated by this project.
+# Scarecrow checkpoint model
+
+Scarecrow On Post (Halloween Slasher Street), by 3D Assets, is released under
+CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/.
+Source: https://3dassets.dev/assets/halloween-slasher-street-scarecrow-on-post-02cc268c.
+The publisher discloses AI-assisted creation. Cornfields locally packages the
+GLB and applies original liquid, emissive and fractal checkpoint treatments.
+The model's original rigid sway is not played. `scarecrow-source.json` records
+the original download, size and SHA256. Existing Hessian cloth maps retain their
+Poly Haven credits in this file. Missing clothing UVs are generated locally, and
+the warning cloth and head/hat reuse the existing Hessian maps with muted colors.
+
+# Environment art refinement, 3 October 2026
+
+The original corn kit is refined at load time by `src/corn-art.js`. Its curved
+blades, raised ribs, rolled and irregular leaf margins, node collars, tassel
+sprigs, and generated 1K color/normal/roughness atlas are original project work.
+The original GLB and six corn node/LOD names remain intact. No concept artwork,
+new stock asset, paid model, or purchased texture is imported into the game.
+
+`src/environment-materials.js` supplies original world-anchored wet/dry material
+masks, painted plaster/earth detail, and per-panel UV variation. Existing Poly
+Haven albedo, normal and roughness maps retain the credits above. The original
+fallen husks and separated bevelled timber boards are generated by
+`src/ground-details.js` and `src/wood-panels.js`. The original return-beacon
+texture and all creature/cast/viewmodel attributions remain unchanged.
+
+Source hashes, baseline identities and output-review provenance are recorded in
+`art/environment-overhaul-sources.json` in the editable source package. The
+comparison image is an intermediate offline Blender CPU asset study using the
+actual original/refined meshes. It is not browser, gameplay, or performance
+verification.
+
+## Cinematic zombie refinement, 4 October 2026
+
+`zombie.glb`, `zombie-color.jpg` and `zombie-normal.jpg` remain modified versions of
+Pixelhouse's Zombie under CC BY 3.0, with the original source and license above.
+Local changes reshape the head into an elongated, narrow cranium, hollow cheeks,
+a flatter nose and an asymmetric pointed jaw; refine elbow volume/weights; and
+control texture contrast and normal intensity. The shipped hooded top, damaged
+jeans, shoes, source height, 56-joint rig and original animation clips are retained.
+`zombie-roughness.jpg` is an original 1K roughness adaptation derived from those
+licensed surfaces, with dry fabric and varied skin response. No new stock asset,
+concept-image texture or external dependency was added.
+
+`art/working/zombie-cinematic-v2.blend` reconstructs an editable authoring source
+from the exact candidate GLB. `scripts/export-cinematic-characters.py` records the
+bounded export. The exact source/output hashes and texture sizes are recorded in
+`zombie-source.json`. Render studies are isolated asset evidence; runtime eye
+attachments, continuous gameplay and device performance need separate checks.
+
+## Visual overhaul v3 arm correction
+The existing CC0 para / MakeHuman FPS arms remain the source. The inherited eight-fold forearm extension was removed, cropped elbow ends closed, and runtime presentation fitted without altering the licensed source hand/finger geometry or adding a new weapon. Editable authoring and provenance: scripts/export-visual-overhaul-v3.py and art/visual-overhaul-v3-sources.json.
+</pre><h2>story/releases/d0a95488ac63f5af/assets/audio/LICENSES.md</h2><pre style="white-space:pre-wrap"># Audio sources
+
+- Footsteps: **Fantozzi** (sliced and shared by qubodup), [Fantozzi's Footsteps (Grass/Sand &amp; Stone)](https://opengameart.org/content/fantozzis-footsteps-grasssand-stone), [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Twelve SandL/R and StoneL/R recordings converted to mono 44.1 kHz MP3 at 96 kbps, peak adjusted, edge silence trimmed and a 2 ms attack fade applied. Runtime files and processing hashes: `footsteps/sources.json`. Both gameplay and cinematic use the same recordings; wet steps layer the existing rubberduck splashes.
+
+Runtime recordings are hosted locally with the game. Creature and weather recordings are CC0-1.0; the pistol recording uses CC BY 3.0 as noted below.
+
+- Pistol shot: **Michel Baradari**, [Chaingun, pistol, rifle, shotgun shots](https://opengameart.org/content/chaingun-pistol-rifle-shotgun-shots), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Original `shots/pistol.wav`. Converted to mono PCM16 at 44.1 kHz, trimmed to 0.9 seconds and faded out over the last 0.1 seconds. Runtime: `pistol-shot.wav`. See `weapon-source.json` for source and runtime hashes. Original credit: Sounds (c) by Michel Baradari, apollo-music.de.
+
+- Creature vocals: artisticdude, [Zombies Sound Pack](https://opengameart.org/content/zombies-sound-pack). See `sources.json` for original filenames and hashes.
+- Stalking growl: Joseph SARDIN, [Zombie #6](https://bigsoundbank.com/zombie-6-s2111.html), CC0 1.0. Attack roars: Darsycho, [Big scary troll sounds](https://opengameart.org/content/big-scary-troll-sounds), CC0 1.0. Selected phrases, filtered and faded, mono 44.1 kHz MP3 at 96 kbps. See `creature-sources.json` for exact trims, processing and hashes. Runtime pitch varies modestly; previous vocals remain as fallback and pain responses.
+- Rain: Ylmir, [Rain (loopable)](https://opengameart.org/content/rain-loopable), original `2.mp3`.
+- Thunder: rubberduck, [100 CC0 SFX #2](https://opengameart.org/content/100-cc0-sfx-2), original `sfx100v2_thunder_01.ogg`.
+- Splashes: rubberduck, [40 CC0 water / splash / slime SFX](https://opengameart.org/content/40-cc0-water-splash-slime-sfx), originals `splash_09.ogg` and `splash_10.ogg`.
+
+Rain retains the original loopable MP3. Thunder and splashes were converted to mono 44.1 kHz, 96 kbps MP3. See `weather-sources.json` for exact provenance, processing and SHA-256 hashes. The sound mixer limits splash playback to short footstep cues.
+
+Creature and weather license: &lt;https://creativecommons.org/publicdomain/zero/1.0/&gt;
+</pre><h2>story/releases/d0a95488ac63f5af/assets/fonts/barlowcondensed-OFL.txt</h2><pre style="white-space:pre-wrap">Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION &amp; CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+</pre><h2>story/releases/d0a95488ac63f5af/assets/fonts/rubikglitch-OFL.txt</h2><pre style="white-space:pre-wrap">Copyright 2020 The Rubik Filtered Project Authors (https://https://github.com/NaN-xyz/Rubik-Filtered)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+https://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION &amp; CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+</pre><h2>story/releases/d0a95488ac63f5af/assets/fonts/LICENSES.md</h2><pre style="white-space:pre-wrap"># Cornfields intro fonts
+
+Barlow Condensed SemiBold by The Barlow Project Authors, and Rubik Glitch by The Rubik Filtered Project Authors.
+Both are distributed under the SIL Open Font License 1.1. The binaries are unmodified.
+
+- Barlow Condensed: https://github.com/google/fonts/tree/main/ofl/barlowcondensed
+- Rubik Glitch: https://github.com/google/fonts/tree/main/ofl/rubikglitch
+- Full notices: `barlowcondensed-OFL.txt` and `rubikglitch-OFL.txt` beside this file.
+- Exact retrieved revision, source URLs, byte sizes and SHA-256 hashes: `sources.json`.
+
+Font authorship is separate from the game's production credits.
+</pre><h2>story/releases/d0a95488ac63f5af/assets/intro/LICENSES.md</h2><pre style="white-space:pre-wrap"># Intro and handheld asset credits
+
+These local runtime assets are modified versions of the sources below. Inclusion
+does not imply endorsement by their original authors. Source records, conversion
+notes and available runtime hashes are in [sources.json](sources.json).
+
+## Car Concept
+
+- Runtime file: `cruiser.glb`.
+- Attribution: **Car Concept**, Darmstadt Graphics Group GmbH and Eric Chadwick,
+  derived from the original model by **Unity Fan**.
+- Copyright © 2024, Darmstadt Graphics Group GmbH.
+- Source: [Khronos glTF Sample Assets, Car Concept](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept).
+- License for the distributed Car Concept adaptation: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
+- The original Unity Fan model was released under CC0. The downloaded adaptation
+  is credited under CC BY 4.0, with this attribution retained in the runtime package.
+- Cornfields changes: removed logo surfaces, simplified meshes and textures,
+  charcoal cruiser materials, and upright orientation with the car facing -Z.
+
+## NPC male Steve
+
+- Runtime file: `cast.glb`.
+- Author: **supersteve**.
+- Source: [NPC male Steve on OpenGameArt](https://opengameart.org/content/npc-male-steve).
+- License: [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+- Cornfields changes: PBR material conversion, bundled textures, seated, talk and
+  walk clips, and slightly recessed eyes. Standing uses a planted walking pose.
+
+## Asphalt 03
+
+- Runtime files: `asphalt_diff.jpg`, `asphalt_nor_gl.jpg`, `asphalt_rough.jpg`.
+- Authors: **Charlotte Baglioni** and **Dario Barresi**, via Poly Haven.
+- Source: [Asphalt 03](https://polyhaven.com/a/asphalt_03).
+- License: [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+- Cornfields changes: local 1K color, OpenGL normal and roughness texture variants.
+
+## Small Plastic Torch
+
+- Runtime file: `../field/handheld-flashlight.glb`.
+- Author: **Abiyyu Panggalih (Abiyyu_xyz)**, via Poly Haven.
+- Source: [Small Plastic Torch](https://polyhaven.com/a/small_plastic_torch).
+- License: [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+- Cornfields changes: simplified mesh, reduced texture resolution and GLB export;
+  runtime hand placement turns the source bulb toward the player's view.
+
+Existing first-person arms and service pistol keep the credits in
+`../field/LICENSES.md` and `../field/player-viewmodel-source.json`. Roadside mist
+reuses the CC0 texture credited in `../field/beacon-source.json`. Its placement,
+the authored driving path and runtime hand poses are original Cornfields code.
+
+## Cinematic character identities, 4 October 2026
+
+`cast-clarence.glb` and `cast-stanley.glb` are separate, locally authored
+adaptations of supersteve's CC0 NPC male Steve. Clarence's narrow angular jaw,
+lean cheeks and slender straight nose differ geometrically from Stanley's broad
+heavy jaw, fuller cheeks and rounded wide nose. Each owns its embedded 512px skin,
+256px iris and matching 512px arm map. Original wardrobe map bytes are retained.
+The skin maps derive from the credited CC0 atlas, with original role-specific
+painting; concept artwork is not used as a runtime texture.
+
+Local elbow silhouette and normalized skin-weight refinements retain the repaired
+hands, ear UVs, 56-joint rig and all source clip samples. Original `cast.glb` stays
+unchanged. Editable reconstructed Blender sources are in
+`art/working/cast-distinct-v2.blend`; repeatable bounded export is in
+`scripts/export-cinematic-characters.py`. The authoring file is reconstructed from
+shipped GLBs, not a recovered original authoring file. Isolated render evidence
+is asset inspection, not a browser screenshot or performance measurement.
+
+
+## Faces and radio v1 candidate, 4 October 2026
+
+The current `cast-clarence.glb` and `cast-stanley.glb` remain locally authored
+adaptations of supersteve's CC0 NPC male Steve. They now use independently
+sculpted facial planes, welded/subdivided facial loops and budgeted retopology.
+Clarence has medium-dark brown skin, cropped hair and brown eyes; Stanley has a
+broader older face, receding gray hair and restrained stubble. The 1K face color maps combine locally authored color/identity fields with
+reprojected microdetail from the credited CC0 role atlas. Packed surface maps
+are original local procedural artwork at 1K. Normal maps
+are baked from editable local high-detail geometry with Blender's CPU BVH.
+The 512px irises have no painted catchlight; exposed skin is matched locally.
+No personal scan, outside face service or generated concept image is embedded.
+
+Existing wardrobe image bytes, body geometry, 56-joint rigs, clip samples, base
+`cast.glb`, original v2 authoring files and other game assets remain unchanged.
+Sources: `art/working/prologue-faces-v3.blend` and
+`scripts/export-prologue-faces-v3.py`. The authoring file contains imported final
+skinned assets and separate editable retopology/high-detail sculpt collections.
+
+`dispatch-radio.glb` is original Cornfields project artwork, created locally
+with Blender. Its unbranded housing, antenna, knobs, PTT, open LCD bezel, grille
+and original polymer/surface/display textures contain no downloaded asset.
+Sources: `art/working/prologue-radio-v1.blend` and
+`scripts/export-prologue-radio-v1.py`. Proposal concepts were direction only.
+
+These are local candidate changes. Offline studio/CPU-pose renders do not
+certify actual game lighting, continuous playtesting or measured performance.
+
+
+## Local liquid-cinematic candidate additions, 4 October 2026
+Original local presentation code and geometry: unbranded POLICE markings, entertainment radio, sedan trim, projector reel/stand details, anonymous analytic face, connected liquid ribbons and transition veil. Created by RKNIGHT at the project owner's direction. Existing Car Concept, cast, Poly Haven and Pixelhouse credits remain applicable and unchanged. No new external artwork or services were introduced. The Pixelhouse zombie is reused under its existing CC BY 3.0 record in assets/field/LICENSES.md.
+
+## Human motion and roadside v2 local candidate, 5 October 2026
+
+`roadside-set.glb` is original Cornfields geometry: a small weathered rural house
+exterior, dark porch/windows, short driveway, fictional unnumbered mailbox and
+streetlight shell. It contains no interior, household identity or dog. The embedded
+512px timber color map is a downsample of the already shipped Wood Planks Dirt
+map by Rob Tuytel / Poly Haven, CC0: https://polyhaven.com/a/wood_planks_dirt.
+All other roadside materials are original. Existing cleared-map credits remain
+unchanged; the asset's mesh permission does not replace texture attribution.
+
+`projector.glb` is original Cornfields geometry and a locally authored 512px atlas:
+housing, stand with grounded feet, reel supports, feed/take-up reels, guide rollers,
+threaded perforated film, film gate, vents, focus ring and lens. It imports no
+external model or texture. The two reels and film use the existing story clock.
+
+`mike-body.glb` derives only body, trouser, shoe topology and the existing skeleton
+from NPC male Steve by supersteve, CC0-1.0, via the pinned Clarence source. Original
+midnight-blue fictional police-uniform pockets, shoulder details, buttons and duty
+belt are added locally. No real police insignia, head or duplicate visible arms is
+included. Source: https://opengameart.org/content/npc-male-steve and
+https://creativecommons.org/publicdomain/zero/1.0/.
+
+The fitted dashboard receiver, wheel refinement, slow restrained cruiser lamps and
+bounded driveway light are original runtime work. Existing Car Concept CC BY 4.0
+credits above still apply. No audio files, voices, external services or paid assets
+are added by this props work.
+
+Editable original parts, matching cabin authoring geometry and the imported Mike
+body are in `art/working/human-roadside-v2.blend`. The modular repeatable producer
+is `scripts/export-human-roadside-v2.py`; exact runtime hashes and separate texture
+provenance are in `human-roadside-v2-source.json`. Asset inventory and CPU studio
+stills are separate from browser QA, measured performance and owner acceptance.
+
+## Visual overhaul v3 local candidate 2026-10-05
+
+The revised Mike and Clarence assets reuse the existing NPC male Steve by supersteve, CC0-1.0, source https://opengameart.org/content/npc-male-steve . New cotton/skin fitting, navy uniform panels, fictional insignia and restrained face/material refinements are original project adaptations. Stanley is unchanged. The Level 1 house keeps the already-cleared Rob Tuytel / Poly Haven weathered timber maps under CC0 and adds original recessed apertures, porch lantern and graded drive geometry.
+
+roadside-dog-v1.glb is original locally authored Blender geometry and vertex colors, with no external dog mesh or texture source. The collar/tether and sampled idle/bark mouth movement are original. A bark sound is not included pending approval. No new asset service, model installation, external AI or spending was used. Current hashes and historical provenance are recorded separately in human-roadside-v2-source.json and art/visual-overhaul-v3-sources.json.
+
+## Realism and Liquid Sequence v1 original art
+
+roadside-dog-v2.glb and background-trees-v1.glb are original Cornfields geometry and embedded images authored locally in Blender for this outcome. No stock model, paid asset, downloaded texture, external AI service or new dependency was used. The existing bark recording and all earlier source attribution remain unchanged. Current runtime asset hashes are recorded in sources.json.
+
+Dog anatomy and coat refinement on 6 October 2026 remains wholly original local Blender work. The revised short-coat maps are locally painted deterministic strands with no photo, downloaded texture, model service or external AI input. Bark bytes, tree bytes and earlier licenses remain unchanged.
+
+The later 6 October 2026 cranial, eye-seat, pinna and coat correction remains original project geometry and original maps. A public breed proportion description was consulted as read-only guidance; no reference photograph, stock mesh or texture was imported. Existing external attribution is unchanged.
+
+
+## Graphics G1 local refinement 2026-10-07
+
+Clarence and Stanley retain the credited NPC male Steve / supersteve CC0-1.0 source, all original face identities and embedded maps. G1 locally relieves selected collar-stand facets using the exact P1-B geometry. Only bounded shirt positions and normals change; no rig, bind, animation, topology, UV, weight, voice or hand data changes. Mike's mesh is retained byte-for-byte after interface checks; his runtime material treatment is separate.
+
+The original roadside dog receives bounded local muzzle-profile and ear-meridian smoothing. Only head positions/normals change. All existing node transforms, paws, collar/tether, jaw, eyes, original images and topology stay unchanged. No external asset, image-generation service, scan, download, paid component or new dependency is used.
+
+scripts/export-graphics-g1.py is the deterministic binary-preserving producer from the pinned P1-B assets. art/working/cornfields-graphics-g1.blend is a reconstructed editable copy of the exact final meshes, with existing images packed. It is included in the owner's private recovery backup and excluded from the playable runtime and private Site source snapshot. Asset and geometric evidence does not establish rendered visual, continuous-motion, listening or device-performance acceptance. All prior attribution and rights remain in force.
+
+
+## Realism R1 hero authoring candidate, 7 October 2026
+
+Stanley and the original roadside dog receive local deform-rig, baked motion, contact and surface authoring within the R1 hero-only approval. All earlier rights and attribution remain in force. No new external asset, AI processing, dependency, recording or spending is introduced. R1 dog maps remain byte-identical to the pinned G1 maps; its short coat fibers are original project geometry. Detailed provenance and current hashes are in `assets/realism-r1/sources.json` and `asset-manifest.json`. Editable sources are `art/working/realism-r1-humans.blend` and `art/working/realism-r1-dog.blend`; their current-scene export workflow is documented by `scripts/export-realism-r1.py`.
+
+These are unaccepted authoring changes. Offline asset inspection and numerical tests do not establish actual-game visual, audible, device-performance or owner acceptance.
+
+
+## Visual Transformation VT1 original proof, 8 October 2026
+
+Stanley's revised anatomy, eyes, wardrobe, original surface maps, morphs and performance are local adaptations of the recovered cleared R1 project lineage. NPC male Steve by supersteve (CC0-1.0) remains the inherited human source. No stock replacement human, external photograph, scanned likeness, image generation or external processing was used.
+
+The cruiser retains the Car Concept attribution and CC BY 4.0 terms above. Original bounded bonnet/grille/lamp/bumpers/door mouldings and surface treatment are added around the preserved cabin, wheel, hinge and window anchors.
+
+The roadside exterior receives original individual boards, slate/trim/foundation/porch construction, recessed glazing and folded linen silhouettes. It has no playable interior or new story. Timber/asphalt source bytes were reused from the already-cleared Poly Haven inputs credited above and in assets/field/LICENSES.md. New dirt, weathering, linen, slate and roadside vegetation maps/geometry are original local project work. The new roadside .blend is an editable reconstruction from recovered runtime assets; missing historical art was not falsely described as recovered.
+
+Current bytes and packed editable sources are recorded in assets/intro/vt1-asset-manifest.json and art/cornfields-vt1-source-manifest.json. Historical manifests and licensed source records remain intact. No new recordings, dependencies, paid service or asset acquisition were introduced.
+
+Visual quality remains unaccepted. Offline Blender media and numerical checks do not establish actual-game rendering, audible playback, owner-device performance or owner acceptance.
+
+
+## Clarance and cabin v0.1 local reconstruction, 9 October 2026
+
+Clarance retains the inherited NPC male Steve by supersteve CC0 source, existing Black identity, medium-dark brown skin, brown eyes, navy uniform, fictional insignia, complete rig and animation. Bounded vertex and normal refinements, restrained surface adjustments and existing-slot maps are original local project authoring. The cruiser adaptation retains the Car Concept CC BY 4.0 attribution above. Only the approved static interior surfaces receive local material variants and bounded geometry changes; exterior, glass, steering, radio and contact anchors remain protected.
+
+The new editable art file is a reconstruction from the exact approved runtime assets, not a recovered historical original. Existing historical .blend files and provenance remain untouched. All resources remain embedded/local. No new external asset, AI processing, dependency, paid service, sound or license acquisition was used. Current candidate hashes live in assets/intro/clarance-cabin-v0.1-manifest.json. Owner QA and visual quality remain pending and unaccepted.
+</pre><h2>story/releases/d0a95488ac63f5af/assets/audio/prologue/LICENSES.md</h2><pre style="white-space:pre-wrap"># Cinematic playtest voices
+
+These are temporary synthetic performances of the CORNFIELDS prologue, generated
+offline with Piper. Story by Jacob Nangle; approved fast interactive adaptation with retained, adapted, new, and user-wording
+provenance is recorded in `src/prologue-script.js`.
+
+Voice model: **en_US-libritts_r-medium**, distributed by the Rhasspy/Piper project.
+[Model and model card](https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/libritts_r/medium).
+The card identifies the underlying LibriTTS-R dataset and license as **CC BY 4.0**.
+[License](https://creativecommons.org/licenses/by/4.0/).
+
+LibriTTS-R: Yuma Koizumi, Heiga Zen, Shigeki Karita, Yifan Ding, Kohei Yatabe,
+Nobuyuki Morioka, Michiel Bacchiani, Yu Zhang, Wei Han and Ankur Bapna.
+[Dataset and attribution](https://www.openslr.org/141/).
+Original corpus recordings derive from LibriSpeech/LibriVox contributors.
+
+Changes: newly generated scripted speech, normalization and mono MP3 compression. The fast interactive cues retain their
+natural delivery rate; no tempo acceleration is applied. These fictional performances are synthetic;
+the model/dataset contributors do not portray or endorse these characters.
+`sources.json` records corpus voice IDs, model checksum and each output checksum.
+Model weights, generation software and raw corpus recordings are not distributed
+with the game. No live synthesis service or microphone is used.
+
+Cast selection was informed by the speaker descriptions from LibriTTS-P,
+Masaya Kawamura, Ryuichi Yamamoto, Yuma Shirahata, Takuya Hasumi, and Kentaro
+Tachibana (Interspeech 2024), [CC BY 4.0](https://github.com/line/LibriTTS-P).
+That research data is not included in the public runtime.
+
+
+## Liquid-cinematic candidate audio, 4 October 2026
+Original entertainment radio bed, mechanical switch click and low projector/static sound are synthesized locally by the existing Web Audio runtime. The hallucination reuses the bundled creature scream under assets/audio/LICENSES.md. By the owner's explicit decision on 4 October 2026, CAR-00 and UND-01 are intentionally subtitle-only for this candidate. No new spoken recordings were generated. They are excluded from the recorded-audio inventory and runtime fetches; all original recordings and their provenance remain unchanged. This deferral covers only those two cue IDs.
+
+
+## Human Motion and Roadside v2, 5 October 2026
+The short reaction horn is original local Web Audio synthesis (370/466 Hz), authored for this fictional cruiser. No sampled horn or bark recording was imported. Existing voice files remain byte-identical; the historical voice-provenance statements above are retained, not independently recertified in this outcome. CAR-00 and UND-01 remain subtitle-only. The owner approved the ordinary radio music below. No new dog bark was imported.
+
+
+### Ordinary car-radio excerpt
+“Cold Funk” Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+https://creativecommons.org/licenses/by/4.0/
+Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100499
+Changes: excerpted 0:00–0:04.15, short boundary fades and volume adjustment; filtered at runtime for an in-game car radio. No artist endorsement is implied.
+
+
+### Short CORNFIELDS title-reveal excerpt
+“The House of Leaves” Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+https://creativecommons.org/licenses/by/4.0/
+Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100710
+Changes: excerpted 0:22.0–0:24.2, short onset/ending fades and volume adjustment; mixed only into the brief CORNFIELDS title reveal. No artist endorsement is implied.
+
+## Visual overhaul v3 revised excerpt (2026-10-05)
+
+“Cold Funk” Kevin MacLeod (incompetech.com). Licensed under Creative Commons Attribution 4.0: https://creativecommons.org/licenses/by/4.0/ . Official source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100499 . Revised local excerpt: 0:00–0:20, MP3 stereo 44.1 kHz 128 kbps. Trimmed for Cornfields; runtime bandpass/level treatment and a shared CAR-01 topic-start cut. Source and output hashes are in sources.json. No new speech. The earlier title excerpt is unchanged. Listening is unverified.
+
+## Roadside dog bark — visual upgrade v3, 2026-10-05
+
+“Dog barking mono” by Brandon Morris (uploaded by HaelDB), from https://opengameart.org/content/dog-barking-mono . Used under the offered CC0 1.0 option: https://creativecommons.org/publicdomain/zero/1.0/ . OpenGameArt permits selecting one offered license: https://opengameart.org/content/faq#q-multilicense .
+
+Local file: `roadside-dog-bark.wav`. Original 179,848-byte mono PCM16 44.1 kHz file is unchanged, SHA-256 `bbd0f908b3514dd3bd7d2bc04dcf64f8d360a161e7f43cac5d6761e7add79451`. Runtime gain envelopes, distance attenuation, stereo panning and car lowpass are applied. No new voice, paid processing or spend. Attentive listening remains unverified.
+
+## Realism and Liquid Sequence v1 short reaction edit, 5 October 2026
+
+END-01.mp3 is a local edit of the existing synthetic Mike recording, with its original Piper/LibriTTS source attribution and license retained above. The earlier words were removed so the line is “Am I going crazy?” The original source hash, current output hash, edit and decoded duration are retained in sources.json. No new voice, external processing or spend.
+</pre><h2>story/releases/d0a95488ac63f5af/assets/audio/survival/LICENSES.md</h2><pre style="white-space:pre-wrap"># Synthetic projector dialogue
+
+Offline fictional playtest speech generated using the existing Piper
+en_US-libritts_r-medium model. Model and LibriTTS-R corpus license: CC BY 4.0.
+Voice model distributed by Rhasspy/Piper. LibriTTS-R attribution: Yuma Koizumi,
+Heiga Zen, Shigeki Karita, Yifan Ding, Kohei Yatabe, Nobuyuki Morioka,
+Michiel Bacchiani, Yu Zhang, Wei Han and Ankur Bapna. Original corpus recordings
+derive from LibriSpeech/LibriVox contributors. See also the existing
+[voice attribution](../prologue/LICENSES.md).
+
+Source/model card: https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/libritts_r/medium/MODEL_CARD
+Corpus attribution: https://www.openslr.org/141/
+License: https://creativecommons.org/licenses/by/4.0/
+
+Modifications: exact fictional gatekeeper script, gain normalization and mono
+MP3 encoding, runtime projector filtering. Natural delivery, no tempo processing.
+No actor imitation or voice cloning. These contributors do not portray or endorse
+the fictional entity. Model weights and corpus recordings are excluded from the game.
+Local filenames, output hashes, generator, model hash and corpus speaker ID appear
+in sources.json. Generated October 2, 2026 for the blood-room and pit sequence.
+
+GATE-HEAL adds the approved one-time scarecrow healing instruction, generated
+with the same model and voice. The checkpoint vision reuses LIQ-01 from the
+existing prologue with runtime filtering and pitch changes; see ../prologue/LICENSES.md.
+
+The blood room, projection, rain, pit and embers use original procedural graphics.
+The pit corn reuses the existing licensed cornfield asset recorded in
+../../field/LICENSES.md. No external video or additional model is bundled.
+</pre><h2>story/releases/d0a95488ac63f5af/vendor/three/LICENSE</h2><pre style="white-space:pre-wrap">The MIT License
+
+Copyright © 2010-2026 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</pre></body></html>

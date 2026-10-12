@@ -87,8 +87,8 @@ export function createAsylumCruiser(gltf){
 
  return {root,car,rear,doors,seat,back,floor,roof,partition,shards,
   activateCustody,
-  update(drive,{time=0,reduced=false,exit=0,custody=null}={}){
-   root.position.fromArray(drive.position);root.rotation.set(reduced?0:drive.bodyPitch||0,drive.yaw||0,reduced?0:drive.bodyRoll||0,'YXZ');car.update(drive,exit);car.setLampState(sampleCruiserLampState(time,{reduced}));
+  update(drive,{time=0,reduced=false,exit=0,custody=null,driverDoor=null,passengerDoor=null}={}){
+   root.position.fromArray(drive.position);root.rotation.set(reduced?0:drive.bodyPitch||0,drive.yaw||0,reduced?0:drive.bodyRoll||0,'YXZ');car.update(drive,exit);if(driverDoor!==null)car.driverDoor.rotation.y=-clamp(driverDoor)*1.05;if(passengerDoor!==null)car.door.rotation.y=clamp(passengerDoor)*1.05;car.setLampState(sampleCruiserLampState(time,{reduced}));
    if(drive.brokenGlass){broken=true;car.model.getObjectByName('BodyWindshield').visible=false;}shards.visible=broken;
    if(custody!==null){activateCustody();doors[1].pivot.rotation.y=smooth((custody-20)/1)*(1-smooth((custody-28)/1))*Math.PI/2;doors[0].pivot.rotation.y=0;}
    for(let i=0;i<shards.children.length;i++){const m=shards.children[i],burst=drive.glassBurst||0;m.position.set((i%3-1)*burst*.15,-(1-burst)*burst*.32,burst*.18);}

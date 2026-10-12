@@ -2,10 +2,11 @@ import {createStory} from './asylum-story.js';
 import {createStoryView} from './asylum-story-view.js';
 import {createStoryAudio} from './asylum-story-audio.js';
 import {createStoryUI} from './asylum-story-ui.js';
+import {entryRecord} from './asylum-handoff.js';
 /** Testable one-session owner, independent of DOM and WebGL. */
 export function createSessionGate(){let generation=0,closed=false,current=null;return {begin(){if(closed)throw new Error('Session disposed');generation++;current?.dispose();current=null;return generation;},accept(token,value){if(closed||token!==generation){value?.dispose();return false;}current=value;return true;},get current(){return current;},get generation(){return generation;},dispose(){if(closed)return;closed=true;generation++;current?.dispose();current=null;}};}
-export function createStoryApp({canvas,renderer,document=globalThis.document,window=globalThis.window,makeView=createStoryView,makeAudio=createStoryAudio,requestFrame=cb=>window.requestAnimationFrame(cb),cancelFrame=id=>window.cancelAnimationFrame(id)}={}){
- const ui=createStoryUI(document),gate=createSessionGate(),keys=new Set(),listeners=[];
+export function createStoryApp({canvas,renderer,document=globalThis.document,window=globalThis.window,makeView=createStoryView,makeAudio=createStoryAudio,enterHall=null,requestFrame=cb=>window.requestAnimationFrame(cb),cancelFrame=id=>window.cancelAnimationFrame(id)}={}){
+ const ui=createStoryUI(document,{connected:typeof enterHall==='function'}),gate=createSessionGate(),keys=new Set(),listeners=[];
  let story=createStory(),view=null,audio=null,status='idle',error='',disposed=false,raf=null,last=null,boot=false,wantsStart=false,silent=false,yaw=0,pitch=0,drag=false;
  const on=(target,event,fn,options)=>{target.addEventListener(event,fn,options);listeners.push(()=>target.removeEventListener(event,fn,options));};
  const clear=()=>{keys.clear();drag=false;};
@@ -23,13 +24,17 @@ export function createStoryApp({canvas,renderer,document=globalThis.document,win
  }
  async function start(){wantsStart=true;if(status==='idle'||status==='error')await load();else if(story.phase==='paused'){const token=gate.generation,sessionStory=story,sessionAudio=audio;try{await sessionAudio?.prepare();if(!disposed&&gate.generation===token&&story===sessionStory&&wantsStart&&!document.hidden){story.resume();sessionAudio?.sync(story.frame());}}catch(e){if(!disposed&&gate.generation===token)fail(e);}}}
  function action(id){
+  if(disposed)return;
   if(id==='start'||id==='retry'){void start();return;}
   if(id==='pause'){pause();return;}
   if(id==='resume'){void start();return;}
   if(id==='replay'){wantsStart=true;yaw=pitch=0;void load();return;}
   if(status!=='ready')return;
   clear();audio?.pause();
-  if(id==='scene')story.skipScene();if(id==='skip')story.skipIntroduction();if(id==='stand')keys.add('KeyE');if(id==='hall')ui.notice(story.hall().message);
+  if(id==='scene')story.skipScene();if(id==='skip')story.skipIntroduction();if(id==='stand')keys.add('KeyE');if(id==='hall'){
+   if(story.frame().scene!=='boundary')return;
+   try{if(typeof enterHall==='function')enterHall(entryRecord(story.snapshot()),{shutdown:dispose});else ui.notice(story.hall().message);}catch(e){ui.notice(e?.message||'Hall connection failed. Try again.',story.frame().scene);}
+  }
  }
  on(document,'click',e=>{const b=e.target.closest?.('[data-action]');if(b)action(b.dataset.action);});
  on(document,'change',e=>{if(['master','voice','effects','reduced'].includes(e.target.id)){const c=ui.settings();story.setComfort(c);audio?.setComfort(c);}});
@@ -50,5 +55,6 @@ export function createStoryApp({canvas,renderer,document=globalThis.document,win
   }catch(e){fail(e);ui.render(story.frame(),{status,error,silent});}raf=requestFrame(frame);
  }
  raf=requestFrame(frame);
- return {start,pause,action,snapshot:()=>({...story.snapshot(),status,error,loops:raf===null?0:1,listeners:listeners.length,generation:gate.generation}),dispose(){if(disposed)return;disposed=true;if(raf!==null)cancelFrame(raf);raf=null;for(const off of listeners.splice(0))off();clear();gate.dispose();story.dispose();ui.dispose();renderer.dispose();}};
+ function dispose(){if(disposed)return;disposed=true;wantsStart=false;audio?.pause();if(document.pointerLockElement===canvas)document.exitPointerLock?.();if(raf!==null)cancelFrame(raf);raf=null;for(const off of listeners.splice(0))off();clear();gate.dispose();story.dispose();ui.dispose();renderer.dispose();}
+ return {start,pause,action,snapshot:()=>({...story.snapshot(),status,error,loops:raf===null?0:1,listeners:listeners.length,generation:gate.generation}),dispose};
 }

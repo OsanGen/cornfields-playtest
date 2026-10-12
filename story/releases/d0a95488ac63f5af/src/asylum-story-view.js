@@ -9,6 +9,7 @@ import {performanceFor,samplePrologueWake} from './prologue-performance.js';
 import {samplePrologueBodyReach} from './viewmodel-pose.js';
 import {createPrologueEquipment} from './scene.js';
 import {installHands} from './hands.js';
+import {createMikePerformance,createClaranceContactFit,sampleRecovery,sampleMikeCustody} from './asylum-post-crash.js';
 import {createIntroVisuals} from './intro-visuals.js';
 import {createCornGeometry,createCornSurfaceAtlas,refineCornKit} from './corn-art.js';
 import {createVT1RoadsideGround,treatVT1Cruiser,treatVT1Glazing,replaceVT1RoadsideCorn} from './visual-vt1-roadside.js';
@@ -59,7 +60,8 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
  let assets=null,cruiser=null,roadMaterial=null,woodMaterial=null,roadMist=null,roadsideSet=null,roadsideFallback=null,streetlight=null,policeSpill=[],fallbackLampMaterials=[];
  let dog=null,porchLight=null,puddleMaterial=null,backgroundTrees=null,vt1Ground=null,rain=null,entertainment=null,groundMaterial=null,groundContactUniforms=null;
  let liquidUniforms=[],foliage=createFoliageMotion({playerPush:false}),borrowed=new Set(),ownedTextures=new Set(),disposed=false,loaded=false,attendant=false;
- let cuffs=null,wound=null,hospitalWound=null,attendantActor=null,heldGun=null;
+ const groundSupports=[];
+ let cuffs=null,wound=null,hospitalWound=null,attendantActor=null,heldGun=null,mikePerformance=null,mikeAssets=[];
  const stats={status:'loading',error:null,trees:{},castRoles:{},frames:0};const skyNormal=new THREE.Color(0x24313d),fogNormal=new THREE.Color(0x202b2b);
  const cornAtlas=createCornSurfaceAtlas();const kitParts=[0,1,2].map(i=>({geometry:createCornGeometry(i),material:new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,side:THREE.DoubleSide,map:cornAtlas.map,normalMap:cornAtlas.normalMap,roughnessMap:cornAtlas.roughnessMap,normalScale:new THREE.Vector2(.72,.72)})}));
  const getCorn=()=>kitParts;
@@ -122,11 +124,11 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
     vt1Ground=createVT1RoadsideGround(earth);
     woodMaterial=wood;wood.normalScale.set(.35,.35);
     roadMaterial=asphalt;asphalt.color.setHex(0xabb0b1);asphalt.normalScale.set(.33,.33);applyEnvironmentSurface(asphalt,{kind:'mud'});
-    const ground=mesh(location,wetGroundGeometry(),earth);ground.name='Continuous graded mud, verge and shallow hollows';
+    const ground=mesh(location,wetGroundGeometry(),earth);ground.name='Continuous graded mud, verge and shallow hollows';groundSupports.push(ground);
     puddleMaterial=standard(0x343d36,{roughness:.24,metalness:.30,transparent:true,opacity:.82,depthWrite:false});
     location.add(createGroundedPuddles(puddleMaterial));
     road=group(location);road.position.x=-4.3;road.name='Continuous roadside';
-    const roadPlane=mesh(road,new THREE.PlaneGeometry(6.7,600,2,60),asphalt,0,-.01,120);roadPlane.rotation.x=-Math.PI/2;
+    const roadPlane=mesh(road,new THREE.PlaneGeometry(6.7,600,2,60),asphalt,0,-.01,120);roadPlane.rotation.x=-Math.PI/2;groundSupports.push(roadPlane);
     const lane=standard(0x8e8762),edge=standard(0x8b9290),reflector=new THREE.MeshBasicMaterial({color:0xa5ae96});
     const markers=new THREE.InstancedMesh(new THREE.BoxGeometry(.07,.006,3.2),lane,160),dummy=new THREE.Object3D();
     for(let i=0;i<80;i++)for(let j=0;j<2;j++){dummy.position.set(j?.10:-.10,0,-176+i*7.5);dummy.scale.set(1,.8,.72+.28*(.5+.5*Math.sin(i*12.7)));dummy.updateMatrix();markers.setMatrixAt(i*2+j,dummy.matrix);}markers.computeBoundingSphere();road.add(markers);
@@ -186,7 +188,7 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
   function loadSetAssets(){
     const treat=object=>object.traverse(item=>{for(const mat of [item.material].flat().filter(Boolean))if(mat.isMeshStandardMaterial)liquidUniforms.push(attachPrologueLiquid(mat));});
     assets=createPrologueAssets({gltfLoader:loader,textureLoader,
-      onRoadside(gltf){gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(!o.isMesh||!o.name.includes('gravel'))return;const p=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert(),v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld);v.y=wetGroundHeight(v.x,v.z)+.002;v.applyMatrix4(inv);p.setXYZ(i,v.x,v.y,v.z);}p.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});roadsideFallback.visible=false;gltf.scene.name='Original roadside exterior shell';roadsideSet.add(gltf.scene);treatVT1Glazing(gltf.scene,puddleMaterial?.envMap);treat(gltf.scene);},
+      onRoadside(gltf){gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(!o.isMesh||!o.name.includes('gravel'))return;groundSupports.push(o);const p=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert(),v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld);v.y=wetGroundHeight(v.x,v.z)+.002;v.applyMatrix4(inv);p.setXYZ(i,v.x,v.y,v.z);}p.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});roadsideFallback.visible=false;gltf.scene.name='Original roadside exterior shell';roadsideSet.add(gltf.scene);treatVT1Glazing(gltf.scene,puddleMaterial?.envMap);treat(gltf.scene);},
       onCar(gltf){
         asylum=createAsylumCruiser(gltf);const prepared=asylum.car;
         treatVT1Cruiser(prepared.model,puddleMaterial?.envMap);
@@ -250,17 +252,22 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
  storyField.root.position.set(8,0,-15);location.add(storyField.root);storyField.root.add(vines.root);storyField.root.visible=false;hospital.root.visible=false;scene.add(hospital.root);
  loadSetAssets();
  function readyAssets(){return new Promise((resolve,reject)=>{const start=Date.now();function poll(){if(disposed)return reject(new Error('Disposed load'));const keys=['car','cast','road','mist','roadside','roadsideCorn','dog','trees','sky','ground:map','ground:normalMap','ground:roughnessMap'];if(keys.some(k=>assets.stats[k]==='fallback'))return reject(new Error('Critical retained asset failed: '+keys.filter(k=>assets.stats[k]==='fallback').join(', ')));if(keys.every(k=>assets.stats[k]==='ready'))return resolve();if(Date.now()-start>9500)return reject(new Error('Critical retained asset deadline'));setTimeout(poll,35);}poll();});}
+ let claranceContactFit;
  const ready=Promise.all([readyAssets(),hands.ready]).then(async()=>{
   if(disposed)throw new Error('Disposed load');if(hands.stats.status!=='ready'||hands.stats.flashlightStatus!=='ready')throw new Error('Critical hands/flashlight unavailable');
   const asset=await loader.loadAsync(new URL('../assets/intro/cast-clarence.glb',import.meta.url).href);if(disposed){disposeTree(asset.scene);throw new Error('Disposed late attendant');}
   attendantActor=createTexturedPrologueActor({name:'Clarance',police:false,gltf:asset,uniformDetails:false});attendantActor.pose({mode:'standing'});attendantTreatment(attendantActor);hospital.root.add(attendantActor.root);hospitalWound=createWound(attendantActor);hospitalWound.setVisible(true);
+  const mikeLoaded=await Promise.all([loader.loadAsync(new URL('../assets/intro/mike-body.glb',import.meta.url).href),loader.loadAsync(new URL('../assets/field/player-arms.glb',import.meta.url).href)]);
+  if(disposed){for(const asset of mikeLoaded)disposeTree(asset.scene);throw new Error('Disposed late Mike body/arms');}
+  mikeAssets=mikeLoaded;mikePerformance=createMikePerformance({bodyGltf:mikeLoaded[0],armsGltf:mikeLoaded[1]});asylum.root.add(mikePerformance.root);mikePerformance.root.visible=false;stats.castRoles.mike='existing first-person body and player arms';
   wound=createWound(clarence);cuffs=createCuffs();location.add(cuffs.root);
   const weapon=gun.getObjectByName('ServicePistol');if(!weapon)throw new Error('Critical existing pistol missing');heldGun=weapon.clone(true);heldGun.name='Stanley one-shot story pistol';heldGun.visible=false;bone(stanley,'handR').add(heldGun);heldGun.position.set(0,.075,0);heldGun.rotation.set(0,0,0);heldGun.scale.setScalar(.8);
+  claranceContactFit=createClaranceContactFit({actor:clarence,car:asylum.root,wheel:cruiser.steering,floors:['InteriorFloor','InteriorFloormats'].map(name=>asylum.root.getObjectByName(name)),groundMeshes:groundSupports});
   loaded=true;stats.status='ready';return true;
  }).catch(error=>{stats.status='error';stats.error=error.message;throw error;});
  function openingFrame(frame){
   const f=frame.opening,m=f.motion,b=m.blocking,d=f.driving,wake=samplePrologueWake(f),driver=m.actors.clarence;
-  location.visible=true;hospital.root.visible=false;storyField.root.visible=false;car.visible=true;pole.visible=false;cuffs.root.visible=false;
+  location.visible=true;hospital.root.visible=false;storyField.root.visible=false;car.visible=true;pole.visible=false;cuffs.root.visible=false;mikePerformance.root.visible=false;
   camera.position.fromArray(b.camera);camera.rotation.set(f.player.pitch,f.player.yaw,0,'YXZ');
   car.position.fromArray(d.position);car.rotation.set(d.bodyPitch,d.yaw,d.bodyRoll,'YXZ');car.updateMatrix();
   camera.position.add(new THREE.Vector3().fromArray(samplePrologueBodyReach(wake.reach).eyeOffset)).applyMatrix4(car.matrix);camera.quaternion.premultiply(car.quaternion);
@@ -268,16 +275,16 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
   cruiser.update(d,0);cruiser.setLampState(sampleCruiserLampState(m.time,{reduced:f.reduced}));headlight.intensity=6;entertainment.update(wake);car.updateWorldMatrix(true,true);
   f.cabinMatrix=car.matrixWorld.toArray();f.locationMatrix=location.matrixWorld.toArray();f.radioKnobQuaternion=entertainment.knob.getWorldQuaternion(new THREE.Quaternion()).toArray();f.radioHandTarget=entertainment.contact.getWorldPosition(new THREE.Vector3()).toArray();f.radioHandReach=wake.reach;f.radioHandTurn=wake.turn;
   clarence.root.visible=true;stanley.root.visible=false;clarence.root.position.fromArray(driver.position).applyMatrix4(car.matrix);clarence.root.rotation.set(0,driver.yaw,0,'YXZ');clarence.root.quaternion.premultiply(car.quaternion);
-  const performance=performanceFor(f,'clarence',driver,m.listener?.position||b.camera);cruiser.steering.updateWorldMatrix(true,false);clarence.pose({wheelMatrix:cruiser.steering.matrixWorld,time:m.time,phase:driver.phase,mode:'drive',speaking:f.line?.voice==='clarence',look:performance.look,reduced:f.reduced,steer:d.steer,performance,gait:driver.gait,support:driver.support});
+  const performance=performanceFor(f,'clarence',driver,m.listener?.position||b.camera);cruiser.steering.updateWorldMatrix(true,false);clarence.pose({wheelMatrix:cruiser.steering.matrixWorld,time:m.time,phase:driver.phase,mode:'drive',speaking:f.line?.voice==='clarence',look:performance.look,reduced:f.reduced,steer:d.steer,performance,gait:driver.gait,support:driver.support});stats.clarance=claranceContactFit.fitSeated({armWeight:0});
   dog.update(f,true);for(const [i,l]of policeSpill.entries()){const s=sampleCruiserLampState(m.time,{reduced:f.reduced});l.intensity=i?s.blueSpill:s.redSpill;}
   if(roadMist)for(const sheet of roadMist.children){const i=sheet.userData.index;sheet.position.set(-4.3+(f.reduced?0:Math.sin(m.time*.07+i)*1.2),.65,camera.position.z-12-i*16);}
   renderer.render(scene,camera);equipment.render(camera,f);
  }
  function updateNew(frame){
   const id=frame.scene,t=frame.time,reduced=frame.comfort.reducedMotion;
-  equipment.reset();titles.release();hospital.root.visible=id.startsWith('hospital')||id==='connector'||id==='boundary';location.visible=!hospital.root.visible;scene.fog=location.visible?new THREE.Fog(fogNormal,14,100):new THREE.Fog(0x758177,5,28);scene.background.set(location.visible?skyNormal:0x758177);
+  equipment.reset();titles.release();mikePerformance.root.visible=['exit','custody'].includes(id);hospital.root.visible=id.startsWith('hospital')||id==='connector'||id==='boundary';location.visible=!hospital.root.visible;scene.fog=location.visible?new THREE.Fog(fogNormal,14,100):new THREE.Fog(0x758177,5,28);scene.background.set(location.visible?skyNormal:0x758177);
   if(hospital.root.visible){attendantActor.root.position.fromArray(HOSPITAL.attendant);attendantActor.root.rotation.y=-Math.PI/2;attendantActor.pose({mode:'standing',time:t,reduced,speaking:frame.line?.speaker==='CLARANCE'});hospitalWound.setVisible(true);if(camera.parent!==scene)scene.add(camera);camera.position.set(frame.player.x,frame.player.y,frame.player.z);camera.rotation.set(frame.player.pitch,frame.player.yaw,0,'YXZ');return;}
-  if(camera.parent!==location)location.add(camera);for(const child of [...car.children])if(child.isLight||child===headlight.target)asylum.root.add(child);car.position.set(0,0,0);car.rotation.set(0,0,0);asylum.root.position.set(0,0,0);asylum.root.rotation.set(0,0,0);
+  if(camera.parent!==location)location.add(camera);for(const child of [...car.children])if(child.isLight||child===headlight.target)asylum.root.add(child);car.position.set(0,0,0);car.rotation.set(0,0,0);asylum.root.position.set(0,0,0);asylum.root.rotation.set(0,0,0);car.updateWorldMatrix(true,false);
   const fieldScene=['field','closure','return','shot','apology','stanley_engulf','mike_engulf','blackout'].includes(id);storyField.root.visible=fieldScene;car.visible=!fieldScene;road.visible=!fieldScene;roadsideSet.visible=!fieldScene;field.visible=false;pole.visible=!fieldScene;
   sky.position.copy(camera.position);rain.update(t,camera.position,sampleCrash(4),reduced,false,false);cuffs.root.visible=id==='custody';heldGun.visible=false;wound.setVisible(false);
   const moveParent=(actor,parent)=>{if(actor.root.parent!==parent)parent.add(actor.root);};
@@ -294,17 +301,25 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
   moveParent(clarence,location);moveParent(stanley,location);clarence.root.visible=true;stanley.root.visible=true;
   if(id==='encounter'||id==='crash'){
    const drive=id==='encounter'?sampleEncounter(t,{reduced}):sampleCrash(t,{reduced});asylum.update(drive,{time:t,reduced});camera.position.set(.5,1.13,.35).applyMatrix4(asylum.root.matrixWorld);camera.rotation.set(frame.player.pitch,frame.player.yaw,0,'YXZ');camera.quaternion.premultiply(asylum.root.quaternion);
-   clarence.root.position.set(-.45,-.38,.09).applyMatrix4(asylum.root.matrixWorld);clarence.root.rotation.set(0,Math.PI+drive.yaw,0);clarence.pose({mode:'drive',time:t,reduced,wheelMatrix:cruiser.steering.matrixWorld,steer:drive.steer});stanley.root.position.fromArray(CRASH.stationaryStanley);stanley.root.rotation.y=0;stanley.pose({mode:'standing',time:0,reduced:true,chapter:'asylum-stationary'});
+   clarence.root.position.set(-.45,-.38,.09).applyMatrix4(asylum.root.matrixWorld);clarence.root.rotation.set(0,Math.PI+drive.yaw,0);clarence.pose({mode:'drive',time:t,reduced,wheelMatrix:cruiser.steering.matrixWorld,steer:drive.steer});stats.clarance=claranceContactFit.fitSeated({armWeight:id==='crash'?smooth((t-5.5)/.5):0});stanley.root.position.fromArray(CRASH.stationaryStanley);stanley.root.rotation.y=0;stanley.pose({mode:'standing',time:0,reduced:true,chapter:'asylum-stationary'});
   }else if(id==='exit'){
-   const exit=sampleCrashExit(t);asylum.update(exit.car,{time:t,reduced,exit:exit.door});camera.position.fromArray(exit.position).applyMatrix4(asylum.root.matrixWorld);camera.rotation.set(frame.player.pitch,frame.player.yaw+exit.car.yaw,0,'YXZ');clarence.root.position.fromArray(exit.driver).applyMatrix4(asylum.root.matrixWorld);clarence.root.rotation.y=exit.driverYaw+exit.car.yaw;clarence.pose({mode:exit.finished?'standing':'exit',time:t,exitPose:exit,reduced});stanley.root.position.fromArray(CRASH.stationaryStanley);stanley.pose({mode:'standing',time:0,reduced:true});
+   const r=sampleRecovery(t);asylum.update(sampleCrash(6),{time:t,reduced,driverDoor:r.driverDoor,passengerDoor:r.passengerDoor});
+   moveParent(clarence,asylum.root);clarence.root.position.fromArray(r.driver);clarence.root.rotation.y=r.driverYaw;
+   // The driver visibly exits, then settles continuously into the exact next
+   // scene's starting pose. The player camera always belongs to Mike.
+   stats.clarance=claranceContactFit.pose(t,reduced);
+   moveParent(stanley,asylum.root);stanley.root.position.set(CRASH.stationaryStanley[0]-CRASH.parked[0],0,CRASH.stationaryStanley[2]-CRASH.parked[2]);stanley.root.rotation.y=0;stanley.pose({mode:'standing',time:0,reduced:true,chapter:'asylum-custody'});
+   const compliance=smooth((t-3)/4);if(compliance>0){const targets=[[.075,1,-.14],[-.075,1,-.14]].map((p,i)=>stanley.root.worldToLocal(bone(stanley,'hand'+(i?'R':'L')).getWorldPosition(new THREE.Vector3())).lerp(new THREE.Vector3(...p),compliance).toArray());poseArms(stanley,targets,compliance,{behind:true});}
+   r.passengerHandle=asylum.car.door.getObjectByName('InteriorDoorR06');r.passengerFloor=asylum.car.model.getObjectByName('InteriorFloor');r.groundSupports=groundSupports;stats.mike=mikePerformance.update(r);stats.recovery={driverOut:r.driverFinished,mikeOut:r.mikeFinished,driverDoor:r.driverDoor,passengerDoor:r.passengerDoor,compliance};
+   camera.position.fromArray(r.eye).applyMatrix4(asylum.root.matrixWorld);camera.rotation.set(r.cameraPitch+frame.player.pitch,r.cameraYaw+frame.player.yaw,0,'YXZ');camera.quaternion.premultiply(asylum.root.quaternion);
   }else if(id==='custody'){
-   const s=sampleCustody(t);asylum.update(sampleCrash(4),{time:t,reduced,custody:t});moveParent(stanley,asylum.root);poseCustody(stanley,s);if(cuffs.root.parent!==asylum.root)asylum.root.add(cuffs.root);cuffs.root.visible=t>=10;cuffs.update(stanley,s.cuffClosure);
+   if(!frame.facts.includes('mike_out'))throw new Error('Custody view before Mike exits');
+   const s=sampleCustody(t),r=sampleMikeCustody(t);asylum.update(sampleCrash(6),{time:t,reduced,custody:t,driverDoor:r.driverDoor,passengerDoor:r.passengerDoor});moveParent(stanley,asylum.root);poseCustody(stanley,s);if(cuffs.root.parent!==asylum.root)asylum.root.add(cuffs.root);cuffs.root.visible=t>=10;cuffs.update(stanley,s.cuffClosure);
    moveParent(clarence,asylum.root);stats.wristContact=poseOfficerCustody(clarence,stanley,s);if(s.doorContact>0)stats.handleContact=fitHandToHandle(clarence,'L',asylum.doors[1].handle,s.doorContact);
-   // Confirmation is framed through the partition from an unobstructed cabin sightline.
-   camera.position.fromArray(s.confirmation?[.42,1.13,.38]:s.time<22?[s.stanley[0]+3,1.58,s.stanley[2]+2]:[3.2,1.58,2.75]).applyMatrix4(asylum.root.matrixWorld);camera.lookAt(asylum.root.localToWorld(new THREE.Vector3(s.time<22?s.stanley[0]:0,1.08,s.time<22?s.stanley[2]:2.4)));camera.rotateY(frame.player.yaw);camera.rotateX(frame.player.pitch);
+   r.groundSupports=groundSupports;r.passengerFloor=asylum.car.model.getObjectByName('InteriorFloor');stats.mike=mikePerformance.update(r);camera.position.fromArray(r.eye).applyMatrix4(asylum.root.matrixWorld);camera.rotation.set(r.cameraPitch+frame.player.pitch,r.cameraYaw+frame.player.yaw,0,'YXZ');camera.quaternion.premultiply(asylum.root.quaternion);
   }
  }
  function render(frame){if(disposed||!loaded)return;const w=Math.max(1,renderer.domElement.clientWidth),h=Math.max(1,renderer.domElement.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();if(frame.scene==='titles'){titles.render(frame.titles);return;}if(frame.scene==='opening')openingFrame(frame);else{updateNew(frame);renderer.render(scene,camera);}stats.frames++;stats.scene=frame.scene;}
  function disposeTree(root){const resources=new Set();root?.traverse(o=>{if(o.geometry)resources.add(o.geometry);o.skeleton&&resources.add(o.skeleton);for(const m of [o.material].flat().filter(Boolean)){resources.add(m);for(const v of Object.values(m))if(v?.isTexture)resources.add(v);}});for(const r of resources)r.dispose();}
- return {ready,render,stats,criticalStatus(){if(equipment.stats.body?.status==='failed'||equipment.stats.radio?.status==='fallback')throw new Error('Critical body/radio failed');return equipment.stats.body?.status==='ready'&&equipment.stats.radio?.status==='ready';},dispose(){if(disposed)return;disposed=true;equipment.dispose();hands.dispose();titles.dispose();assets?.dispose();rain?.dispose();dog?.dispose();asylum?.dispose();clarence?.dispose();stanley?.dispose();attendantActor?.dispose();vines.dispose();hospital.dispose();storyField.dispose();disposeTree(scene);for(const p of kitParts){p.geometry.dispose();p.material.dispose();}for(const t of ownedTextures)t.dispose();for(const t of [cornAtlas.map,cornAtlas.normalMap,cornAtlas.roughnessMap])t.dispose();stats.status='disposed';}};
+ return {ready,render,stats,criticalStatus(){if(equipment.stats.body?.status==='failed'||equipment.stats.radio?.status==='fallback')throw new Error('Critical body/radio failed');return equipment.stats.body?.status==='ready'&&equipment.stats.radio?.status==='ready';},dispose(){if(disposed)return;disposed=true;mikePerformance?.dispose();for(const asset of mikeAssets)disposeTree(asset.scene);mikeAssets=[];equipment.dispose();hands.dispose();titles.dispose();assets?.dispose();rain?.dispose();dog?.dispose();asylum?.dispose();clarence?.dispose();stanley?.dispose();attendantActor?.dispose();vines.dispose();hospital.dispose();storyField.dispose();disposeTree(scene);for(const p of kitParts){p.geometry.dispose();p.material.dispose();}for(const t of ownedTextures)t.dispose();for(const t of [cornAtlas.map,cornAtlas.normalMap,cornAtlas.roughnessMap])t.dispose();stats.status='disposed';}};
 }

@@ -10,8 +10,8 @@ export const WOUND=Object.freeze({side:'left',region:'temple',local:[.082,1.66,.
 const line=(id,speaker,text,start,end,claim=false)=>Object.freeze({id,speaker,text,start,end,claim,audioMode:'subtitle-only'});
 // C1: these are caption performances, never inferred new recordings.
 export const NEW_LINES=Object.freeze({
-  encounter:[], crash:[line('CRASH-01','CLARANCE','Are you okay, Mike?',3,5.8)], exit:[line('EXIT-01','MIKE','What the hell',1,3.7)],
-  custody:[line('CUS-01','STANLEY','I was waiting for you. My daughter, Sadie, is in the cornfield. Please, help her.',.6,6.8),line('CUS-02','MIKE','Hands where I can see them. You’re staying in the car.',7,11.8),line('CUS-03','CLARANCE','Cuffs secure. Rear door locked. We’ll look for Sadie.',29,32.8)],
+  encounter:[], crash:[line('CRASH-01','CLARANCE','Are you okay, Mike?',3,5.8)], exit:[line('EXIT-01','MIKE','What the hell',.4,2.8),line('REC-01','CLARANCE','Put your hands behind your back!',3,6.8),line('REC-02','STANLEY','You need to help my daughter, she’s in that cornfield.',7,11.8),line('REC-03','CLARANCE','What were you doing in the middle of the highway?',12,15.8)],
+  custody:[line('CUS-03','CLARANCE','Cuffs secure. Rear door locked. We’ll look for your daughter.',29,32.8)],
   field:[line('FIELD-01','MIKE','Need some light.',.5,2.5)], closure:[],
   return:[line('RETURN-01','MIKE','We locked you in the car.',.3,3.9)], shot:[],
   apology:[line('APOLOGY-01','STANLEY','I didn’t have a choice. It was the only way to save Sadie.',.5,8.4)],
@@ -21,7 +21,7 @@ export const NEW_LINES=Object.freeze({
 });
 export const SCENES=Object.freeze([
  ['opening',DISPATCH_END,'Police car and dispatch'],['encounter',.9,'A man in the headlights'],
- ['crash',6,'The pole'],['exit',4,'Broken windshield'],['custody',33,'Secured custody'],
+ ['crash',6,'The pole'],['exit',22,'Recovery in Mike’s eyes'],['custody',33,'Secured custody'],
  ['field',8,'Two officers enter'],['closure',4,'The way closes'],['return',4.5,'An impossible return'],
  ['shot',3,'One shot'],['apology',9,'Stanley’s apology'],['stanley_engulf',5,'Stanley is consumed'],
  ['mike_engulf',5,'Mike is consumed'],['blackout',1,'Blackout'],['titles',INTRO.duration,'Cornfields'],
@@ -30,8 +30,8 @@ export const SCENES=Object.freeze([
 ].map(([id,duration,title])=>Object.freeze({id,duration,title})));
 export const EVENTS=Object.freeze({
  encounter:[['stanley_stationary',0]],crash:[['near_miss',1.7],['impact',2.5],['glass',2.5]],
- exit:[['front_door_open',.35],['officers_out',3]],
- custody:[['cuffs_closed',12],['rear_door_open',21],['stanley_seated',27],['rear_door_closed',29],['handle_checked',31],['custody_confirmed',32]],
+ exit:[['driver_door_open',.35],['clarance_out',3],['hands_commanded',3],['stanley_complied',7],['daughter_plea_complete',11.8],['highway_challenge_complete',15.8],['front_door_open',16.35],['mike_out',20],['officers_out',20]],
+ custody:[['cuffs_closed',12],['escort_started',13],['rear_door_open',21],['stanley_seated',27],['rear_door_closed',29],['handle_checked',31],['custody_confirmed',32]],
  field:[['both_officers_clear',7.8]],closure:[['vines_closed',3.5]],return:[['impossible_return',.2]],
  shot:[['shot',1.2],['clarance_wounded',1.2]],apology:[['apology_complete',8.5]],
  stanley_engulf:[['stanley_consumed',4.8]],mike_engulf:[['mike_consumed',4.8]],
@@ -39,7 +39,7 @@ export const EVENTS=Object.freeze({
 });
 export const DESCRIPTIONS=Object.freeze({
  encounter:'Stanley stands motionless in the headlights.',crash:'The cruiser swerves past Stanley and strikes a standing telephone pole. Glass breaks once.',
- exit:'The windshield remains broken. Mike and Clarance leave the cruiser.',custody:'Stanley is cuffed, seated behind the rear partition, and secured. Clarance closes the door and checks its handle.',
+ exit:'Through Mike’s eyes: glass is picked from his bloodied forearm while Clarance exits and questions Stanley. Mike then climbs out through the passenger door.',custody:'Mike stays outside in first-person view. Clarance cuffs Stanley’s hands behind his back, escorts him to the rear seat, closes the door and checks its handle.',
  field:'Mike and Clarance enter alone. Stanley remains secured in the cruiser.',closure:'Both officers are inside before vines close the path behind them.',
  return:'Stanley is ahead of them. He was secured in the cruiser; no escape has been shown.',shot:'Stanley fires once. Clarance is hit on his left temple.',
  apology:'Stanley speaks after the shot.',stanley_engulf:'The vines consume Stanley first.',mike_engulf:'The vines then consume Mike. Darkness.',

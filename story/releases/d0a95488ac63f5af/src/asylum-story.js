@@ -14,6 +14,9 @@ export function createStory({onCue=()=>{}}={}){
  function fact(id,skip=false){
   if(facts.has(id))return;
   const require=(condition,message)=>{if(!condition)throw new Error(message);};
+  if(id==='mike_out')require(['clarance_out','stanley_complied','daughter_plea_complete','highway_challenge_complete'].every(x=>facts.has(x)),'Mike exits before recovery exchange');
+  if(id==='officers_out')require(facts.has('mike_out')&&facts.has('clarance_out'),'Officers out before both exits');
+  if(id==='escort_started')require(facts.has('mike_out')&&facts.has('cuffs_closed'),'Escort before Mike exits and cuffs close');
   if(id==='custody_confirmed')require(['cuffs_closed','stanley_seated','rear_door_closed','handle_checked'].every(x=>facts.has(x)),'Unsecured custody');
   if(id==='vines_closed')require(facts.has('both_officers_clear'),'Early vine closure');
   if(id==='impossible_return')require(facts.has('custody_confirmed'),'Return without custody');
