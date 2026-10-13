@@ -1,3 +1,4 @@
+import {createStoryView} from './asylum-story-view.js';
 import {createMaze} from './maze.js';
 import {createScene} from './scene.js';
 import {FieldAudio} from './audio.js';
@@ -33,14 +34,24 @@ try {
   const introView=introEnabled?createIntroVisuals(view.renderer,{getCorn:view.introCorn,touch,enhanced:parameters.get('introfx')!=='off'}):null;
   const prologueEnabled=introEnabled&&parameters.get('prologue')!=='off';
   const survivalEndingEnabled=parameters.get('ending')!=='off'&&(!parameters.has('test')||parameters.get('ending')==='on');
-  const prologueView=prologueEnabled?createPrologueVisuals(view.renderer,{getCorn:view.introCorn,getWorld:()=>({scene:view.scene,camera:view.camera}),renderEquipment:view.renderPrologueEquipment,spawn:{...maze.spawn,yaw:Math.PI},touch}):null;
+  const originalPrologueView=prologueEnabled?createPrologueVisuals(view.renderer,{getCorn:view.introCorn,getWorld:()=>({scene:view.scene,camera:view.camera}),renderEquipment:view.renderPrologueEquipment,spawn:{...maze.spawn,yaw:Math.PI},touch}):null;
+  const crashView=prologueEnabled?createStoryView(view.renderer):null;
+  let crashLoaded=false,crashFailure=null;
+  if(crashView)crashView.ready.then(()=>{crashLoaded=true;}).catch(error=>{crashFailure=error;});
+  const prologueView=originalPrologueView&&{...originalPrologueView,
+    crashReady(){if(crashFailure)throw crashFailure;return crashLoaded;},
+    render(frame){if(frame.crashOriginal){if(crashFailure)throw crashFailure;if(!crashLoaded)throw Error('Crash assets are not ready');crashView.render(frame);}else originalPrologueView.render(frame);view.renderer.domElement.style.opacity=String(1-(frame.joinFade||0));},
+    release(){view.renderer.domElement.style.opacity='1';originalPrologueView.release();},
+    dispose(){view.renderer.domElement.style.opacity='1';originalPrologueView.dispose();crashView?.dispose();}
+  };
   const prologueAudio=prologueEnabled||survivalEndingEnabled?createPrologueAudio(audio):null;
   const survivalView=survivalEndingEnabled?createSurvivalVisuals(view,{touch}):null;
   const survivalAudio=survivalEndingEnabled?createSurvivalAudio(audio):null;
 
   const app = createGameApp({
-    maze, view, audio, weather, document, window, touch, introEnabled, introView, prologueEnabled,prologueView,prologueAudio,ready:view.ready,
-    survivalEndingEnabled,survivalView,survivalAudio,
+    maze, view, audio, weather, document, window, touch, introEnabled, introView, prologueEnabled,prologueView,prologueAudio,ready:Promise.all([view.ready,crashView?.ready]),
+    survivalEndingEnabled,survivalView,survivalAudio,crashOriginal:true,
+    onLevelSelect:record=>window.dispatchEvent(new CustomEvent('cornfields-level-complete',{detail:{record,shutdown:()=>app.dispose()}})),
     onLevelComplete:record=>window.dispatchEvent(new CustomEvent('cornfields-level-complete',{detail:{record,shutdown:()=>app.dispose()}})),
     debug: parameters.has('debug'), horror:parameters.get('horror')!=='off',
     reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,

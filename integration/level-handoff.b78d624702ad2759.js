@@ -1,10 +1,13 @@
-/** One-use same-origin handoff; only a completed deliberate pit fall can stage it. */
+/** One-use same-origin handoff from a completed fall or explicit title selection. */
 export const LEVEL_KEY='cornfields.level-two.once.v1';
 export const MAX_AGE=300000;
 export function validateLevel(record){
- if(!record||Object.keys(record).sort().join(',')!=='comfort,completed'||record.completed!==true)throw new Error('Complete Level 1 before entering Level 2.');
+ const keys=record&&Object.keys(record).sort().join(',');
+ const completed=keys==='comfort,completed'&&record.completed===true;
+ const selected=keys==='comfort,selectedLevel'&&record.selectedLevel===2;
+ if(!completed&&!selected)throw new Error('Complete Level 1 or select Start Level 2 from the title.');
  const c=record.comfort;if(!c||Object.keys(c).sort().join(',')!=='effects,master,reducedMotion,voice'||typeof c.reducedMotion!=='boolean'||!['master','voice','effects'].every(k=>Number.isFinite(c[k])&&c[k]>=0&&c[k]<=1))throw new Error('Invalid comfort settings');
- return {completed:true,comfort:{...c}};
+ return {...(completed?{completed:true}:{selectedLevel:2}),comfort:{...c}};
 }
 export function stageLevelEntry(record,storage,now=Date.now()){
  const value=JSON.stringify({at:now,record:validateLevel(record)});if(!Number.isFinite(now))throw new Error('Invalid entry time');

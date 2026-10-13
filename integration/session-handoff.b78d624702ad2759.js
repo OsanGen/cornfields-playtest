@@ -1,4 +1,4 @@
-import {copyEntry} from './entry-contract.js';
+import {copyEntry} from './entry-contract.b78d624702ad2759.js';
 export const SESSION_KEY='cornfields.story-hall.once.v1';
 export const MAX_AGE_MS=300000;
 const MAX_BYTES=48000;

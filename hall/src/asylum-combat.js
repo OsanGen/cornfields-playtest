@@ -1,6 +1,6 @@
 // Adapted from the existing Cornfields combat.js aim capsule and grapple.js drain arithmetic.
 // The context-free game configuration is shared unchanged; no corn-maze or enemy-HP system is imported.
-import {GAME_CONFIG as C} from '../../story/releases/042a95b9fd19768d/src/game-config.js';
+import {GAME_CONFIG as C} from '../../story/releases/e389f949f44726c7/src/game-config.js';
 export const COMBAT=Object.freeze({health:C.player.maxHealth,startAmmo:C.player.startAmmo,maxAmmo:C.player.maxAmmo,shotCooldown:C.player.shotCooldown,stagger:C.zombie.staggerSecondsByTier[0],attackRange:C.zombie.attackRange,damagePerSecond:C.player.maxHealth/C.grapple.fullHealthSeconds});
 export function createCombatState(){return {health:COMBAT.health,maxHealth:COMBAT.health,ammo:COMBAT.startAmmo,shotCooldown:0,damageCooldown:1.5,muzzleFlash:0,flashlightOn:true,shots:0,hits:0,damageTaken:0,dead:false};}
 export function shotHits(player,enemy,lineClear){

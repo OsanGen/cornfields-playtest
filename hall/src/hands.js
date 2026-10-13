@@ -27,7 +27,7 @@ export function installHands({gun,knife,torch,placeholders,weaponPlaceholders=[]
     if(cleaned)return;cleaned=true;
     disposeAssets([...roots,...groups],[...knifeMaterials,...sourceMaterials]);for(const group of groups)group.removeFromParent();environment?.dispose();
   };
-  const load=name=>loader.loadAsync(new URL(`../../story/releases/042a95b9fd19768d/assets/field/${name}`,import.meta.url).href).then(asset=>{
+  const load=name=>loader.loadAsync(new URL(`../../story/releases/e389f949f44726c7/assets/field/${name}`,import.meta.url).href).then(asset=>{
     if(expired){disposeAssets([asset.scene]);return asset;}
     roots.push(asset.scene);return asset;
   });
@@ -53,7 +53,7 @@ export function installHands({gun,knife,torch,placeholders,weaponPlaceholders=[]
   // This optional load has its own deadline and error channel. Its failure must
   // never discard the independently usable gun, knife or skin assets.
   const torchAsset=torch?Promise.race([
-    loader.loadAsync(new URL('../../story/releases/042a95b9fd19768d/assets/field/handheld-flashlight.glb',import.meta.url).href).then(asset=>{
+    loader.loadAsync(new URL('../../story/releases/e389f949f44726c7/assets/field/handheld-flashlight.glb',import.meta.url).href).then(asset=>{
       if(torchExpired||expired||disposed){disposeAssets([asset.scene]);return null;}
       roots.push(asset.scene);return asset;
     }),

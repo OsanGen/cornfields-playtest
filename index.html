@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#101713">
   <title>CORNFIELDS · Find Sadie Yates</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23101713'/%3E%3Cpath d='M20 35V5M20 15L10 8M20 22L30 12M20 28L10 20' stroke='%23c3c598' stroke-width='2' fill='none'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./story/releases/042a95b9fd19768d/src/style.css">
-  <script type="importmap">{"imports":{"three":"./story/releases/042a95b9fd19768d/vendor/three/build/three.module.js","three/addons/":"./story/releases/042a95b9fd19768d/vendor/three/examples/jsm/"}}</script>
+  <link rel="stylesheet" href="./story/releases/e389f949f44726c7/src/style.css">
+  <script type="importmap">{"imports":{"three":"./story/releases/e389f949f44726c7/vendor/three/build/three.module.js","three/addons/":"./story/releases/e389f949f44726c7/vendor/three/examples/jsm/"}}</script>
 </head>
 <body>
   <main id="game" aria-label="Cornfield first-person horror game">
@@ -27,6 +27,7 @@
         <input id="player-alias" class="alias-input" autocomplete="off" spellcheck="false" maxlength="160" dir="auto" placeholder="Name or alias" aria-label="Name or fictional alias">
         <p class="alias-note">Fictional horror uses only this name. It stays in this session.<br>No camera or microphone. Leave blank to be STRANGER.</p>
         <button id="start-btn" class="primary">ENTER THE FIELD <span>↗</span></button>
+        <button id="start-level-two" class="text-button" disabled>START LEVEL 2 · ASYLUM</button>
         <button id="preflight-skip" class="text-button" hidden>SKIP INTRO</button>
         <p id="intro-content-note" class="small-note" hidden>Distorted visuals and sudden sounds. Reduced effects available.</p>
         <p id="opening-note" class="small-note" hidden>An interactive story playtest with temporary synthetic voices.<br>Look around, exit the cruiser and follow the others.<br>Sound is optional. All dialogue is subtitled.</p>
@@ -75,12 +76,12 @@
       <p><span id="credits-roles">GAME DIRECTION • DEVELOPMENT • BUILD • GAMEPLAY • CINEMATIC IMPLEMENTATION</span><br><strong>OSCAR SANCHEZ</strong></p>
       <p class="credit-notices">Zombie: Pixelhouse, CC BY 3.0, modified in Blender.<br>
         Music: “Cold Funk” and “The House of Leaves” by Kevin MacLeod (incompetech.com), CC BY 4.0; edited excerpts. See prologue voices and music notices below.<br>
-        <a href="./story/releases/042a95b9fd19768d/assets/field/LICENSES.md" target="_blank" rel="noopener noreferrer">Field and character notices</a> ·
-        <a href="./story/releases/042a95b9fd19768d/assets/audio/LICENSES.md" target="_blank" rel="noopener noreferrer">Audio notices</a> ·
-        <a href="./story/releases/042a95b9fd19768d/assets/audio/prologue/LICENSES.md" target="_blank" rel="noopener noreferrer">Prologue voices and music</a> ·
-        <a href="./story/releases/042a95b9fd19768d/assets/intro/LICENSES.md" target="_blank" rel="noopener noreferrer">Cruiser and intro cast notices</a> ·
-        <a href="./story/releases/042a95b9fd19768d/assets/audio/survival/LICENSES.md" target="_blank" rel="noopener noreferrer">Survival voice notices</a> ·
-        <a href="./story/releases/042a95b9fd19768d/assets/fonts/LICENSES.md" target="_blank" rel="noopener noreferrer">Font notices</a>
+        <a href="./story/releases/e389f949f44726c7/assets/field/LICENSES.md" target="_blank" rel="noopener noreferrer">Field and character notices</a> ·
+        <a href="./story/releases/e389f949f44726c7/assets/audio/LICENSES.md" target="_blank" rel="noopener noreferrer">Audio notices</a> ·
+        <a href="./story/releases/e389f949f44726c7/assets/audio/prologue/LICENSES.md" target="_blank" rel="noopener noreferrer">Prologue voices and music</a> ·
+        <a href="./story/releases/e389f949f44726c7/assets/intro/LICENSES.md" target="_blank" rel="noopener noreferrer">Cruiser and intro cast notices</a> ·
+        <a href="./story/releases/e389f949f44726c7/assets/audio/survival/LICENSES.md" target="_blank" rel="noopener noreferrer">Survival voice notices</a> ·
+        <a href="./story/releases/e389f949f44726c7/assets/fonts/LICENSES.md" target="_blank" rel="noopener noreferrer">Font notices</a>
       </p>
       <button id="credits-replay" class="text-button">REPLAY OPENING</button>
       <button id="credits-close" class="primary">BACK</button>
@@ -130,10 +131,10 @@
     <section id="error" class="modal" hidden><p class="eyebrow">UNABLE TO ENTER</p><h2>The field could not load.</h2><p id="error-copy">Reload in a browser with WebGL enabled.</p></section>
     <pre id="debug" hidden></pre>
   </main>
-  <script type="module" src="./story/releases/042a95b9fd19768d/src/main.js"></script>
+  <script type="module" src="./story/releases/e389f949f44726c7/src/main.js"></script>
 <div id="level-transfer-error" class="modal" style="z-index:100" hidden role="alert"><p id="level-transfer-message"></p><button id="level-transfer-retry">Retry Level 2</button></div>
 <script type="module">
-import {transferToWake} from './integration/level-handoff.js';
+import {transferToWake} from './integration/level-handoff.b78d624702ad2759.js';
 let pending=null;
 function transfer(){try{transferToWake(pending.record,{shutdown:pending.shutdown});}catch(error){document.getElementById('level-transfer-error').hidden=false;document.getElementById('level-transfer-message').textContent=error.message;queueMicrotask(()=>document.getElementById('level-transfer-retry').focus());}}
 window.addEventListener('cornfields-level-complete',event=>{if(pending)return;pending=event.detail;transfer();});

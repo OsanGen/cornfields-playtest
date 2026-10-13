@@ -151,14 +151,16 @@ export function createPrologueAudio(audio,{fetcher=(...args)=>fetch(...args),lin
 
   }
   function sync(frame){
+    if(frame.crashOriginal)frame={...frame,time:frame.audioTime,motion:{listener:{position:[0,1.58,0],yaw:0},actors:{},blocking:{inCar:frame.scene!=='exit'}}};
     lastFrame=frame;
     if(!ensureBus(!!frame.gameplay)){pause();return;}
+    if(frame.crashOriginal&&frame.nextRecordedLine)preload({...frame,line:null,nextLine:frame.nextRecordedLine});
     preload(frame);
     if(frame.gameplay){stop(ambience);ambience=null;stop(engine);engine=null;stopEntertainment();stop(projector);projector=null;}else atmosphere(frame);
     // Process contact before the dialogue fast path: speaking must not silence walking.
     const motion=frame.motion||samplePrologueMotion(frame),listener=motion.listener;
-    syncBark(frame,motion);
-    for(const contact of frame.gameplay?[]:contacts.update(motion)){
+    if(frame.crashOriginal)stopBark();else syncBark(frame,motion);
+    for(const contact of frame.gameplay||frame.crashOriginal?[]:contacts.update(motion)){
       const dx=contact.position[0]-listener.position[0],dz=contact.position[2]-listener.position[2],distance=Math.hypot(dx,dz);
       const self=contact.actor==='mike',pan=self?0:(dx*Math.cos(listener.yaw)-dz*Math.sin(listener.yaw))/Math.max(3,distance);
       const gain=(self?.34:.29)/(1+distance*.18)*(frame.line?.id?.65:1);
@@ -196,7 +198,7 @@ export function createPrologueAudio(audio,{fetcher=(...args)=>fetch(...args),lin
     }
     const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),level=ctx.createGain();
     const scream=id.startsWith('zombie_scream_');
-    const crash=id==='crash',bang=id.startsWith('car_bang_'),door=id==='door_open',duration=scream?1.75:crash?3.4:id==='corn_burst'?.85:door?.48:bang?(id.endsWith('1')?.14:.18):.28;
+    const crash=id==='crash'||id==='vehicle_impact',bang=id.startsWith('car_bang_'),door=id==='door_open',duration=scream?1.75:crash?3.4:id==='corn_burst'?.85:door?.48:bang?(id.endsWith('1')?.14:.18):.28;
     source.buffer=scream?(audio.samples?.scream||audio.noise):audio.noise;source.loop=crash;filter.type='lowpass';filter.frequency.value=scream?2700:crash?450:id==='radio'?2100:door?1250:bang?(id.endsWith('1')?740:920):1400;
     level.gain.setValueAtTime(0,t);level.gain.linearRampToValueAtTime(scream?.40:crash?1.3:bang?.48:id==='entertainment_off'?.10:.28,t+.01);level.gain.exponentialRampToValueAtTime(.001,t+duration);
     const pan=scream&&ctx.createStereoPanner?ctx.createStereoPanner():null;source.connect(filter).connect(level);if(pan){pan.pan.value=id.endsWith('1')?-.36:.36;level.connect(pan).connect(bus);}else level.connect(bus);

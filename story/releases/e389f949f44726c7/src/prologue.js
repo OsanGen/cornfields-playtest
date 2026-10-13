@@ -39,6 +39,7 @@ export function prologueFrame(seconds,{reduced=false,timeline,durations}={}){
 export function createPrologue({onCue=()=>{},durations={},timeline}={}){
   const script=timeline||createPrologueTimeline({durations});
   let phase='preflight',time=0,elapsed=0,disposed=false,skipped=false,exited=false,outdoor=null,inRoom=false;
+  let resumedAfterCrash=false;
   let separationTime=0,lastCall=-Infinity,callCount=0,follow=null,held=false,chapterId='car';
   const player={},escorts={clarence:{},stanley:{}};
   const reset=()=>{
@@ -161,7 +162,17 @@ export function createPrologue({onCue=()=>{},durations={},timeline}={}){
     get phase(){return phase;},get active(){return phase!=='finished';},get player(){return player;},
     begin(){
       if(disposed||!['preflight','finished'].includes(phase))return false;
-      time=0;elapsed=0;skipped=false;exited=false;outdoor=null;inRoom=false;held=false;follow=null;separationTime=0;lastCall=-Infinity;callCount=0;chapterId='car';reset();fired.clear();dropped.clear();phase='playing';return true;
+      time=0;elapsed=0;skipped=false;exited=false;resumedAfterCrash=false;outdoor=null;inRoom=false;held=false;follow=null;separationTime=0;lastCall=-Infinity;callCount=0;chapterId='car';reset();fired.clear();dropped.clear();phase='playing';return true;
+    },
+    resumeAfterCrash(){
+      if(disposed||phase!=='playing')return false;
+      const target=script.chapters.find(c=>c.id==='flashlight');time=target.start;elapsed=time;exited=true;resumedAfterCrash=true;chapterId='flashlight';
+      const pose=samplePrologueExit(EXIT_SECONDS);[player.x,player.y,player.z]=pose.position;player.yaw=0;player.pitch=0;player.moving=false;
+      Object.assign(escorts.clarence,{x:-1.3,y:0,z:-2.1,yaw:Math.PI,moving:false,exit:null});
+      const cabin=script.chapters.find(c=>c.id==='cabin'),father=sampleRoadsideConfrontation({chapter:'cabin',chapterTime:cabin.end-cabin.start,chapterProgress:1});
+      Object.assign(escorts.stanley,{x:father.position[0],y:father.position[1],z:father.position[2],yaw:father.yaw,moving:false});
+      for(const [id,at]of script.cues)if(at<time)dropped.add(id);
+      return true;
     },
     tick(dt,controls={},stopAt=script.duration){
       if(disposed||phase!=='playing'||!Number.isFinite(dt)||dt<=0)return 0;
@@ -179,7 +190,7 @@ export function createPrologue({onCue=()=>{},durations={},timeline}={}){
     skip(){if(disposed||phase==='finished')return false;skipped=true;time=script.duration;phase='finished';return true;},
     frame(reduced=false){
       const frame=prologueFrame(time,{reduced,timeline:script});
-      frame.player={...player};frame.elapsed=elapsed;frame.exitProgress=exited?(frame.chapter==='exit'?clamp(frame.chapterTime/EXIT_SECONDS):1):0;
+      frame.player={...player};frame.elapsed=elapsed;frame.afterCrash=resumedAfterCrash;frame.joinFade=resumedAfterCrash?Math.max(0,1-(time-script.chapters.find(c=>c.id==='flashlight').start)/.4):0;frame.exitProgress=exited?(frame.chapter==='exit'?clamp(frame.chapterTime/EXIT_SECONDS):1):0;
       frame.waitingForExit=!exited&&time>=cabinEnd-1e-8;
       if(frame.waitingForExit){frame.chapter='cabin';frame.chapterTime=script.chapters.find(c=>c.id==='cabin').end-script.chapters.find(c=>c.id==='cabin').start;frame.chapterProgress=1;frame.spoken='';frame.line=null;}
       if(follow){Object.assign(frame,{time:elapsed,line:follow,nextLine:null,spoken:follow.text,speaker:follow.speaker});}

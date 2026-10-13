@@ -38,6 +38,8 @@ export function createGameApp({
   survivalAudio = null,
   ready = null,
   onLevelComplete = null,
+  onLevelSelect = null,
+  crashOriginal = false,
   now = () => performance.now(),
   requestFrame = callback => window.requestAnimationFrame(callback),
   cancelFrame = id => window.cancelAnimationFrame(id),
@@ -62,7 +64,7 @@ export function createGameApp({
   let creditsOpen = false;
   prologueEnabled=prologueEnabled&&introEnabled;
   let openingStage=null,endingAt=null,handoffAt=null;
-  const intro = prologueEnabled?createOpening({onCue:id=>prologueAudio?.cue(id),onIntroCue:id=>audio.introCue?.(id)}):createIntro({enabled:introEnabled, onCue:id=>audio.introCue?.(id)});
+  const intro = prologueEnabled?createOpening({crashOriginal,crashReady:()=>prologueView?.crashReady?.()??true,onCue:id=>prologueAudio?.cue(id),onIntroCue:id=>audio.introCue?.(id)}):createIntro({enabled:introEnabled, onCue:id=>audio.introCue?.(id)});
   if(prologueEnabled){ui.node('player-alias').value='MIKE';document.body.classList.toggle('story-player',true);}
   if (ready) Promise.resolve(ready).then(()=>{if(!disposed){coreReady=true;present();}},error=>{
     if(!disposed){coreError=error.message;ui.showError('The field could not load. Reload to retry.');present();}
@@ -150,7 +152,7 @@ export function createGameApp({
         if(prologueEnabled&&intro.phase!=='preflight'){
           if(openingStage!==intro.stage){
             openingStage=intro.stage;
-            if(openingStage==='credits'){prologueAudio?.pause();prologueAudio?.prepareLine(PROLOGUE_END_LINE);introView?.start();if(intro.phase==='playing')audio.startIntro?.();}
+            if(openingStage==='credits'){if(canvas.style)canvas.style.opacity='1';prologueAudio?.pause();prologueAudio?.prepareLine(PROLOGUE_END_LINE);introView?.start();if(intro.phase==='playing')audio.startIntro?.();}
             else{audio.stopIntro?.();introView?.release();if(openingStage==='prologue'&&!prologueView?.diagnostics?.().live)prologueView?.start();}
           }
           const shot=intro.frame(reducedMotion);
@@ -160,7 +162,7 @@ export function createGameApp({
         }else if(prologueEnabled)view.render(game,0,reducedMotion);
         else introView?.render(intro.frame(reducedMotion));
       }
-      catch { introView?.release(); introView=null; }
+      catch(error) { if(crashOriginal){intro.pause();prologueAudio?.pause();audio.pause();pointerError='Opening could not render: '+error.message;ui.node('error').hidden=false;ui.node('error-copy').textContent=pointerError;}else{introView?.release();introView=null;} }
     } else {
       const phase=game.survivalEnding?.phase;
       if(['entry','room','exit','transform','pit','fall'].includes(phase)&&survivalView)survivalView.render(game,reducedMotion);
@@ -418,6 +420,16 @@ export function createGameApp({
     if(!disposed)frameId = requestFrame(frame);
   }
 
+  const levelButton=document.getElementById('start-level-two');
+  let levelSelected=false;
+  if(levelButton&&typeof onLevelSelect==='function'){
+    levelButton.disabled=false;
+    listen(levelButton,'click',()=>{
+      if(disposed||levelSelected||game.mode!=='menu'||(intro.active&&intro.phase!=='preflight'))return;
+      levelSelected=true;levelButton.disabled=true;
+      onLevelSelect({selectedLevel:2,comfort:{reducedMotion,master:Math.max(0,Math.min(1,Number(audio.volume)||0)),voice:1,effects:.7}});
+    });
+  }
   listen(ui.node('start-btn'), 'click', () => void enter());
   ui.node('graphics-quality').value=view.quality?.snapshot().mode||'auto';
   listen(ui.node('graphics-quality'),'change',event=>{view.quality?.set(event.target.value);present();});

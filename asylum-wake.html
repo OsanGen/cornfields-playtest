@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>Cornfields · Level 2</title><link rel="stylesheet" href="./story/releases/042a95b9fd19768d/src/asylum-intro.css"><script type="importmap">{"imports":{"three":"./story/releases/042a95b9fd19768d/vendor/three/build/three.module.js","three/addons/":"./story/releases/042a95b9fd19768d/vendor/three/examples/jsm/"}}</script><link rel="stylesheet" href="./integration/entry-ui.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>Cornfields · Level 2</title><link rel="stylesheet" href="./story/releases/e389f949f44726c7/src/asylum-intro.css"><script type="importmap">{"imports":{"three":"./story/releases/e389f949f44726c7/vendor/three/build/three.module.js","three/addons/":"./story/releases/e389f949f44726c7/vendor/three/examples/jsm/"}}</script><link rel="stylesheet" href="./integration/entry-ui.css"></head>
 <body class="intro-fonts"><main id="asylum-app"><canvas id="story-canvas" tabindex="0" aria-label="New Cornfields first-person story"></canvas><div id="story-cover" aria-hidden="true"></div>
 <section id="story-preflight" aria-labelledby="story-heading"><p class="eyebrow">NEW CORNFIELDS</p><h1 id="story-heading">New Cornfields</h1><p>Level 2 · Awakening</p><p>Contains gunfire, injury, restraint and disturbing imagery. A character makes an unverified claim about mental illness.</p><p>New dialogue uses timed, speaker-labelled captions. Existing opening recordings are retained. Visual quality, performance and owner QA are pending.</p><p><a href="./credits.html" target="_blank" rel="noopener">Asset credits and licenses</a></p><button data-action="start">Wake up</button><p id="load-status" role="status"></p></section>
 <section id="story-pause" hidden aria-label="Paused"><h2>Paused</h2><p>Nothing advances while paused.</p><button data-action="resume">Continue</button></section>
@@ -11,9 +11,9 @@
 <div id="touch-controls" aria-label="Touch movement"><button data-move="forward" aria-label="Walk forward">↑</button><button data-move="left" aria-label="Step left">←</button><button data-move="right" aria-label="Step right">→</button><button data-move="back" aria-label="Walk backward">↓</button></div>
 </main><script type="module">
 import * as THREE from 'three';
-import {createStoryApp} from './story/releases/042a95b9fd19768d/src/asylum-story-app.js';
-import {transferToHall,SESSION_KEY} from './integration/session-handoff.js';
-import {consumeLevelEntry} from './integration/level-handoff.js';
+import {createStoryApp} from './story/releases/e389f949f44726c7/src/asylum-story-app.js';
+import {transferToHall,SESSION_KEY} from './integration/session-handoff.b78d624702ad2759.js';
+import {consumeLevelEntry} from './integration/level-handoff.b78d624702ad2759.js';
 const canvas=document.getElementById('story-canvas');let app=null;
 function recovery(error){document.getElementById('story-error').hidden=false;document.getElementById('error-message').textContent=error.message;document.getElementById('entry-restart').hidden=false;document.getElementById('entry-restart').focus();}
 try{

@@ -1,3 +1,4 @@
+import {createCrashOriginalBeat} from './crash-original-opening.js';
 import {ease} from './prologue-performance.js';
 import {createIntro,INTRO} from './intro.js';
 import {createPrologue,PROLOGUE} from './prologue.js';
@@ -5,18 +6,19 @@ import {createPrologueTimeline} from './prologue-script.js';
 import {PROLOGUE_VOICE_TIMING} from './prologue-voice-timing.js';
 
 /** Isolated story actors and credits never advance the live hunt or weather. */
-export function createOpening({onCue=()=>{},onIntroCue=()=>{},durations=PROLOGUE_VOICE_TIMING}={}){
+export function createOpening({onCue=()=>{},onIntroCue=()=>{},durations=PROLOGUE_VOICE_TIMING,crashOriginal=false,crashReady=()=>true}={}){
   const timeline=createPrologueTimeline({durations}),titlesAt=timeline.chapters.find(c=>c.id==='solid_return').start;
   const story=createPrologue({onCue,durations,timeline}),titles=createIntro({onCue:onIntroCue});
+  const dispatchEnd=timeline.chapters.find(c=>c.id==='dispatch').end,crash=createCrashOriginalBeat({onCue});let crashStarted=false,crashFinished=false;
   let phase='preflight',stage='prologue',replay=false,disposed=false,skipped=false,titlesPlayed=false,storySkipped=false;
   return {
-    get phase(){return phase;},get stage(){return stage;},get active(){return phase!=='finished';},get replaying(){return replay;},get player(){return story.player;},
+    get phase(){return phase;},get stage(){return stage;},get active(){return phase!=='finished';},get replaying(){return replay;},get player(){return crashStarted&&!crashFinished?crash.player:story.player;},
     begin({replay:isReplay=false}={}){
       if(disposed||phase==='playing'||(!isReplay&&phase!=='preflight'))return false;
       // Replay owns a fresh story cursor even when requested from a paused
       // opening. Continue uses resume() and leaves that cursor untouched.
       if(isReplay){story.finish();titles.finish();}
-      replay=isReplay;stage='prologue';skipped=false;titlesPlayed=false;storySkipped=false;story.begin();phase='playing';return true;
+      crash.reset();crashStarted=false;crashFinished=false;replay=isReplay;stage='prologue';skipped=false;titlesPlayed=false;storySkipped=false;story.begin();phase='playing';return true;
     },
     tick(dt,controls={}){
       if(disposed||phase!=='playing'||!Number.isFinite(dt)||dt<=0)return;
@@ -24,7 +26,13 @@ export function createOpening({onCue=()=>{},onIntroCue=()=>{},durations=PROLOGUE
       // their existing 20-second clock, then the same story continues.
       while(dt>1e-8&&phase==='playing'){
         if(stage==='prologue'){
-          const stop=titlesPlayed?timeline.duration:titlesAt;
+          if(crashOriginal&&!crashFinished&&story.snapshot().time>=dispatchEnd-1e-8){
+            if(!crashReady())break;
+            crashStarted=true;const used=crash.tick(dt,controls);dt-=used;
+            if(crash.done){crashFinished=true;story.resumeAfterCrash();}else if(used<=0)break;
+            continue;
+          }
+          const stop=crashOriginal&&!crashFinished?dispatchEnd:titlesPlayed?timeline.duration:titlesAt;
           const used=story.tick(dt,controls,stop);dt-=used;
           if(!titlesPlayed&&story.snapshot().time>=titlesAt-1e-8){stage='credits';titles.begin({replay:true});}
           else if(story.phase==='finished')phase='ready';
@@ -45,10 +53,10 @@ export function createOpening({onCue=()=>{},onIntroCue=()=>{},durations=PROLOGUE
     finish(){story.finish();titles.finish();phase='finished';},
     frame(reduced=false){
       if(stage==='credits'){const frame=titles.frame(reduced),handoffFade=ease(frame.time,19.65,20);return {...frame,opacity:frame.opacity*(1-handoffFade),handoffFade,stage,returning:false};}
-      const frame=story.frame(reduced);
+      const frame=crashStarted&&!crashFinished?crash.frame(reduced):story.frame(reduced);
       return {...frame,stage,shot:'prologue',label:'',name:'',opacity:0,accent:0};
     },
-    snapshot(){return {phase,stage,replay,skipped,storySkipped,titlesPlayed,titlesAt,time:story.snapshot().time,story:story.snapshot(),credits:titles.snapshot(),duration:(story.snapshot().duration||PROLOGUE.duration)+INTRO.duration};},
+    snapshot(){return {crash:crash.snapshot(),crashStarted,crashFinished,phase,stage,replay,skipped,storySkipped,titlesPlayed,titlesAt,time:story.snapshot().time,story:story.snapshot(),credits:titles.snapshot(),duration:(story.snapshot().duration||PROLOGUE.duration)+INTRO.duration};},
     dispose(){disposed=true;story.dispose?.();titles.dispose();phase='finished';},
   };
 }
