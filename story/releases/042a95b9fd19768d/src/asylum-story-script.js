@@ -17,7 +17,7 @@ export const NEW_LINES=Object.freeze({
   apology:[line('APOLOGY-01','STANLEY','I didn’t have a choice. It was the only way to save Sadie.',.5,8.4)],
   stanley_engulf:[], mike_engulf:[], blackout:[], titles:[], hospital_wake:[],
   // Brief original wording of the approved claims, attributable to Clarance only.
-  hospital_dialogue:[line('HOS-01','CLARANCE','Mike, you’re in the hospital. We’re treating you here.',1,6),line('HOS-02','MIKE','Clarance? Your head… What happened?',7,11),line('HOS-03','CLARANCE','You shot me, Mike.',12,15,true),line('HOS-04','CLARANCE','You’re being treated for schizophrenia.',17,21,true),line('HOS-05','MIKE','We were police officers. We went into the cornfield.',23,29),line('HOS-06','CLARANCE','You weren’t a police officer. You believed you were.',30,37,true)], hospital_stand:[], connector:[], boundary:[],
+  hospital_dialogue:[line('HOS-01','CLARANCE','Mike, you’re in the hospital. We’re treating you here.',1,6),line('HOS-02','MIKE','Clarance? What happened?',7,11),line('HOS-03','CLARANCE','You’re safe here, Mike.',12,15,true),line('HOS-04','CLARANCE','You’re being treated for schizophrenia.',17,21,true),line('HOS-05','MIKE','We were police officers. We went into the cornfield.',23,29),line('HOS-06','CLARANCE','You weren’t a police officer. You believed you were.',30,37,true)], hospital_stand:[], connector:[], boundary:[],
 });
 export const SCENES=Object.freeze([
  ['opening',DISPATCH_END,'Police car and dispatch'],['encounter',.9,'A man in the headlights'],
@@ -43,7 +43,7 @@ export const DESCRIPTIONS=Object.freeze({
  field:'Mike and Clarance enter alone. Stanley remains secured in the cruiser.',closure:'Both officers are inside before vines close the path behind them.',
  return:'Stanley is ahead of them. He was secured in the cruiser; no escape has been shown.',shot:'Stanley fires once. Clarance is hit on his left temple.',
  apology:'Stanley speaks after the shot.',stanley_engulf:'The vines consume Stanley first.',mike_engulf:'The vines then consume Mike. Darkness.',
- hospital_wake:'Mike wakes on a bed in an institutional treatment room. Clarance wears attendant clothes and has dried blood at his left temple.',
+ hospital_wake:'Mike wakes on a bed in an institutional treatment room. Clarance wears attendant clothes.',
  hospital_dialogue:'Clarance gives his account. His claims are not confirmed by the narration.',hospital_stand:'The conversation is over. Look around, then choose Stand.',
  connector:'Walk down the short corridor toward the door beneath the skylight.',boundary:'Central hall connection pending. This local story stops here.',
 });

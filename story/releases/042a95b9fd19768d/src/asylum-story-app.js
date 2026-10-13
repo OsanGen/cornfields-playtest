@@ -5,9 +5,10 @@ import {createStoryUI} from './asylum-story-ui.js';
 import {entryRecord} from './asylum-handoff.js';
 /** Testable one-session owner, independent of DOM and WebGL. */
 export function createSessionGate(){let generation=0,closed=false,current=null;return {begin(){if(closed)throw new Error('Session disposed');generation++;current?.dispose();current=null;return generation;},accept(token,value){if(closed||token!==generation){value?.dispose();return false;}current=value;return true;},get current(){return current;},get generation(){return generation;},dispose(){if(closed)return;closed=true;generation++;current?.dispose();current=null;}};}
-export function createStoryApp({canvas,renderer,document=globalThis.document,window=globalThis.window,makeView=createStoryView,makeAudio=createStoryAudio,enterHall=null,requestFrame=cb=>window.requestAnimationFrame(cb),cancelFrame=id=>window.cancelAnimationFrame(id)}={}){
+export function createStoryApp({canvas,renderer,document=globalThis.document,window=globalThis.window,makeView=createStoryView,makeAudio=createStoryAudio,enterHall=null,profile='asylum-intro-v0.1',initialComfort=null,requestFrame=cb=>window.requestAnimationFrame(cb),cancelFrame=id=>window.cancelAnimationFrame(id)}={}){
  const ui=createStoryUI(document,{connected:typeof enterHall==='function'}),gate=createSessionGate(),keys=new Set(),listeners=[];
- let story=createStory(),view=null,audio=null,status='idle',error='',disposed=false,raf=null,last=null,boot=false,wantsStart=false,silent=false,yaw=0,pitch=0,drag=false;
+ let story=createStory({profile}),view=null,audio=null,status='idle',error='',disposed=false,raf=null,last=null,boot=false,wantsStart=false,silent=false,yaw=0,pitch=0,drag=false;
+ if(initialComfort){for(const k of ['master','voice','effects'])document.getElementById(k).value=String(initialComfort[k]);document.getElementById('reduced').checked=initialComfort.reducedMotion;}
  const on=(target,event,fn,options)=>{target.addEventListener(event,fn,options);listeners.push(()=>target.removeEventListener(event,fn,options));};
  const clear=()=>{keys.clear();drag=false;};
  function pause(){wantsStart=false;story.pause();audio?.pause();clear();if(document.pointerLockElement===canvas)document.exitPointerLock();}
@@ -18,7 +19,7 @@ export function createStoryApp({canvas,renderer,document=globalThis.document,win
   const session={dispose(){localView?.dispose();localAudio?.dispose();}};
   if(!gate.accept(token,session))return;
   try{
-   story=createStory({onCue:id=>audio?.cue(id)});story.setComfort(ui.settings());localAudio=makeAudio();audio=localAudio;localView=makeView(renderer);view=localView;
+   story=createStory({profile,onCue:id=>audio?.cue(id)});story.setComfort(ui.settings());localAudio=makeAudio();audio=localAudio;localView=makeView(renderer);view=localView;
    const [,sound]=await Promise.all([localView.ready,localAudio.prepare()]);if(disposed||gate.generation!==token)return;silent=!!sound?.silent;boot=true;if(!wantsStart||document.hidden)status='loaded';
   }catch(e){if(!disposed&&gate.generation===token){session.dispose();view=null;audio=null;fail(e);}}
  }
@@ -33,7 +34,7 @@ export function createStoryApp({canvas,renderer,document=globalThis.document,win
   clear();audio?.pause();
   if(id==='scene')story.skipScene();if(id==='skip')story.skipIntroduction();if(id==='stand')keys.add('KeyE');if(id==='hall'){
    if(story.frame().scene!=='boundary')return;
-   try{if(typeof enterHall==='function')enterHall(entryRecord(story.snapshot()),{shutdown:dispose});else ui.notice(story.hall().message);}catch(e){ui.notice(e?.message||'Hall connection failed. Try again.',story.frame().scene);}
+   try{if(typeof enterHall==='function')enterHall({...entryRecord(story.snapshot()),routeId:profile==='original-level-two'?'original-level-two':'asylum-intro-v0.1'},{shutdown:dispose});else ui.notice(story.hall().message);}catch(e){ui.notice(e?.message||'Hall connection failed. Try again.',story.frame().scene);}
   }
  }
  on(document,'click',e=>{const b=e.target.closest?.('[data-action]');if(b)action(b.dataset.action);});
@@ -49,7 +50,7 @@ export function createStoryApp({canvas,renderer,document=globalThis.document,win
  function frame(at){
   if(disposed)return;try{
    const dt=last===null?0:Math.min(.1,Math.max(0,(at-last)/1000));last=at;
-   if(view?.stats.status==='ready'&&!error){view.render(story.frame());if(boot&&wantsStart&&story.phase==='preflight'&&!document.hidden&&view.criticalStatus()){story.begin();audio.setComfort(story.snapshot().comfort);status='ready';}}
+   if(view?.stats.status==='ready'&&!error){view.render(story.frame());if(boot&&wantsStart&&story.phase==='preflight'&&!document.hidden&&view.criticalStatus(profile)){story.begin();audio.setComfort(story.snapshot().comfort);status='ready';}}
    if(status==='ready'&&!error){story.tick(dt,{forward:Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown')),strafe:Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft')),interact:keys.has('KeyE'),yaw,pitch});if(story.frame().scene!=='hospital_stand')keys.delete('KeyE');audio.sync(story.frame());}
    ui.render(story.frame(),{status,error,silent});
   }catch(e){fail(e);ui.render(story.frame(),{status,error,silent});}raf=requestFrame(frame);

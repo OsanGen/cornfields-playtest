@@ -41,6 +41,7 @@ try {
   const app = createGameApp({
     maze, view, audio, weather, document, window, touch, introEnabled, introView, prologueEnabled,prologueView,prologueAudio,ready:view.ready,
     survivalEndingEnabled,survivalView,survivalAudio,
+    onLevelComplete:record=>window.dispatchEvent(new CustomEvent('cornfields-level-complete',{detail:{record,shutdown:()=>app.dispose()}})),
     debug: parameters.has('debug'), horror:parameters.get('horror')!=='off',
     reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
   });

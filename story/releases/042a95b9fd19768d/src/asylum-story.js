@@ -5,9 +5,13 @@ import {clamp} from './asylum-crash.js';
 import {HOSPITAL,moveHospital} from './asylum-hospital.js';
 import {entryRecord,requestHallEntry} from './asylum-handoff.js';
 export const DEFAULT_COMFORT=Object.freeze({reducedMotion:false,master:.7,voice:1,effects:.7});
-export function createStory({onCue=()=>{}}={}){
- let disposed=false,index=0,time=0,phase='preflight',generation=0,held=false,checkpoint='CP0',progress=0,standing=false;
+export function createStory({onCue=()=>{},profile='asylum-intro-v0.1'}={}){
+ const wakeOnly=profile==='original-level-two';
+ if(!wakeOnly&&profile!=='asylum-intro-v0.1')throw new Error('Unknown story profile');
+ const startIndex=wakeOnly?SCENES.findIndex(s=>s.id==='hospital_wake'):0;
+ let disposed=false,index=startIndex,time=0,phase='preflight',generation=0,held=false,checkpoint='CP0',progress=0,standing=false;
  let comfort={...DEFAULT_COMFORT},player={x:.5,y:1.13,z:.35,yaw:0,pitch:0};
+ if(wakeOnly)player={x:-1.1,y:1,z:.1,yaw:0,pitch:0};
  const facts=new Set(),watched=new Set(),skipped=new Set(),exposure=new Map();
  const makeOpening=()=>createPrologue({timeline:OPENING_TIMELINE,onCue:id=>{if(['entertainment_off','radio'].includes(id))onCue(id);}});let opening=makeOpening(),titles=createIntro({onCue:id=>onCue('title:'+id)});
  const scene=()=>SCENES[index],lines=()=>scene().id==='opening'?RETAINED_LINES:NEW_LINES[scene().id]||[];
@@ -38,7 +42,7 @@ export function createStory({onCue=()=>{}}={}){
  }
  const api={
   get phase(){return phase;},get generation(){return generation;},
-  begin(){if(disposed||!['preflight','finished'].includes(phase))return false;phase='playing';opening.begin();return true;},
+  begin(){if(disposed||!['preflight','finished'].includes(phase))return false;phase='playing';if(!wakeOnly)opening.begin();return true;},
   tick(dt,controls={}){
    if(disposed||phase!=='playing'||!Number.isFinite(dt)||dt<=0)return 0;
    dt=Math.min(dt,.1);const id=scene().id,previous=time,edge=!!controls.interact&&!held;held=!!controls.interact;
@@ -67,14 +71,14 @@ export function createStory({onCue=()=>{}}={}){
   pause(){if(phase!=='playing')return false;phase='paused';held=false;opening.pause();titles.pause();return true;},
   resume(){if(disposed||phase!=='paused')return false;phase='playing';held=false;opening.resume();titles.resume();return true;},
   skipScene(){if(disposed||!['playing','paused'].includes(phase)||scene().id==='boundary')return false;canonical();advance();return true;},
-  skipIntroduction(){if(disposed)return false;while(scene().id!=='hospital_stand'&&index<SCENES.length-1){canonical();advance();}phase='playing';return true;},
-  replay(){if(disposed)return false;generation++;index=time=progress=0;checkpoint='CP0';standing=false;held=false;facts.clear();watched.clear();skipped.clear();exposure.clear();player={x:.5,y:1.13,z:.35,yaw:0,pitch:0};opening.dispose();titles.dispose();opening=makeOpening();titles=createIntro({onCue:id=>onCue('title:'+id)});phase='preflight';return api.begin();},
+  skipIntroduction(){if(disposed)return false;const wasPaused=phase==='paused';while(scene().id!=='hospital_stand'&&index<SCENES.length-1){canonical();advance();}phase=wakeOnly&&wasPaused?'paused':'playing';return true;},
+  replay(){if(disposed)return false;generation++;index=startIndex;time=progress=0;checkpoint='CP0';standing=false;held=false;facts.clear();watched.clear();skipped.clear();exposure.clear();player=wakeOnly?{x:-1.1,y:1,z:.1,yaw:0,pitch:0}:{x:.5,y:1.13,z:.35,yaw:0,pitch:0};opening.dispose();titles.dispose();opening=makeOpening();titles=createIntro({onCue:id=>onCue('title:'+id)});phase='preflight';return api.begin();},
   setComfort(values){for(const k of ['master','voice','effects'])if(Number.isFinite(values[k]))comfort[k]=clamp(values[k]);if(typeof values.reducedMotion==='boolean')comfort.reducedMotion=values.reducedMotion;},
   frame(){
    const current=scene(),line=lines().find(l=>time>=l.start&&time<l.end)||null;
-   return {scene:current.id,title:current.title,time,phase,checkpoint,player:{...player},standing,comfort:{...comfort},facts:[...facts],line,caption:line?.text||'',description:DESCRIPTIONS[current.id]||'',opening:current.id==='opening'?opening.frame(comfort.reducedMotion):null,titles:current.id==='titles'?titles.frame(comfort.reducedMotion):null,progress};
+   return {profile,scene:current.id,title:current.title,time,phase,checkpoint,player:{...player},standing,comfort:{...comfort},facts:[...facts],line,caption:line?.text||'',description:DESCRIPTIONS[current.id]||'',opening:current.id==='opening'?opening.frame(comfort.reducedMotion):null,titles:current.id==='titles'?titles.frame(comfort.reducedMotion):null,progress};
   },
-  snapshot(){return {scene:scene().id,time,phase,checkpoint,player:{...player},standing,comfort:{...comfort},facts:[...facts],watched:[...watched],skipped:[...skipped],generation};},
+  snapshot(){return {profile,scene:scene().id,time,phase,checkpoint,player:{...player},standing,comfort:{...comfort},facts:[...facts],watched:[...watched],skipped:[...skipped],generation};},
   hall(){return requestHallEntry(entryRecord(api.snapshot()));},
   dispose(){if(disposed)return;disposed=true;phase='disposed';opening.dispose();titles.dispose();held=false;},
  };

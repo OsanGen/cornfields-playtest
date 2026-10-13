@@ -37,6 +37,7 @@ export function createGameApp({
   survivalView = null,
   survivalAudio = null,
   ready = null,
+  onLevelComplete = null,
   now = () => performance.now(),
   requestFrame = callback => window.requestAnimationFrame(callback),
   cancelFrame = id => window.cancelAnimationFrame(id),
@@ -50,6 +51,7 @@ export function createGameApp({
   let last = now();
   let frameId = null;
   let disposed = false;
+  let levelCompleteSent = false;
   let manual = false;
   let visualCheckSuspended = false;
   let pointerError = null;
@@ -127,6 +129,11 @@ export function createGameApp({
   }
 
   function present(time = game.elapsed) {
+    if(!levelCompleteSent && typeof onLevelComplete==='function' && game.mode==='playtest-ended' && game.survivalEnding?.phase==='fall' && game.survivalEnding.jumped && game.survivalEnding.time>=3.2){
+      levelCompleteSent=true;
+      onLevelComplete({completed:true,comfort:{reducedMotion,master:Math.max(0,Math.min(1,Number(audio.volume)||0)),voice:1,effects:.7}});
+      if(disposed)return;
+    }
     syncMode();
     ui.render(game);
     const reveal=handoffAt===null||intro.active||game.mode!=='playing'?0:Math.max(0,1-(game.elapsed-handoffAt)/.28);ui.renderHandoff?.(reveal);if(reveal<=0&&!intro.active)handoffAt=null;
@@ -408,7 +415,7 @@ export function createGameApp({
     // Explicit test stepping renders once per step. Repainting identical manual
     // frames can starve software-rendered browser captures without advancing play.
     if(!manual)present(game.elapsed + (game.mode === 'menu' ? time / 1000 : 0));
-    frameId = requestFrame(frame);
+    if(!disposed)frameId = requestFrame(frame);
   }
 
   listen(ui.node('start-btn'), 'click', () => void enter());

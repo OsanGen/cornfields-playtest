@@ -3,7 +3,7 @@ export const SCHEMA='cornfields.hall-entry.v1';
 export const SAFE_SPAWN=Object.freeze({x:0,z:5.2,yaw:0});
 const exact=(value,keys)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).sort().join(',')===[...keys].sort().join(',');
 export function validateEntry(record){
- if(!exact(record,['schema','routeId','checkpoint','dialogue','comfort','safeSpawnRole'])||record.schema!==SCHEMA||record.routeId!=='asylum-intro-v0.1'||record.checkpoint!=='CP3'||record.safeSpawnRole!=='central-hall-story-entry')throw new Error('Invalid story checkpoint or entry contract');
+ if(!exact(record,['schema','routeId','checkpoint','dialogue','comfort','safeSpawnRole'])||record.schema!==SCHEMA||!['asylum-intro-v0.1','original-level-two'].includes(record.routeId)||record.checkpoint!=='CP3'||record.safeSpawnRole!=='central-hall-story-entry')throw new Error('Invalid story checkpoint or entry contract');
  if(!exact(record.dialogue,['watched','skipped']))throw new Error('Invalid dialogue markers');
  const {watched,skipped}=record.dialogue;
  for(const values of [watched,skipped])if(!Array.isArray(values)||values.length>256||values.some(x=>typeof x!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(x))||new Set(values).size!==values.length)throw new Error('Invalid dialogue markers');

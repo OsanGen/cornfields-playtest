@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>Cornfields · Level 2</title><link rel="stylesheet" href="./story/releases/042a95b9fd19768d/src/asylum-intro.css"><script type="importmap">{"imports":{"three":"./story/releases/042a95b9fd19768d/vendor/three/build/three.module.js","three/addons/":"./story/releases/042a95b9fd19768d/vendor/three/examples/jsm/"}}</script><link rel="stylesheet" href="./integration/entry-ui.css"></head>
+<body class="intro-fonts"><main id="asylum-app"><canvas id="story-canvas" tabindex="0" aria-label="New Cornfields first-person story"></canvas><div id="story-cover" aria-hidden="true"></div>
+<section id="story-preflight" aria-labelledby="story-heading"><p class="eyebrow">NEW CORNFIELDS</p><h1 id="story-heading">New Cornfields</h1><p>Level 2 · Awakening</p><p>Contains gunfire, injury, restraint and disturbing imagery. A character makes an unverified claim about mental illness.</p><p>New dialogue uses timed, speaker-labelled captions. Existing opening recordings are retained. Visual quality, performance and owner QA are pending.</p><p><a href="./credits.html" target="_blank" rel="noopener">Asset credits and licenses</a></p><button data-action="start">Wake up</button><p id="load-status" role="status"></p></section>
+<section id="story-pause" hidden aria-label="Paused"><h2>Paused</h2><p>Nothing advances while paused.</p><button data-action="resume">Continue</button></section>
+<section id="story-error" hidden role="alert"><h2>Introduction paused</h2><p id="error-message"></p><button data-action="retry">Retry loading</button><a id="entry-restart" class="entry-return" href="./index.html" hidden>Restart introduction</a></section>
+<div id="intro-screen" hidden><div class="intro-card"><p id="intro-label"></p><h2 id="intro-name"></h2><div id="intro-ghost" aria-hidden="true"></div></div></div>
+<div id="story-caption" aria-live="polite" aria-atomic="true"><strong id="speaker"></strong><span id="caption"></span></div><p id="event-description" aria-live="polite"></p><p id="story-prompt" role="status"></p>
+<nav id="story-controls" aria-label="Story controls"><button data-action="pause">Pause</button><button data-action="scene">Skip scene</button><button data-action="skip">Skip introduction</button><button data-action="replay">Replay</button><button data-action="stand" hidden>Stand</button><button data-action="hall" hidden>Enter central hall</button></nav>
+<details id="story-settings"><summary>Comfort and controls</summary><label><input id="reduced" type="checkbox">Reduced motion</label><label>Master <input id="master" type="range" min="0" max="1" step=".05" value=".7"></label><label>Voice <input id="voice" type="range" min="0" max="1" step=".05" value="1"></label><label>Effects and music <input id="effects" type="range" min="0" max="1" step=".05" value=".7"></label><p>WASD: walk · Mouse: look · E: stand · Esc: pause. Click the scene to capture the mouse. All essential events also have captions. Skipping does not mark dialogue as watched.</p></details>
+<div id="touch-controls" aria-label="Touch movement"><button data-move="forward" aria-label="Walk forward">↑</button><button data-move="left" aria-label="Step left">←</button><button data-move="right" aria-label="Step right">→</button><button data-move="back" aria-label="Walk backward">↓</button></div>
+</main><script type="module">
+import * as THREE from 'three';
+import {createStoryApp} from './story/releases/042a95b9fd19768d/src/asylum-story-app.js';
+import {transferToHall,SESSION_KEY} from './integration/session-handoff.js';
+import {consumeLevelEntry} from './integration/level-handoff.js';
+const canvas=document.getElementById('story-canvas');let app=null;
+function recovery(error){document.getElementById('story-error').hidden=false;document.getElementById('error-message').textContent=error.message;document.getElementById('entry-restart').hidden=false;document.getElementById('entry-restart').focus();}
+try{
+ const levelEntry=consumeLevelEntry(sessionStorage);
+ try{sessionStorage.removeItem(SESSION_KEY);}catch{}
+ const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'});
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;renderer.outputColorSpace=THREE.SRGBColorSpace;
+ app=createStoryApp({canvas,renderer,profile:'original-level-two',initialComfort:levelEntry.comfort,enterHall(record,{shutdown}){let closed=false;try{return transferToHall(record,{shutdown(){shutdown();closed=true;}});}catch(error){if(closed)recovery(error);throw error;}}});
+ window.addEventListener('pagehide',()=>app.dispose(),{once:true});
+ window.addEventListener('pageshow',event=>{if(event.persisted)window.location.reload();});
+}catch(error){recovery(error);}
+</script></body></html>

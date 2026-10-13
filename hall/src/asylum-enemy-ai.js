@@ -1,5 +1,5 @@
 // Hall adaptation of existing zombie-ai.js sight, memory, tell, chase, search, beam recoil and stagger states.
-import {GAME_CONFIG as C} from '../../story/releases/d0a95488ac63f5af/src/game-config.js';
+import {GAME_CONFIG as C} from '../../story/releases/042a95b9fd19768d/src/game-config.js';
 export function createEnemyState(spec){return {...spec,room:spec.kind==='zombie'?spec.area:null,radius:spec.kind==='rabbit'?.42:.28,state:'observe',stateStartedAt:0,timer:0,repath:0,path:[],lastKnown:null,lost:0,memory:0,flashlightExposure:0,contact:0,visible:true,patrolIndex:0,foldTimer:0,foldTarget:null};}
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 function transition(e,state,time,timer=0){e.state=state;e.stateStartedAt=time;e.timer=timer;}
