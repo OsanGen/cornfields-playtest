@@ -26,13 +26,13 @@ export function applyPS2Materials(target,{profile='environment'}={}){
     const before=m.onBeforeCompile,key=m.customProgramCacheKey;
     const inheritedKey=key?key.call(m):'';
     m.onBeforeCompile=function(shader,renderer){
-      before?.call(this,shader,renderer);
+      before?.call(m,shader,renderer);
       const grid=state.profile==='character'?PS2_STYLE.characterGrid:PS2_STYLE.environmentGrid;
       shader.uniforms.cfPS2TexelGrid={value:new THREE.Vector2(grid,grid)};
       shader.fragmentShader='uniform vec2 cfPS2TexelGrid;\n'+shader.fragmentShader;
       const chunk=THREE.ShaderChunk.map_fragment.replace('texture2D( map, vMapUv )','texture2D( map, (floor(vMapUv * cfPS2TexelGrid) + 0.5) / cfPS2TexelGrid )');
       shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',chunk);
-      if(this.isMeshStandardMaterial)shader.fragmentShader=shader.fragmentShader.replace('#include <lights_physical_fragment>','roughnessFactor = max(roughnessFactor, 0.88); metalnessFactor = min(metalnessFactor, 0.1);\n#include <lights_physical_fragment>');
+      if(m.isMeshStandardMaterial)shader.fragmentShader=shader.fragmentShader.replace('#include <lights_physical_fragment>','roughnessFactor = max(roughnessFactor, 0.88); metalnessFactor = min(metalnessFactor, 0.1);\n#include <lights_physical_fragment>');
       // Fixed colour precision rather than a full-screen blur/pixel filter.
       const grade='outgoingLight = floor(max(outgoingLight, vec3(0.0)) * 31.0 + 0.5) / 31.0;\n';
       if(shader.fragmentShader.includes('#include <opaque_fragment>'))shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',grade+'#include <opaque_fragment>');
