@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {applyPS2Materials} from '../../story/releases/e389f949f44726c7/src/ps2-style.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 import {createZombieAnimation} from './zombie-animation.js';
@@ -11,6 +12,7 @@ export function createEnemyViews(scene,enemies,{loader=new GLTFLoader()}={}){
  const load=async url=>{const gltf=await optionalAsset(loader.loadAsync(url),8000,asset=>disposeModelResources([asset.scene]));if(disposed){disposeModelResources([gltf.scene]);throw new Error('Enemy views disposed');}roots.push(gltf.scene);return gltf;};
  const ready=Promise.all([enemies.some(e=>e.kind==='zombie')?load(new URL('../../story/releases/e389f949f44726c7/assets/field/zombie.glb',import.meta.url).href):Promise.resolve(null),load(new URL('../assets/rabbit-r1.glb',import.meta.url).href)]).then(([zombie,rabbit])=>{
   if(disposed)return;for(const enemy of enemies){const source=enemy.kind==='rabbit'?rabbit:zombie,model=cloneSkeleton(source.scene),root=new THREE.Group(),wrapper=new THREE.Group();roots.push(model);root.name=enemy.id;root.add(wrapper);wrapper.add(model);normalizeModel(model,enemy.kind==='rabbit'?1.9:2.32);if(enemy.kind==='zombie')wrapper.rotation.y=Math.PI/2;scene.add(root);model.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
+   applyPS2Materials(model,{profile:'character'});
    let animation=null,poses=null,mixer=null,actions=null;if(enemy.kind==='zombie'){animation=createZombieAnimation(model,source.animations);poses=createZombiePoses(model,root);}else{mixer=new THREE.AnimationMixer(model);actions=new Map(source.animations.map(c=>{const clip=c.clone();stripRootTravel(clip,['root']);return [clip.name,mixer.clipAction(clip)];}));if(!actions.has('Idle')||!actions.has('Slow Walk'))throw new Error('Rabbit animation clips unavailable');}
    records.push({enemy,root,model,animation,poses,mixer,actions,action:null,x:enemy.x,z:enemy.z,walkTime:0});stats.models++;
   }stats.status='ready';

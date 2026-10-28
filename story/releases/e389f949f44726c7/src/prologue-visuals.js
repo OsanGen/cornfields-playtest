@@ -1,3 +1,4 @@
+import {applyPS2Materials} from './ps2-style.js';
 import {sampleRealismSequence} from './prologue-return-sequence.js';
 import {samplePrologueBodyReach} from './viewmodel-pose.js';
 import {sampleRoomTransition,createLiquidVeil} from './prologue-liquid-transition.js';
@@ -112,9 +113,9 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
   let dog=null,porchLight=null,puddleMaterial=null,backgroundTrees=null,vt1Ground=null;
   let liquidUniforms=[],foliage=null,rain=null,entertainment=null,liquidVeil=null,hallucinations=null,ribbons=null,groundMaterial=null,groundContactUniforms=null;
   let assets=null,cruiser=null,roadMaterial=null,woodMaterial=null,roadMist=null,roadsideSet=null,roadsideFallback=null,streetlight=null,policeSpill=[],fallbackLampMaterials=[],roomPresentation=null;
-  const stats = {live:false, frames:0, draws:0, chapter:null, cast:PROLOGUE_CAST_PROVENANCE, corn:'uninitialized', passenger:'Mike', driver:'Clarence', error:null};
+  const stats = {live:false, frames:0, draws:0, chapter:null, cast:PROLOGUE_CAST_PROVENANCE, corn:'uninitialized', passenger:'Clarence', driver:'Mike', error:null};
   const viewport = new THREE.Vector4(), scissor = new THREE.Vector4(), savedClear = new THREE.Color(), cameraWorld = new THREE.Vector3();
-  const skyNormal = new THREE.Color(0x24313d), skyRed = new THREE.Color(0x501512), fogNormal = new THREE.Color(0x202b2b), fogRed = new THREE.Color(0x631f18);
+  const skyNormal = new THREE.Color(0x19232a), skyRed = new THREE.Color(0x501512), fogNormal = new THREE.Color(0x242b29), fogRed = new THREE.Color(0x631f18);
   function standard(color, extra={}) { return new THREE.MeshStandardMaterial({color,roughness:.85,...extra}); }
   function mesh(parent, geometry, material, x=0,y=0,z=0, ry=0) { const item=new THREE.Mesh(geometry,material); item.position.set(x,y,z);item.rotation.y=ry;parent.add(item);return item; }
   function box(parent, material, w,h,d,x=0,y=0,z=0,ry=0) { return mesh(parent,new THREE.BoxGeometry(w,h,d),material,x,y,z,ry); }
@@ -161,8 +162,8 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     door=group(car,.86,.45,-.52);box(door,vinyl,.065,.40,1.13,0,-.10,.54);box(door,trim,.10,.035,.33,-.055,.02,.49);box(door,rubber,.08,.035,.17,-.055,.035,.27);
     box(car,vinyl,.065,.42,1.13,-.85,.36,.02);box(car,trim,.09,.035,.33,-.78,.48,.04);
     box(car,body,1.80,.16,1.04,0,.63,-1.85);box(car,body,1.87,.24,.40,0,.42,1.40);
-    const dome=new THREE.PointLight(0xe6c49d,.48,2.5,2);dome.position.set(0,1.36,.30);car.add(dome);
-    headlight=new THREE.SpotLight(0xffdfa8,6,31,.47,.65,1.3);headlight.name='Cruiser forward headlight spill';headlight.position.set(0,.78,-2.39);headlight.target.position.set(0,0,-20);car.add(headlight,headlight.target);
+    const dome=new THREE.PointLight(0xd0a56b,.48,2.5,2);dome.position.set(0,1.36,.30);car.add(dome);
+    headlight=new THREE.SpotLight(0xd9bd83,6,31,.47,.65,1.3);headlight.name='Cruiser forward headlight spill';headlight.position.set(0,.78,-2.39);headlight.target.position.set(0,0,-20);car.add(headlight,headlight.target);
     const lampLens=standard(0xd9d6bc,{emissive:0xffe4b5,emissiveIntensity:1.8,roughness:.23});
     for(const x of [-.65,.65]){const lens=box(car,lampLens,.28,.085,.023,x,.71,-2.385);lens.name='Fallback illuminated front lamp';}
     box(car,trim,1.27,.055,.26,0,1.50,.85);
@@ -230,8 +231,8 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     box(roadsideFallback,dark,.05,1.9,1,7.22,1.3,7);box(roadsideFallback,dark,1.6,.12,4.6,6.46,2.76,7);
     box(roadsideFallback,rural,.12,1.09,.12,1.62,.545,4.14);box(roadsideFallback,dark,.48,.25,.30,1.57,1.23,4.14);
     box(roadsideFallback,dark,.13,4.48,.13,3.02,2.24,3.75);box(roadsideFallback,warm,.34,.10,.52,3.02,4.44,4.61);
-    streetlight=new THREE.PointLight(0xe7b976,4.6,10.5,2);streetlight.name='Bounded warm driveway streetlight';streetlight.position.set(3.02,4.38,4.61);streetlight.castShadow=false;roadsideSet.add(streetlight);
-    porchLight=new THREE.PointLight(0xffcd8b,3.6,6.8,2);porchLight.name='Warm porch light on boards and ground';porchLight.position.set(6.95,2.38,7.75);porchLight.castShadow=false;roadsideSet.add(porchLight);
+    streetlight=new THREE.PointLight(0xc59a5d,4.6,10.5,2);streetlight.name='Bounded warm driveway streetlight';streetlight.position.set(3.02,4.38,4.61);streetlight.castShadow=false;roadsideSet.add(streetlight);
+    porchLight=new THREE.PointLight(0xd4a466,3.6,6.8,2);porchLight.name='Warm porch light on boards and ground';porchLight.position.set(6.95,2.38,7.75);porchLight.castShadow=false;roadsideSet.add(porchLight);
     dog=createRoadsideDog(roadsideSet,{heightAt:wetGroundHeight});
     const verge=new THREE.InstancedMesh(grassGeometry(),standard(0x66684b,{vertexColors:true,side:THREE.DoubleSide,roughness:.96}),100);verge.name='Graded verge grass and fallen husks';
     for(let i=0;i<100;i++){const x=i<50?-.72+(i%10)*.66:-10.2-Math.floor(i/10)*1.9,z=i<50?3.5+Math.floor(i/10)*1.03:-8.1+(i%10)*.68;dummy.position.set(x,wetGroundHeight(x,z)+.002,z);dummy.rotation.set(0,i*2.399,0);dummy.scale.setScalar(.62+.3*Math.sin(i*8.1)**2);dummy.updateMatrix();verge.setMatrixAt(i,dummy.matrix);}verge.computeBoundingSphere();location.add(verge);
@@ -280,7 +281,7 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     }
   }
   function loadSetAssets(){
-    const treat=object=>object.traverse(item=>{for(const mat of [item.material].flat().filter(Boolean))if(mat.isMeshStandardMaterial)liquidUniforms.push(attachPrologueLiquid(mat));});
+    const treat=object=>{object.traverse(item=>{for(const mat of [item.material].flat().filter(Boolean))if(mat.isMeshStandardMaterial)liquidUniforms.push(attachPrologueLiquid(mat));});applyPS2Materials(object);};
     assets=createPrologueAssets({
       onRoadside(gltf){gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(!o.isMesh||!o.name.includes('gravel'))return;const p=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert(),v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld);v.y=wetGroundHeight(v.x,v.z)+.002;v.applyMatrix4(inv);p.setXYZ(i,v.x,v.y,v.z);}p.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});roadsideFallback.visible=false;gltf.scene.name='Original roadside exterior shell';roadsideSet.add(gltf.scene);treatVT1Glazing(gltf.scene,puddleMaterial?.envMap);treat(gltf.scene);},
       onProjector(gltf){roomPresentation.setProjector(gltf);},
@@ -296,16 +297,18 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
         // Each optional role arrives independently; a missing asset retains only
         // that role's procedural fallback. Never replace the other identity.
         const police=role==='clarence';if(!police&&role!=='stanley')return;
-        const name=police?'Clarence':'Stanley Yates',old=police?clarence:stanley;
+        const name=police?'Mike':'Stanley Yates',old=police?clarence:stanley;
         const actor=createTexturedPrologueActor({name,police,gltf,onMaterial:mat=>liquidUniforms.push(attachPrologueLiquid(mat))});
         actor.root.position.copy(old.root.position);actor.root.quaternion.copy(old.root.quaternion);actor.root.scale.copy(old.root.scale);actor.root.visible=old.root.visible;
         // Keep the hidden fallback owned by this set for deterministic teardown.
         old.root.visible=false;actor.root.add(old.root);location.add(actor.root);
+        actor.root.userData.storyIdentity=police?'mike':'stanley';
         if(police)clarence=actor;else stanley=actor;
-        stats.cast='Distinct Clarence and Stanley identities, adapted from CC0 NPC male Steve';
+        stats.cast='Mike and Stanley, reusing the existing officer and father assets';
         stats.castRoles[role]=`cast-${role}.glb`;
+        applyPS2Materials(actor.root,{profile:'character'});
       },
-      onGround(key,map){groundMaterial[key]=map;groundMaterial.needsUpdate=true;},
+      onGround(key,map){groundMaterial[key]=map;groundMaterial.needsUpdate=true;applyPS2Materials(groundMaterial);},
       onRoadsideCorn(gltf){stats.roadsideCorn=replaceVT1RoadsideCorn(road,gltf,foliage);for(const batch of road.children)if(batch.userData.cornfieldsVT1)treat(batch);},
       onDog(gltf){dog.accept(gltf);treat(gltf.scene);},
       onTrees(gltf){
@@ -326,9 +329,9 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
         });
         stats.trees.status='ready';stats.trees.instances=15;treat(backgroundTrees);
       },
-      onSky(map){if(puddleMaterial){puddleMaterial.envMap=map;puddleMaterial.envMap.mapping=THREE.EquirectangularReflectionMapping;puddleMaterial.envMapIntensity=.30;puddleMaterial.needsUpdate=true;}if(cruiser)treatVT1Cruiser(cruiser.model,map);if(roadsideSet)treatVT1Glazing(roadsideSet,map);sky.material.uniforms.skyMap.value=map;sky.material.uniforms.hasMap.value=1;},
-      onRoad(key,map){roadMaterial[key]=map;roadMaterial.needsUpdate=true;},
-      onWood(key,map){woodMaterial[key]=map;if(key==='map')woodMaterial.color.setHex(0xffffff);woodMaterial.needsUpdate=true;},
+      onSky(map){if(puddleMaterial){puddleMaterial.envMap=map;puddleMaterial.envMap.mapping=THREE.EquirectangularReflectionMapping;puddleMaterial.envMapIntensity=.30;puddleMaterial.needsUpdate=true;}if(cruiser){treatVT1Cruiser(cruiser.model,map);applyPS2Materials(cruiser.model);}if(roadsideSet)treatVT1Glazing(roadsideSet,map);sky.material.uniforms.skyMap.value=map;sky.material.uniforms.hasMap.value=1;},
+      onRoad(key,map){roadMaterial[key]=map;roadMaterial.needsUpdate=true;applyPS2Materials(roadMaterial);},
+      onWood(key,map){woodMaterial[key]=map;if(key==='map')woodMaterial.color.setHex(0xffffff);woodMaterial.needsUpdate=true;applyPS2Materials(woodMaterial);},
       onMist(map){
         roadMist=group(location);roadMist.name='Low roadside mist';
         const material=new THREE.MeshBasicMaterial({map,transparent:true,opacity:.11,depthWrite:false,side:THREE.DoubleSide,color:0x819397});
@@ -344,13 +347,16 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     worldStage=new THREE.Group();worldStage.name='Temporary prologue cast and lighting';worldStage.position.copy(location.position);worldStage.quaternion.copy(location.quaternion);worldStage.visible=false;scene.add(worldStage);
     const castFill=new THREE.HemisphereLight(0xb8c4cd,0x302922,.40);worldStage.add(castFill);
     worldFog=new THREE.FogExp2(fogNormal.clone(),.075);worldBackground=new THREE.Color();
-    hemi=new THREE.HemisphereLight(0xa9b8c4,0x303021,1.12);scene.add(hemi);
-    moon=new THREE.DirectionalLight(0xb3c9db,1.85);moon.position.set(-5,9,3);scene.add(moon);
-    sky=new THREE.Mesh(new THREE.SphereGeometry(155,24,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{red:{value:0},liquid:{value:0},clock:{value:0},skyMap:{value:null},hasMap:{value:0}},vertexShader:'varying vec3 vWorld; void main(){vWorld=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 vWorld; uniform float red,liquid,clock,hasMap;uniform sampler2D skyMap; void main(){vec3 n=normalize(vWorld);float h=smoothstep(-.1,.6,n.y+liquid*sin(n.x*18.+n.z*11.+clock*.7)*.10);vec3 dusk=mix(vec3(.16,.20,.21),vec3(.021,.035,.064),h);vec3 blood=mix(vec3(.29,.048,.024),vec3(.080,.008,.009),h);vec3 color=mix(dusk,blood,red);color=mix(color,vec3(.17,.29,.28)+color*.3,liquid*.5);vec2 skyUV=vec2(atan(n.z,n.x)/6.2831853+.625,asin(clamp(n.y,-1.,1.))/3.14159265+.5);vec3 photo=texture2D(skyMap,skyUV).rgb;float veil=.5+.5*sin(n.x*5.+sin(n.z*7.+clock*.014)+n.y*9.);color=mix(color,mix(photo*.75,color,.28+veil*.21),hasMap*(1.-red*.7));gl_FragColor=vec4(color,1.);}' }));location.add(sky);
+    hemi=new THREE.HemisphereLight(0x9aaab7,0x342d23,.86);scene.add(hemi);
+    moon=new THREE.DirectionalLight(0x9eb2c4,1.38);moon.position.set(-5,9,3);scene.add(moon);
+    sky=new THREE.Mesh(new THREE.SphereGeometry(155,24,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{red:{value:0},liquid:{value:0},clock:{value:0},skyMap:{value:null},hasMap:{value:0}},vertexShader:'varying vec3 vWorld; void main(){vWorld=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 vWorld; uniform float red,liquid,clock,hasMap;uniform sampler2D skyMap; void main(){vec3 n=normalize(vWorld);float h=smoothstep(-.1,.6,n.y+liquid*sin(n.x*18.+n.z*11.+clock*.7)*.10);vec3 dusk=mix(vec3(.10,.13,.14),vec3(.018,.027,.044),h);vec3 blood=mix(vec3(.29,.048,.024),vec3(.080,.008,.009),h);vec3 color=mix(dusk,blood,red);color=mix(color,vec3(.17,.29,.28)+color*.3,liquid*.5);vec2 skyUV=vec2(atan(n.z,n.x)/6.2831853+.625,asin(clamp(n.y,-1.,1.))/3.14159265+.5);vec3 photo=texture2D(skyMap,skyUV).rgb;float veil=.5+.5*sin(n.x*5.+sin(n.z*7.+clock*.014)+n.y*9.);color=mix(color,mix(photo*.52,color,.48+veil*.16),hasMap*(1.-red*.7));gl_FragColor=vec4(color,1.);}' }));location.add(sky);
     foliage=createFoliageMotion({playerPush:false});
-    buildLandscape();buildCar();clarence=createPrologueActor({name:'Clarence',police:true});stanley=createPrologueActor({name:'Stanley Yates',police:false});location.add(clarence.root,stanley.root);
+    buildLandscape();buildCar();clarence=createPrologueActor({name:'Mike',police:true});stanley=createPrologueActor({name:'Stanley Yates',police:false});clarence.root.userData.storyIdentity='mike';location.add(clarence.root,stanley.root);
     const treated=new Set();location.traverse(item=>{for(const mat of Array.isArray(item.material)?item.material:item.material?[item.material]:[])if(mat.isMeshStandardMaterial&&!treated.has(mat)){treated.add(mat);liquidUniforms.push(attachPrologueLiquid(mat));}});
     buildVisions();
+    // Material-only treatment retains liquid/wind hooks and the original set ownership.
+    applyPS2Materials(location);
+    for(const actor of [clarence,stanley])applyPS2Materials(actor.root,{profile:'character'});
     flashlight=new THREE.SpotLight(0xffe9cc,0,25,.48,.60,1.2);flashlight.position.set(-.26,-.22,-.53);flashlight.target.position.set(.08,-.08,-8);camera.add(flashlight,flashlight.target);
     // A low-frequency camera-space veil guarantees the vanishing is concealed.
     haze=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({transparent:true,depthTest:false,depthWrite:false,uniforms:{amount:{value:0},red:{value:0},clock:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,.0,1.);}',fragmentShader:'varying vec2 vUv;uniform float amount,red,clock;void main(){float cloud=.88+.12*sin(vUv.x*9.+sin(vUv.y*8.+clock*.09))*sin(vUv.y*7.-clock*.06);vec3 c=mix(vec3(.19,.24,.23),vec3(.32,.075,.050),red);gl_FragColor=vec4(c,clamp(amount*cloud,0.,1.));}'}));haze.frustumCulled=false;haze.renderOrder=1000;scene.add(haze);
@@ -368,14 +374,18 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     if(size!==key||camera.fov!==fov){camera.aspect=width/height;camera.fov=fov;camera.updateProjectionMatrix();size=key;}
     const cameraParent=vision.room?room:location;if(camera.parent!==cameraParent)cameraParent.add(camera);
     applyPrologueCamera(camera,locomotion,frame.player);
+    // Memory borrows the existing outdoor set, never its adult controller or equipment.
+    if(frame.childMemory){camera.position.set(frame.player.x,frame.player.y??.95,frame.player.z);}
     camera.rotation.x+=vision.sequence.cameraPitch;
     const motion=reduced?0:1;
     location.visible=!vision.room;room.visible=vision.room;
     room.userData.roomUpdate?.(Math.max(0,vision.time-1.2),reduced,vision.room&&!frame.returning);liquidVeil.update(frame);
     // Directional moon shape carries the exterior; restrained ambient fill keeps
     // corn and people readable without flattening their surfaces. No extra lights.
-    hemi.intensity=vision.room?0:1.12+vision.lightning*1.8;moon.intensity=vision.room?0:1.85+vision.lightning*4;
-    flashlight.intensity=frame.player?.flashlightOn?18:0;
+    hemi.intensity=vision.room?0:.86+vision.lightning*1.8;moon.intensity=vision.room?0:1.38+vision.lightning*4;
+    flashlight.intensity=!frame.childMemory&&frame.player?.flashlightOn?18:0;
+    hemi.color.setHex(frame.childMemory?0xffe9bf:0x9aaab7);moon.color.setHex(frame.childMemory?0xffe3a1:0x9eb2c4);
+    if(frame.childMemory){hemi.intensity=1.8;moon.intensity=2.0;}
     for(const uniforms of liquidUniforms){uniforms.amount.value=vision.liquid;uniforms.time.value=reduced&&vision.sequence.active?time*.25:time;uniforms.scale.value=reduced&&vision.sequence.active?.28:1;}
     const drive=frame.driving||samplePrologueDriving(frame),wake=samplePrologueWake(frame);
     vt1Ground?.update(drive,!frame.returning&&!vision.room&&!transition.world);
@@ -384,8 +394,8 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     if(b.inCar&&!vision.room){camera.position.add(new THREE.Vector3().fromArray(bodyReach.eyeOffset));camera.position.applyMatrix4(car.matrix);camera.quaternion.premultiply(car.quaternion);}
     const confrontation=sampleRoadsideConfrontation(frame)||{bang:0,impact:0};
     if(b.inCar&&!reduced&&confrontation.impact){camera.position.x+=confrontation.impact*.012;camera.rotation.z+=confrontation.impact*.008;}
-    sky.position.copy(camera.position);
-    rain.update(time,camera.position,drive,reduced,!vision.room&&!transition.world&&!frame.returning,!frame.returning);
+    sky.position.copy(camera.position);sky.visible=!frame.childMemory;
+    rain.update(time,camera.position,drive,reduced,!frame.childMemory&&!vision.room&&!transition.world&&!frame.returning,!frame.childMemory&&!frame.returning);
     road.visible=!frame.returning;
     field.visible=chapter!=='car'&&(chapter!=='dispatch'||p>.8);car.visible=!frame.returning;
     const exitPose=frame.exitPose||samplePrologueExit((frame.exitProgress??b.exit)*EXIT_SECONDS);door.rotation.y=exitPose.door*1.05;wheel.rotation.z=steeringAngle(drive.steer);const lampState=sampleCruiserLampState(time,{reduced,active:!vision.room&&!frame.returning&&!transition.world});
@@ -400,8 +410,8 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     const doorWorld=(cruiser?.door||door).localToWorld(new THREE.Vector3(-.055,.035,.48));
     frame.exitHandTarget=doorWorld.toArray();frame.exitHandQuaternion=(cruiser?.door||door).getWorldQuaternion(new THREE.Quaternion()).toArray();
     if(roadMist){roadMist.visible=!vision.room&&!frame.returning;for(const sheet of roadMist.children){const i=sheet.userData.index;sheet.position.set(-4.3+(reduced?0:Math.sin(time*.07+i)*1.2),.65,camera.position.z-12-i*16);}}
-    const speech=String(frame.speaker||'').toLowerCase(),isClarence=speech.includes('clarence'),isStanley=speech.includes('stanley');
-    const menVisible=vision.escortsVisible&&!vision.room&&(chapter==='rupture'||b.menVisible);
+    const speech=String(frame.speaker||'').toLowerCase(),isMike=speech.includes('mike'),isStanley=speech.includes('stanley');
+    const menVisible=!frame.childMemory&&vision.escortsVisible&&!vision.room&&(chapter==='rupture'||b.menVisible);
     clarence.root.visible=menVisible;stanley.root.visible=menVisible&&chapter!=='car'&&chapter!=='dispatch';
     const driver=locomotion.actors.clarence,father=locomotion.actors.stanley,roadside=b.inCar||chapter==='emergence';
     clarence.root.position.fromArray(driver.position);clarence.root.position.y+=vision.rise;clarence.root.rotation.set(0,driver.yaw,0,'YXZ');
@@ -409,17 +419,26 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
     stanley.root.position.fromArray(father.position);stanley.root.position.y+=vision.rise;stanley.root.rotation.set(0,father.yaw,0,'YXZ');
     const bangTargets=father.mode==='bang'?[1,-1].map(sign=>stanley.root.worldToLocal(location.localToWorld(new THREE.Vector3(BANG_WINDOW_TARGET[0],BANG_WINDOW_TARGET[1],BANG_WINDOW_TARGET[2]+sign*.18))).toArray()):null;
     const effect={corpse:false,dissolve:0}; // Whole liquid silhouettes remain until opaque cover; no grain disappearance.
-    const driverAct=performanceFor(frame,'clarence',driver,(locomotion.listener?.position||b.camera)),fatherAct=performanceFor(frame,'stanley',father,(locomotion.listener?.position||b.camera));
+    const driverAct=performanceFor(frame,'mike',driver,(locomotion.listener?.position||b.camera)),fatherAct=performanceFor(frame,'stanley',father,(locomotion.listener?.position||b.camera));
     (cruiser?.steering||wheel).updateWorldMatrix(true,false);
-    clarence.pose({wheelMatrix:(cruiser?.steering||wheel).matrixWorld,time,phase:driver.phase,mode:vision.limp?'limp':driver.mode,speaking:isClarence,look:driverAct.look,reduced,steer:drive.steer,performance:driverAct,gait:driver.gait,support:driver.support,exitPose:driver.exitPose,limpWeight:vision.limpWeight,...effect});
+    clarence.pose({wheelMatrix:(cruiser?.steering||wheel).matrixWorld,time,phase:driver.phase,mode:vision.limp?'limp':driver.mode,speaking:isMike,look:driverAct.look,reduced,steer:drive.steer,performance:driverAct,gait:driver.gait,support:driver.support,exitPose:driver.exitPose,limpWeight:vision.limpWeight,...effect});
     stanley.pose({time,chapter,chapterTime:frame.chapterTime,phase:father.phase,mode:vision.limp?'limp':father.mode,speaking:isStanley,distress:roadside?1:chapter==='disappearance'?.7:.32,look:fatherAct.look,gesture:fatherAct.emphasis*.30,bang:father.bang??confrontation.bang,bangTargets,reduced,performance:fatherAct,crouch:father.crouch||0,runWeight:father.runWeight,gait:father.gait,support:father.support,limpWeight:vision.limpWeight,...effect});
     stats.confrontation={...confrontation,windowTargets:bangTargets,cameraImpact:reduced?0:confrontation.impact};
     const hallucination=hallucinations.update(frame,[clarence,stanley]);
+    if(frame.childMemory){
+      const anchor=frame.memoryAnchor||frame.player,figure=hallucinations.roots[0];
+      figure.position.set(anchor.x-Math.sin(anchor.yaw||0)*6,0,anchor.z-Math.cos(anchor.yaw||0)*6);
+      figure.rotation.set(0,(anchor.yaw||0)+Math.PI,0);
+      figure.visible=hallucinations.stats.status==='ready';hallucinations.roots[1].visible=false;
+      car.visible=false;roadsideSet.visible=false;headlight.intensity=0;streetlight.intensity=0;porchLight.intensity=0;
+      for(const light of policeSpill)light.intensity=0;
+    }
     for(const human of [clarence,stanley])human.root.traverse(o=>{for(const m of [o.material].flat().filter(Boolean)){const u=m.userData?.prologueLiquid;if(u){u.handover.value=hallucinations.stats.status==='ready'?hallucination.zombie:0;u.lift.value=chapter==='rupture'?vision.dissolve:0;}}});
     ribbons.visible=chapter==='rupture'&&vision.time>=5&&vision.time<11.35;
     for(const [i,root]of ribbons.children.entries()){const actor=i?stanley:clarence;root.position.copy(actor.root.position);root.quaternion.copy(actor.root.quaternion);for(const strand of root.children){strand.material.opacity=smooth((vision.time-5)/1.5)*(1-vision.sequence.cover);strand.userData.liquid.amount.value=reduced?.25:1;strand.userData.liquid.time.value=time;strand.userData.liquid.lift.value=vision.dissolve;}}
     updateBinary(vision,time,reduced);
     const red=chapter==='rupture'?vision.red:clamp(frame.red),mist=chapter==='rupture'?vision.mist:clamp(frame.mist),cover=Math.max(mist,transition.cover||0);scene.background.copy(skyNormal).lerp(skyRed,red);scene.fog.color.copy(fogNormal).lerp(fogRed,red);scene.fog.near=vision.room?6:14*(1-cover);scene.fog.far=vision.room?55:100-cover*93;stats.fog={near:scene.fog.near,far:scene.fog.far,scope:'staged roadside and approach only'};
+    if(frame.childMemory){scene.background.setHex(0xb6c8b2);scene.fog.color.setHex(0xc5c8a7);scene.fog.near=14;scene.fog.far=100;}
     sky.material.uniforms.red.value=red;sky.material.uniforms.liquid.value=vision.liquid;sky.material.uniforms.clock.value=time;haze.material.uniforms.red.value=red;haze.material.uniforms.amount.value=Math.max(mist*1.34,(transition.cover||0)*1.34);haze.material.uniforms.clock.value=reduced?0:time;haze.visible=!vision.room&&cover>.001;
     const target=renderer.getRenderTarget(),auto=renderer.autoClear,infoAuto=renderer.info.autoReset,test=renderer.getScissorTest();renderer.getViewport(viewport);renderer.getScissor(scissor);renderer.getClearColor(savedClear);const alpha=renderer.getClearAlpha();
     try {
@@ -429,8 +448,8 @@ export function createPrologueVisuals(renderer, {getCorn = () => null, getWorld 
         const background=world.scene.background?.isColor?worldBackground.copy(world.scene.background).lerp(skyRed,red):world.scene.background;
         withPrologueWorld(world,{camera,stage:worldStage,actors:[clarence.root,stanley.root,binary,ribbons,haze,liquidVeil.mesh],fog:worldFog,background,red,liquid:vision.liquid,time},(actualScene,cinematicCamera)=>renderer.render(actualScene,cinematicCamera));
       }else renderer.render(scene,camera);
-      renderEquipment(camera,frame);
-      stats.frames++;stats.draws=renderer.info.render.calls;stats.chapter=chapter;stats.environment=vision.room?'red room':transition.world?'live maze':'staged approach';stats.transitionCover=transition.cover||0;camera.getWorldPosition(cameraWorld);stats.camera={x:cameraWorld.x,y:cameraWorld.y,z:cameraWorld.z,yaw:camera.rotation.y,pitch:camera.rotation.x};stats.menVisible=menVisible;stats.vision={...vision};stats.hallucination={...hallucinations.stats,...hallucination};stats.ribbons=ribbons.visible?ribbons.children.length*3:0;stats.roomContents=vision.room?['projector','original detailed anonymous face projection']:[];stats.liquidMaterials=vision.liquid?liquidUniforms.length:0;stats.flashlight=flashlight.intensity>0;
+      if(!frame.childMemory)renderEquipment(camera,frame);
+      stats.frames++;stats.draws=renderer.info.render.calls;stats.chapter=chapter;stats.childMemory=!!frame.childMemory;stats.controlledCharacter='Clarence';stats.environment=vision.room?'red room':transition.world?'live maze':'staged approach';stats.transitionCover=transition.cover||0;camera.getWorldPosition(cameraWorld);stats.camera={x:cameraWorld.x,y:cameraWorld.y,z:cameraWorld.z,yaw:camera.rotation.y,pitch:camera.rotation.x};stats.menVisible=menVisible;stats.vision={...vision};stats.hallucination={...hallucinations.stats,...hallucination};stats.ribbons=ribbons.visible?ribbons.children.length*3:0;stats.roomContents=vision.room?['projector','original detailed anonymous face projection']:[];stats.liquidMaterials=vision.liquid?liquidUniforms.length:0;stats.flashlight=flashlight.intensity>0;
     } catch(error){stats.error=error.message;throw error;}
     finally {renderer.setRenderTarget(target);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(test);renderer.setClearColor(savedClear,alpha);renderer.autoClear=auto;renderer.info.autoReset=infoAuto;}
   }

@@ -1,9 +1,9 @@
 import {PROLOGUE_LINES} from './prologue-script.js';
 import {sampleCrash,sampleEncounter} from './asylum-crash.js';
 const retained=(id,start,end)=>({...PROLOGUE_LINES.find(l=>l.id===id),start,end});
-const lines=[{id:'CRASH-01',speaker:'CLARANCE',voice:'clarence',text:'Are you okay, Mike?',start:3.9,end:6.7,audioMode:'subtitle-only'},
-{id:'RECOVERY-MIKE',speaker:'MIKE',voice:'mike',text:'I hit my head in the crash.',start:7.1,end:10.1,audioMode:'subtitle-only'},
-{id:'RECOVERY-CLARANCE',speaker:'CLARANCE',voice:'clarence',text:'I’ll deal with this while you get yourself straight.',start:10.3,end:14.5,audioMode:'subtitle-only'},retained('ARR-01',14.9,19.2),retained('ARR-02',19.4,21)];
+const lines=[{id:'CRASH-01',speaker:'MIKE',voice:'mike',text:'Are you okay, Clarence?',start:3.9,end:6.7,audioMode:'subtitle-only'},
+{id:'RECOVERY-MIKE',speaker:'CLARENCE',voice:'clarence',text:'I hit my head in the crash.',start:7.1,end:10.1,audioMode:'subtitle-only'},
+{id:'RECOVERY-CLARANCE',speaker:'MIKE',voice:'mike',text:'I’ll deal with this while you get yourself straight.',start:10.3,end:14.5,audioMode:'subtitle-only'},retained('ARR-01',14.9,19.2),retained('ARR-02',19.4,21)];
 export const CRASH_ORIGINAL_DURATION=28.9;
 export function createCrashOriginalBeat({onCue=()=>{}}={}){
  let time=0,impact=false,player={x:.5,y:1.13,z:.35,yaw:0,pitch:0};

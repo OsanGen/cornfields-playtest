@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {applyPS2Materials} from './ps2-style.js';
 import {box} from './asylum-cruiser.js';
 import {bone} from './asylum-custody.js';
 import {WOUND} from './asylum-story-script.js';
@@ -19,7 +20,7 @@ export function attendantTreatment(actor){
  });return {runtimeOnly:true,changed};
 }
 export function createHospital(){
- const root=new THREE.Group();root.name='Original treatment room and connector';const plaster=new THREE.MeshStandardMaterial({color:0xaaaFA0,roughness:.96}),tile=new THREE.MeshStandardMaterial({color:0x62766e,roughness:.75}),floor=new THREE.MeshStandardMaterial({color:0x6c7067,roughness:.86}),metal=new THREE.MeshStandardMaterial({color:0x4a5652,metalness:.3,roughness:.65}),linen=new THREE.MeshStandardMaterial({color:0xc4c8b5,roughness:1});
+ const root=new THREE.Group();root.name='Original treatment room and connector';const plaster=new THREE.MeshStandardMaterial({color:0x989e94,roughness:1}),tile=new THREE.MeshStandardMaterial({color:0x53685f,roughness:.92}),floor=new THREE.MeshStandardMaterial({color:0x62675e,roughness:.96}),metal=new THREE.MeshStandardMaterial({color:0x46514d,metalness:.16,roughness:.86}),linen=new THREE.MeshStandardMaterial({color:0xb7bba7,roughness:1});
  box(root,'Treatment room floor',[6,.1,5],[0,-.05,.55],floor);
  for(const x of [-3,3]){box(root,'Treatment wall',[.12,3.2,5],[x,1.6,.55],plaster);box(root,'Gray green wall tiles',[.13,1.1,5],[x,.55,.55],tile);}
  box(root,'Room back wall',[6,3.2,.12],[0,1.6,3.05],plaster);
@@ -29,16 +30,18 @@ export function createHospital(){
  box(root,'Connector floor',[1.8,.1,6.4],[0,-.05,-5.10],floor);
  box(root,'Hall boundary door',[1.78,2.8,.13],[0,1.4,-8.55],metal);
  const sky=new THREE.MeshStandardMaterial({color:0xb7c7b4,emissive:0x92b2a2,emissiveIntensity:.35,roughness:.8});box(root,'Original skylight landmark',[1.1,.08,1.25],[0,3.1,-7.2],sky);
- const bed=new THREE.Group();bed.name='Mike treatment bed';root.add(bed);const frame=box(bed,'Bed frame',[1.3,.10,2.15],[-1.2,.48,.15],metal),mattress=box(bed,'Bed mattress',[1.3,.22,2.15],[-1.2,.64,.15],linen);box(bed,'Pillow',[.95,.12,.37],[-1.2,.81,-.58],linen);
+ const bed=new THREE.Group();bed.name='Clarence treatment bed';root.add(bed);const frame=box(bed,'Bed frame',[1.3,.10,2.15],[-1.2,.48,.15],metal),mattress=box(bed,'Bed mattress',[1.3,.22,2.15],[-1.2,.64,.15],linen);box(bed,'Pillow',[.95,.12,.37],[-1.2,.81,-.58],linen);
  for(const x of [-1.73,-.67])for(const z of [-.78,1.1])box(bed,'Bed leg',[.05,.48,.05],[x,.24,z],metal);
- const light=new THREE.HemisphereLight(0xc7d6c8,0x343b35,2);root.add(light);const key=new THREE.PointLight(0xdbe3c6,12,8,2);key.position.set(0,2.8,.3);root.add(key);
+ const light=new THREE.HemisphereLight(0x91aead,0x343a32,.72);root.add(light);const key=new THREE.PointLight(0xd6d3a2,15,8,2);key.position.set(0,2.8,.3);root.add(key);
+ // Cold fill preserves silhouettes; the existing ceiling pool remains the treatment landmark.
+ applyPS2Materials(root,{profile:'environment'});
  return {root,bed,mattress,frame,stand:HOSPITAL.stand,dispose(){root.traverse(o=>o.geometry?.dispose());for(const m of [plaster,tile,floor,metal,linen,sky])m.dispose();}};
 }
 
 // Bounds are shared with the original meshes above and independently compared
 // against their actual BoxGeometry bounds by the acceptance suite.
 export const HOSPITAL_SOLIDS=Object.freeze([
- {name:'Mike treatment bed',min:[-1.85,-.925],max:[-.55,1.225]},
+ {name:'Clarence treatment bed',min:[-1.85,-.925],max:[-.55,1.225]},
  {name:'Left room wall',min:[-3.065,-1.95],max:[-2.935,3.05]},
  {name:'Right room wall',min:[2.935,-1.95],max:[3.065,3.05]},
  {name:'Room back wall',min:[-3,2.99],max:[3,3.11]},

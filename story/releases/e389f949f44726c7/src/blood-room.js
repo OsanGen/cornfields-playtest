@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {applyEnvironmentSurface} from './environment-materials.js';
+import {applyPS2Materials} from './ps2-style.js';
 
 export const PROJECTOR_LENS=Object.freeze([-.88,.98,.02]);
 export const PROJECTOR_WALL_TARGET=Object.freeze([0,1.76,-4.765]);
@@ -20,7 +21,7 @@ export function createBloodRoom({rain=false,touch=false}={}){
   box(group,red,6.4,3.3,9.6,0,1.65);
   const light=new THREE.PointLight(0xff2130,4.2,14,1.5);light.position.set(0,2.9,0);group.add(light);
   const projector=new THREE.Group();projector.position.set(-.88,.98,.30);projector.name='Single film projector';group.add(projector);
-  const housing=new THREE.MeshStandardMaterial({color:0x242527,roughness:.57,metalness:.3});
+  const housing=new THREE.MeshStandardMaterial({color:0x343431,roughness:.92,metalness:.08});
   box(projector,housing,.47,.22,.37);box(projector,housing,.34,.07,.29,0,-.14);
   // Ground the same projector; legs fill the former floating gap without
   // adding a new prop or changing its authored centre/footprint.
@@ -41,7 +42,9 @@ export function createBloodRoom({rain=false,touch=false}={}){
     fragmentShader:`varying vec2 vUv;uniform float clock,motion;
       float ellipse(vec2 p,vec2 r){return length(p/r);}
       void main(){
-        vec2 p=(vUv-.5)*2.;p.x+=sin(p.y*7.+clock*1.7)*.016*motion;
+        // Deliberately coarse projection, retaining the full face and eye contrast.
+        vec2 faceUv=(floor(vUv*vec2(128.,144.))+.5)/vec2(128.,144.);
+        vec2 p=(faceUv-.5)*2.;p.x+=sin(p.y*7.+clock*1.7)*.016*motion;
         float head=1.-smoothstep(.91,1.,ellipse(p-vec2(0.,.03),vec2(.72,.96)));
         float left=1.-smoothstep(.7,1.,ellipse(p-vec2(-.27,.25),vec2(.18,.10)));
         float right=1.-smoothstep(.7,1.,ellipse(p-vec2(.27,.28),vec2(.18,.10)));
@@ -53,9 +56,10 @@ export function createBloodRoom({rain=false,touch=false}={}){
         float cheeks=exp(-pow((abs(p.x)-.4)/.19,2.))*exp(-pow((p.y+.12)/.22,2.));
         float nostrils=exp(-pow((abs(p.x)-.09)/.044,2.))*exp(-pow((p.y+.16)/.038,2.));
         float lips=exp(-pow((ellipse(p-vec2(.01,-.36),vec2(.25,.32))-1.)/.075,2.));
-        float grain=fract(sin(dot(floor(vUv*vec2(720.,810.)),vec2(12.9898,78.233)))*43758.5453)-.5;
+        float grain=fract(sin(dot(floor(faceUv*vec2(128.,144.)),vec2(12.9898,78.233)))*43758.5453)-.5;
         float shade=clamp(.38+edge*.53+nose*.19+cheeks*.085-nostrils*.3-lips*.13+grain*.035-max(left,right)*.81-mouth*.95-brow*.48-tear*.44,0.,1.);
-        vec3 color=mix(vec3(.20,.013,.028),vec3(1.,.66,.57),shade)*(.98+.02*sin(vUv.y*810.));
+        shade=floor(shade*31.+.5)/31.;
+        vec3 color=mix(vec3(.20,.013,.028),vec3(1.,.66,.57),shade)*(.98+.02*sin(faceUv.y*144.));
         gl_FragColor=vec4(color,head*.95);
       }` }));face.position.set(0,1.76,-4.765);face.name='Original anonymous distressed face projection';group.add(face);
   const hazeMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,toneMapped:false,
@@ -88,6 +92,8 @@ export function createBloodRoom({rain=false,touch=false}={}){
           vec4 sampledDiffuseColor=texture2D(map,filmUv);diffuseColor*=sampledDiffuseColor;
         #endif`);
     };material.customProgramCacheKey=()=> 'cornfields-original-projector-film-v2';material.needsUpdate=true;}
+    // Install after the film hook so the shared wrapper composes, not replaces it.
+    applyPS2Materials(model,{profile:'environment'});
     stats.source='projector.glb';stats.reels=reelNodes.length;
     poseMechanism(mechanismTime);if(!stats.active)projectorLight.intensity=0;
   }
@@ -96,6 +102,8 @@ export function createBloodRoom({rain=false,touch=false}={}){
     for(const [i,{node,rest}] of reelNodes.entries())node.quaternion.copy(rest).premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),i?state.takeup:state.feed));
     stats.time=time;stats.film=state.film;projectorLight.intensity=6*state.shutter;
   }
+  // Emissive red room, lens and transparent projection/haze keep their authored light.
+  applyPS2Materials(projector,{profile:'environment'});
   return {group,face,projectorLight,setProjector,stats,update(time,reduced=false,active=true){
     stats.active=!!active;face.visible=haze.visible=!!active;if(!active){projectorLight.intensity=0;return;}
     mechanismTime=Math.max(0,Number(time)||0);poseMechanism(mechanismTime);if(reduced)projectorLight.intensity=6;

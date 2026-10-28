@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {applyPS2Materials} from '../../story/releases/e389f949f44726c7/src/ps2-style.js';
 import { createMaterials, createStripMotion } from './materials.js';
 import { DOOR_NAMES } from './progression.js';
 
@@ -18,7 +19,7 @@ export function validateLayout(l) {
 }
 export function createHall(layout, { document: doc = null, quickplay = false } = {}) {
   validateLayout(layout);
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x202a29); scene.fog = new THREE.Fog(0x38403d, 18, 42);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x171f20); scene.fog = new THREE.Fog(0x293533, 13, 38);
   const materials = createMaterials(), solids = [], floors = [], signs = [], doorIndicators = new Map(), resources = [], boxGeometry = new THREE.BoxGeometry(1,1,1);
   function box(name, center, size, material = materials.plaster, solid = true, parent = scene) {
     const mesh = new THREE.Mesh(boxGeometry, material); mesh.name = name; mesh.position.set(...center); mesh.scale.set(...size); parent.add(mesh); if (solid) solids.push(mesh); return mesh;
@@ -46,14 +47,14 @@ export function createHall(layout, { document: doc = null, quickplay = false } =
       wall(room.id+'-north',[x,h/2,-3.15],[6.3,h,0.3]);wall(room.id+'-south',[x,h/2,3.15],[6.3,h,0.3]);wall(room.id+'-west',[x-3.15,h/2,0],[0.3,h,6]);
       if(room.id==='B') wall('B-east',[24.15,h/2,0],[0.3,h,6]);
       box(room.id+'-light',[x,h-0.06,0],[1.5,0.08,0.55],materials.skylight,false);
-      const light=new THREE.PointLight(0xc1d0bd,8,9,2);light.position.set(x,3.1,0);scene.add(light);
+      const light=new THREE.PointLight(0xd0c79f,10,9,2);light.position.set(x,3.1,0);scene.add(light);
       sign(room.id+'-original-label','ORIGINAL TEST VESTIBULE\n'+room.id,[x,2.55,-2.96],0,3.45,0.64);
     }
   }
   // Shared floor and a genuine open wall aperture make A a walk-through route.
   wall('A-screen',[-11.25,1.55,-0.55],[0.24,3.1,2.45]);
   // A floor-specific plan blockout. Wall apertures, panel colliders and navigation share the same data.
-  const green=new THREE.MeshStandardMaterial({color:0x60735b,roughness:.92}),wood=new THREE.MeshStandardMaterial({color:0x493022,roughness:.8});resources.push(green,wood);
+  const green=new THREE.MeshStandardMaterial({color:0x54634f,roughness:1}),wood=new THREE.MeshStandardMaterial({color:0x49382a,roughness:.94});resources.push(green,wood);
   const interiorDoors=new Map();let doorVersion=0;
   function segment(name,a,b,height=3.5,y=height/2,material=green){const dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz);if(length<.001)return;const mesh=box(name,[(a[0]+b[0])/2,y,(a[1]+b[1])/2],[length,height,.18],material);mesh.rotation.y=-Math.atan2(dz,dx);return mesh;}
   for(const room of layout.mansion.spaces){
@@ -115,9 +116,11 @@ export function createHall(layout, { document: doc = null, quickplay = false } =
   const strip=box('one-maintenance-strip',layout.strip.position,[0.09,0.92,0.015],materials.metal,false);
   for(let x=0.55;x<1.7;x+=0.12)box('distant-grille-'+x,[x,4.75,-6.35],[0.026,1.15,0.035],materials.metal,false);
   box('grille-top',[1.1,5.32,-6.35],[1.2,0.04,0.04],materials.metal,false);box('grille-bottom',[1.1,4.18,-6.35],[1.2,0.04,0.04],materials.metal,false);
-  scene.add(new THREE.HemisphereLight(0xb5cbc9,0x343d33,1.65));
-  const sky=new THREE.DirectionalLight(0xc8ddd8,1.45);sky.position.set(0,6,1);scene.add(sky);
-  for(const [x,color]of[[-7,0x89b9a4],[7,0xb58a98]]){const l=new THREE.PointLight(color,11,14,2);l.position.set(x,3.6,-3);scene.add(l);}
+  scene.add(new THREE.HemisphereLight(0x98b3b1,0x3b4236,.95));
+  const sky=new THREE.DirectionalLight(0xb0c3b3,.85);sky.position.set(0,6,1);scene.add(sky);
+  for(const [x,color]of[[-7,0xabbcaf],[7,0xc4a36e]]){const l=new THREE.PointLight(color,14,14,2);l.position.set(x,3.6,-3);scene.add(l);}
+  // Preserve sign/key emissions and geometry while giving opaque surfaces a shared coarse finish.
+  applyPS2Materials(scene,{profile:'environment'});
   scene.updateMatrixWorld(true);
   const bounds=()=>{scene.updateMatrixWorld(true);return solids.filter(mesh=>mesh.visible).map(mesh=>({mesh,box:new THREE.Box3().setFromObject(mesh)}));};
   let colliders=bounds();

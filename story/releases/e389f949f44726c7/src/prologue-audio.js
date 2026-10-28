@@ -169,7 +169,7 @@ export function createPrologueAudio(audio,{fetcher=(...args)=>fetch(...args),lin
     const line=frame.line,buffer=line&&buffers.get(line.id),offset=line?Math.max(0,frame.time-line.start):0;
     const outside=line?.voice==='stanley'&&(frame.motion?.blocking?.inCar||frame.exitPose?.door<1),door=frame.exitPose?.door??(outside?0:1);
     if(voice?.filter&&line?.voice==='stanley')voice.filter.frequency.setTargetAtTime(2600+6900*door,audio.ctx.currentTime,.10);
-    if(voice?.pan){const position=motion.actors?.[line?.voice]?.position;if(position){const dx=position[0]-listener.position[0],dz=position[2]-listener.position[2],distance=Math.hypot(dx,dz);voice.pan.pan.setTargetAtTime(Math.max(-.75,Math.min(.75,(dx*Math.cos(listener.yaw)-dz*Math.sin(listener.yaw))/Math.max(2,distance))),audio.ctx.currentTime,.08);}}
+    if(voice?.pan){const motionRole=line?.voice==='mike'?'clarence':line?.voice==='clarence'?'mike':line?.voice;const position=motion.actors?.[motionRole]?.position;if(position){const dx=position[0]-listener.position[0],dz=position[2]-listener.position[2],distance=Math.hypot(dx,dz);voice.pan.pan.setTargetAtTime(Math.max(-.75,Math.min(.75,(dx*Math.cos(listener.yaw)-dz*Math.sin(listener.yaw))/Math.max(2,distance))),audio.ctx.currentTime,.08);}}
     if(current===line?.id&&voice){
       const actual=audio.ctx.currentTime-voice.started+voice.offset;
       if(Math.abs(actual-offset)<.20)return;
@@ -178,12 +178,12 @@ export function createPrologueAudio(audio,{fetcher=(...args)=>fetch(...args),lin
     // A naturally ended source must not replay its tail while a delayed render
     // still reports the same line. Only the last occurrence is retained; follow
     // calls have their own start time and release() resets explicit Replay.
-    if(!line||!buffer||completedOccurrence?.id===line.id&&completedOccurrence.start===line.start||offset>=buffer.duration-.03)return;
+    if(!line||line.audioMode==='subtitle-only'||!buffer||completedOccurrence?.id===line.id&&completedOccurrence.start===line.start||offset>=buffer.duration-.03)return;
     const ctx=audio.ctx,source=ctx.createBufferSource(),level=ctx.createGain(),filter=ctx.createBiquadFilter();
 
     source.buffer=buffer;filter.type=line.voice==='dispatch'||line.voice==='face'?'bandpass':'lowpass';filter.frequency.value=line.voice==='dispatch'?1700:line.voice==='face'?2100:line.voice==='unknown'?1100:outside?2600:9500;filter.Q.value=line.voice==='dispatch'?.65:line.voice==='face'?.8:.7;
     level.gain.value=line.voice==='dispatch'?1.25:line.id==='FLA-03'?.74:line.id==='CAB-01'?1.15:line.id.startsWith('FOL-')?1.12:outside?.9:1;
-    const pan=(line.voice==='stanley'||line.voice==='clarence')&&ctx.createStereoPanner?ctx.createStereoPanner():null;
+    const pan=(line.voice==='stanley'||line.voice==='mike')&&ctx.createStereoPanner?ctx.createStereoPanner():null;
     source.connect(filter).connect(level);if(pan)level.connect(pan).connect(bus);else level.connect(bus);
     const item={source,filter,pan,nodes:[source,filter,level,...(pan?[pan]:[])],offset,started:ctx.currentTime,occurrence:{id:line.id,start:line.start,generation}};voice=item;current=line.id;played++;
     source.onended=()=>{if(voice===item){voice=null;completedOccurrence=item.occurrence;naturalCompletions++;}for(const node of item.nodes)node.disconnect();};source.start(0,offset);

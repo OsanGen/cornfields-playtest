@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {applyPS2Materials} from './ps2-style.js';
 import {defaultActorWheelMatrix,wheelGrip} from './prologue-cabin.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -81,6 +82,7 @@ export function createTexturedPrologueActor({name = 'Clarence', police = true, g
       for (const material of [].concat(object.material || [])) materials.add(material);
     });
     for (const material of materials) onMaterial?.(material);
+    applyPS2Materials(fallback.root,{profile:'character'});
     return {...fallback, dispose() {}};
   }
 
@@ -547,6 +549,9 @@ export function createTexturedPrologueActor({name = 'Clarence', police = true, g
     const across=new THREE.Vector3().crossVectors(forward,back).normalize();
     arm.wheelForearmFrameInverse=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(across,forward,back)).invert();
   }
+
+  // Presentation only: retain the authored rig, geometry, clips and contact solver.
+  applyPS2Materials(root,{profile:'character'});
 
   return {
     root,

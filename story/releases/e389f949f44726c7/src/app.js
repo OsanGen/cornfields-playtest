@@ -1,3 +1,5 @@
+import {createIdentityCard,STORY_IDENTITIES} from './cf-story-memory.js';
+import {classroomBeat} from './sadie-classroom.js';
 import {pathTo} from './maze.js';
 import {
   createGame, startGame, pauseGame, resumeGame,
@@ -46,6 +48,7 @@ export function createGameApp({
 }) {
   const canvas = document.getElementById('scene');
   const ui = createUI(document, {debug, reducedMotion, touch, horror});
+  const identityCard=createIdentityCard({document});
   const listeners = [];
   let game = createGame(maze);
   if(survivalEndingEnabled)attachSurvivalEnding(game);
@@ -64,8 +67,8 @@ export function createGameApp({
   let creditsOpen = false;
   prologueEnabled=prologueEnabled&&introEnabled;
   let openingStage=null,endingAt=null,handoffAt=null;
-  const intro = prologueEnabled?createOpening({crashOriginal,crashReady:()=>prologueView?.crashReady?.()??true,onCue:id=>prologueAudio?.cue(id),onIntroCue:id=>audio.introCue?.(id)}):createIntro({enabled:introEnabled, onCue:id=>audio.introCue?.(id)});
-  if(prologueEnabled){ui.node('player-alias').value='MIKE';document.body.classList.toggle('story-player',true);}
+  const intro = prologueEnabled?createOpening({onTransition:()=>{input.clear();input.quarantine?.();prologueAudio?.pause();},crashOriginal,crashReady:()=>prologueView?.crashReady?.()??true,onCue:id=>prologueAudio?.cue(id),onIntroCue:id=>audio.introCue?.(id)}):createIntro({enabled:introEnabled, onCue:id=>audio.introCue?.(id)});
+  if(prologueEnabled){ui.node('player-alias').value='CLARENCE';document.body.classList.toggle('story-player',true);}
   if (ready) Promise.resolve(ready).then(()=>{if(!disposed){coreReady=true;present();}},error=>{
     if(!disposed){coreError=error.message;ui.showError('The field could not load. Reload to retry.');present();}
   });
@@ -90,7 +93,7 @@ export function createGameApp({
     const beforeSteps=game.steps;
     updateGame(game, dt, controls);
     if(previousEnding!==game.survivalEnding?.phase){
-      input.clearEdges();game.pendingStabs.length=0;
+      input.quarantine?.();input.clear();game.pendingStabs.length=0;
       if(game.survivalEnding?.phase==='transform'){audio.stopCues?.();survivalAudio?.cue('crash');}
     }
     if(previousPhase!==game.interaction?.phase){input.clearEdges();game.pendingStabs.length=0;}
@@ -131,20 +134,22 @@ export function createGameApp({
   }
 
   function present(time = game.elapsed) {
-    if(!levelCompleteSent && typeof onLevelComplete==='function' && game.mode==='playtest-ended' && game.survivalEnding?.phase==='fall' && game.survivalEnding.jumped && game.survivalEnding.time>=3.2){
+    if(!levelCompleteSent && typeof onLevelComplete==='function' && game.mode==='playtest-ended' && game.survivalEnding?.phase==='handoff' && game.survivalEnding.classroomSeen){
       levelCompleteSent=true;
       onLevelComplete({completed:true,comfort:{reducedMotion,master:Math.max(0,Math.min(1,Number(audio.volume)||0)),voice:1,effects:.7}});
       if(disposed)return;
     }
     syncMode();
     ui.render(game);
+    const endingPhase=game.survivalEnding?.phase;
+    identityCard.render(intro.active?intro.frame(reducedMotion).identityCard:endingPhase==='classroom-card'?STORY_IDENTITIES.kindergarten:endingPhase==='hospital-card'||endingPhase==='handoff'?STORY_IDENTITIES.present:null);
     const reveal=handoffAt===null||intro.active||game.mode!=='playing'?0:Math.max(0,1-(game.elapsed-handoffAt)/.28);ui.renderHandoff?.(reveal);if(reveal<=0&&!intro.active)handoffAt=null;
     ui.renderIntro(intro, {enabled:introEnabled, portrait:touch&&window.innerHeight>window.innerWidth, coreReady, coreError, entering:introEntering, pointerError, creditsOpen, muted:audio.muted, volume:audio.volume});
     if(prologueEnabled)ui.renderOpening(intro,{touch,portrait:touch&&window.innerHeight>window.innerWidth,coreReady,coreError,entering:introEntering,pointerError});
     const endingTime=endingAt===null?Infinity:game.elapsed-endingAt;
     const ending=endingTime<PROLOGUE_END_LINE.end&&game.mode==='playing'&&!intro.active&&(!game.survivalEnding||game.survivalEnding.phase==='arrival');
     const trialLine=survivalLine(game.survivalEnding);
-    ui.renderEnding?.(ending?PROLOGUE_END_LINE.text:game.mode==='playing'?trialLine?.text||'':'');
+    ui.renderEnding?.(ending?PROLOGUE_END_LINE.text:game.mode==='playing'?(endingPhase==='classroom'?classroomBeat(game.survivalEnding.time).caption||(touch?'Look around. The memory will continue.':'LOOK AROUND · K TO SKIP MEMORY'):trialLine?.text||''):'');
     if(ending)prologueAudio?.sync({gameplay:true,time:endingTime,line:PROLOGUE_END_LINE,chapter:'gameplay'});
     else if(endingAt!==null&&(endingTime>=PROLOGUE_END_LINE.end||game.survivalEnding?.phase!=='arrival'&&game.survivalEnding)){endingAt=null;prologueAudio?.release();}
     if (intro.active) {
@@ -158,16 +163,16 @@ export function createGameApp({
           const shot=intro.frame(reducedMotion);
           if(intro.stage==='credits')introView?.render(shot);
           else prologueView?.render(shot);
-          if(intro.stage==='prologue'&&intro.phase==='playing')prologueAudio?.sync(shot);
+          if(intro.stage==='prologue'&&intro.phase==='playing'&&!shot.identityCard&&!shot.childMemory)prologueAudio?.sync(shot);else if(shot.identityCard||shot.childMemory)prologueAudio?.pause();
         }else if(prologueEnabled)view.render(game,0,reducedMotion);
         else introView?.render(intro.frame(reducedMotion));
       }
       catch(error) { if(crashOriginal){intro.pause();prologueAudio?.pause();audio.pause();pointerError='Opening could not render: '+error.message;ui.node('error').hidden=false;ui.node('error-copy').textContent=pointerError;}else{introView?.release();introView=null;} }
     } else {
       const phase=game.survivalEnding?.phase;
-      if(['entry','room','exit','transform','pit','fall'].includes(phase)&&survivalView)survivalView.render(game,reducedMotion);
+      if(['entry','room','exit','sadie','collapse','classroom-card','classroom','hospital-card','handoff'].includes(phase)&&survivalView)survivalView.render(game,reducedMotion);
       else {survivalView?.release();view.render(game,time,reducedMotion);}
-      if(game.mode==='playing'&&['entry','room','exit','transform','pit','fall'].includes(phase)){
+      if(game.mode==='playing'&&['entry','room','exit'].includes(phase)){
         const state=game.survivalEnding;
         survivalAudio?.sync({gameplay:true,chapter:phase,time:state.time,line:trialLine,nextLine:['entry','room'].includes(phase)?SURVIVAL_LINES[0]:phase==='transform'?SURVIVAL_LINES.find(line=>line.chapter==='pit'):null});
       }else survivalAudio?.pause();
@@ -224,10 +229,10 @@ export function createGameApp({
       if(intro.phase==='preflight'){void beginOpening({skip:true});return;}
       if(!intro.active||disposed)return;
       if(intro.phase==='paused'&&!touch){void beginOpening({skip:true});return;}
-      prologueAudio?.pause();audio.stopIntro?.();intro.skip();input.clear();readyIntro();return;
+      prologueAudio?.pause();audio.stopIntro?.();intro.skip();input.clear();if(intro.phase==='ready')readyIntro();else present();return;
     }
     if(!intro.active||intro.phase==='ready'||disposed)return;
-    intro.skip();readyIntro();
+    intro.skip();if(intro.phase==='ready')readyIntro();else present();
   }
 
   function tickIntro(dt,controls) {
@@ -252,7 +257,7 @@ export function createGameApp({
     prologueView?.release();introView?.release();audio.stopIntro?.();intro.finish();openingStage=null;
     if(skipped){input.quarantine?.();input.clear();}else{input.quarantineActions?.();input.clearEdges();}
     clock.reset();last=now();
-    alias='MIKE';ui.setAlias(alias);startGame(game);previousMode=game.mode;game.player.flashlightOn=light;
+    alias='CLARENCE';ui.setAlias(alias);startGame(game);previousMode=game.mode;game.player.flashlightOn=light;
     handoffAt=skipped?null:game.elapsed;endingAt=null;audio.startGameplay?.();present();
   }
 
@@ -430,6 +435,12 @@ export function createGameApp({
       onLevelSelect({selectedLevel:2,comfort:{reducedMotion,master:Math.max(0,Math.min(1,Number(audio.volume)||0)),voice:1,effects:.7}});
     });
   }
+  listen(document,'keydown',event=>{
+    if(event.repeat||['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName))return;
+    if(!intro.active&&game.mode==='playing'&&game.survivalEnding?.phase==='classroom'&&event.code==='KeyK'){
+      event.preventDefault();game.survivalEnding.time=26;input.clear();
+    }
+  });
   listen(ui.node('start-btn'), 'click', () => void enter());
   ui.node('graphics-quality').value=view.quality?.snapshot().mode||'auto';
   listen(ui.node('graphics-quality'),'change',event=>{view.quality?.set(event.target.value);present();});
@@ -467,7 +478,7 @@ export function createGameApp({
   listen(ui.node('player-alias'),'keydown',event=>{if(event.key==='Enter'){event.preventDefault();void enter();}});
   listen(ui.node('title-btn'),'click',()=>{
     endingAt=null;prologueAudio?.release();
-    pause();game=createGame(maze);if(survivalEndingEnabled)attachSurvivalEnding(game);survivalAudio?.release();survivalView?.release();weather?.reset();audio.reset();view.reset?.();ui.reset();input.clear();clock.reset();
+    pause();intro.resetToTitle?.();openingStage=null;levelCompleteSent=false;game=createGame(maze);if(survivalEndingEnabled)attachSurvivalEnding(game);survivalAudio?.release();survivalView?.release();weather?.reset();audio.reset();view.reset?.();ui.reset();input.clear();clock.reset();
     ui.node('player-alias').value=alias;present();ui.node('player-alias').focus();
   });
   listen(ui.node('volume'), 'input', event => audio.setVolume(Number(event.target.value) / 100));
@@ -677,7 +688,7 @@ export function createGameApp({
     dispose() {
       if (disposed) return;
       disposed = true;
-      introAudioAttempt++;cancelIntroEntry();intro.dispose();introView?.dispose();audio.stopIntro?.();
+      identityCard.dispose();introAudioAttempt++;cancelIntroEntry();intro.dispose();introView?.dispose();audio.stopIntro?.();
       prologueView?.dispose();prologueAudio?.dispose();
       survivalView?.dispose();survivalAudio?.dispose();
       entryAttempt++;

@@ -1,3 +1,4 @@
+import {applyPS2Materials} from './ps2-style.js';
 import {reachPrologueArm} from './prologue-confrontation.js';
 import {sampleRealismSequence,sampleRecoveryGunPose} from './prologue-return-sequence.js';
 import {cabinRadioEnvelope} from './prologue-clearance.js';
@@ -339,12 +340,12 @@ export function createScene(canvas,maze,{touch=false,weather=null}={}){
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,touch?1:1.5));renderer.setSize(innerWidth,innerHeight,false);
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
-  const scene=new THREE.Scene();scene.background=new THREE.Color(0x111d19);scene.fog=new THREE.FogExp2(0x111d19,.096);
+  const scene=new THREE.Scene();scene.background=new THREE.Color(0x19221f);scene.fog=new THREE.FogExp2(0x19221f,.096);
   const baseBackground=scene.background.clone(),redBackground=new THREE.Color(0x631d18);
   const stormBackground=new THREE.Color(0x52666b);
   const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.065,90);camera.rotation.order='YXZ';scene.add(camera);
-  scene.add(new THREE.HemisphereLight(0xa8b6b6,0x4c4336,1.35));
-  const moon=new THREE.DirectionalLight(0xb5c5cb,1.4);moon.position.set(-30,50,10);scene.add(moon);
+  scene.add(new THREE.HemisphereLight(0x99a9b5,0x443a2d,1.02));
+  const moon=new THREE.DirectionalLight(0xa1b3bf,1.08);moon.position.set(-30,50,10);scene.add(moon);
   const random=seeded(), dummy=new THREE.Object3D();
   const groundCanvas=document.createElement('canvas');groundCanvas.width=128;groundCanvas.height=128;
   const ctx=groundCanvas.getContext('2d');ctx.fillStyle='#474635';ctx.fillRect(0,0,128,128);
@@ -397,7 +398,7 @@ export function createScene(canvas,maze,{touch=false,weather=null}={}){
   const sign=textSign('C O R N F I E L D',3.5,.78);sign.position.set(doorPos.x,3.12,doorPos.z+.17);scene.add(sign);
   entranceObjects.push(sign);
   // A modest pool of light at the threshold.
-  const doorLight=new THREE.PointLight(0xf1c087,28,11,1.6);doorLight.position.set(doorPos.x,3.1,doorPos.z+1.1);scene.add(doorLight);
+  const doorLight=new THREE.PointLight(0xcfaa70,28,11,1.6);doorLight.position.set(doorPos.x,3.1,doorPos.z+1.1);scene.add(doorLight);
   box(.15,.22,.15,new THREE.MeshStandardMaterial({color:0xffd29a,emissive:0xffb55f,emissiveIntensity:2}),doorPos.x,3.3,doorPos.z+.7);
   const scarecrowAnchors=[];
   function scarecrow(x,z,scale=1,broken=false){
@@ -431,7 +432,7 @@ export function createScene(canvas,maze,{touch=false,weather=null}={}){
   for(const side of [-1,1]){box(.10,.28,.13,darkWood,side*.10,.15,0,daughter);box(.085,.46,.10,coat,side*.225,.78,.01,daughter);}
   const childHead=new THREE.Mesh(new THREE.SphereGeometry(.16,12,8),face);childHead.position.set(0,1.18,0);daughter.add(childHead);
   const childHair=new THREE.Mesh(new THREE.SphereGeometry(.171,12,8,0,Math.PI*2,0,Math.PI*.65),hair);childHair.position.set(0,1.21,0);daughter.add(childHair);
-  const centerGlow=new THREE.PointLight(0xdcca8c,24,14,1.8);centerGlow.position.set(maze.center.x,4,maze.center.z);scene.add(centerGlow);
+  const centerGlow=new THREE.PointLight(0xc2ad73,24,14,1.8);centerGlow.position.set(maze.center.x,4,maze.center.z);scene.add(centerGlow);
   const rewardRings=maze.checkpoints.map(cp=>{const ring=new THREE.Mesh(new THREE.TorusGeometry(.85,.035,4,24),new THREE.MeshBasicMaterial({color:0xb6be87}));ring.rotation.x=Math.PI/2;ring.position.set(cp.x,.025,cp.z);scene.add(ring);return {ring,id:cp.id};});
   for(const a of maze.hideAnchors){
     if(a.permanentOpen)continue;
@@ -513,6 +514,7 @@ export function createScene(canvas,maze,{touch=false,weather=null}={}){
   const liquidMaterials=new Set(),liquidTreatments=[];
   function registerLiquid(){
     if(disposed)return;
+    applyPS2Materials(scene);
     for(const root of scene.children){
       if(root===camera||root===enemy||extraGroups.includes(root))continue;
       root.traverse(object=>{for(const m of [object.material].flat().filter(Boolean))if(m.isMeshStandardMaterial&&!liquidMaterials.has(m)){
@@ -549,14 +551,15 @@ export function createScene(canvas,maze,{touch=false,weather=null}={}){
   visuals.zombie={status:'loading',error:null};
   const zombieReady=installZombie(enemy,extraGroups).then(result=>{
     refineG1PursuerMaterials(result.model);
+    applyPS2Materials(enemy,{profile:'character'});for(const copy of extraGroups)applyPS2Materials(copy,{profile:'character'});
     zombie=result;visuals.zombie.status='ready';
   }).catch(error=>{visuals.zombie.status='fallback';visuals.zombie.error=error.message;console.warn('Zombie unavailable; using original enemy.',error.message);});
   visuals.details={status:detailsEnabled?'loading':'off'};
   const detailsReady=detailsEnabled?installPropDetails({cloth,sack:pale,barrel:barrelPaint}).then(result=>{
-    visuals.details=result;
+    visuals.details=result;applyPS2Materials(scene);
   }):Promise.resolve();
   // Zombie is optional and can install later; its own deadline prevents a late commit.
-  const ready=Promise.all([fieldReady,skyReady,detailsReady,hands.ready]);
+  const ready=Promise.all([fieldReady,skyReady,detailsReady,hands.ready]).then(result=>{if(!disposed){applyPS2Materials(scene);applyPS2Materials(camera,{profile:'character'});}return result;});
   function resize(){if(disposed)return;const width=canvas.clientWidth||innerWidth,height=canvas.clientHeight||innerHeight;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
   const quality=createRenderQuality({mode:parameters.get('quality'),onChange(profile){
     renderer.setPixelRatio(Math.min(devicePixelRatio,profile.pixelRatio));
@@ -639,7 +642,7 @@ export function createScene(canvas,maze,{touch=false,weather=null}={}){
     scene.background.lerp(stormBackground,flash*.40);
     scene.fog.color.copy(baseBackground).lerp(redBackground,checkpoint.red*.8).lerp(stormBackground,flash*.16);
     scene.fog.density+=checkpoint.mist;
-    moon.intensity=1.4+flash*2.2;
+    moon.intensity=1.08+flash*2.2;
     for(const {ring,id}of rewardRings)ring.visible=!g.progress.activatedCheckpoints.includes(id);
     dust.position.set(camera.position.x,0,camera.position.z);dust.rotation.y=reduced?0:Math.sin(time*.018)*.1;
     dust.visible=!weather?.state.enabled;

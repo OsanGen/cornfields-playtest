@@ -25,17 +25,17 @@ export function completeSurvival(game){
   const position=actorPosition(game,'player');
   Object.assign(game.player,position,{hidden:false,cornZoneId:null,hideAnchorId:null,returnTransform:null,moving:false,sprinting:false,muzzleFlash:0});
   s.remaining=0;s.origin={...position};
-  s.center={x:position.x-Math.sin(game.player.yaw)*14,z:position.z-Math.cos(game.player.yaw)*14};
+  s.center={x:position.x-Math.sin(game.player.yaw)*4,z:position.z-Math.cos(game.player.yaw)*4};
+  s.sadieApproached=false;s.classroomSeen=false;
   game.interaction=null;game.pendingStabs.length=0;game.skyRedUntil=0;
   for(const enemy of game.enemies||[game.enemy]){enemy.active=false;enemy.visible=false;}
   Object.assign(game.threat,{activeMessage:null,activeMessageTime:0,intensity:0,pressure:0});
-  game.caption='';game.captionTime=0;game.objective='TRIAL COMPLETE';game.chapter='DEEPER ACCESS';
-  game.landmark='';phase(s,'transform');emitEvent(game,'trial_complete');
+  game.caption='';game.captionTime=0;game.objective='APPROACH SADIE';game.chapter='SADIE';
+  game.landmark='';phase(s,'sadie');emitEvent(game,'trial_complete');
 }
 
 export function pitPrompt(game){
-  const s=game.survivalEnding;
-  return s?.phase==='pit'&&Math.hypot(game.player.x-s.center.x,game.player.z-s.center.z)<=11.8?'E - JUMP':'';
+  return game.survivalEnding?.phase==='sadie'?'APPROACH SADIE':'';
 }
 function movePresentation(game,dt,input,room=false){
   const s=game.survivalEnding,p=room?s.roomPlayer:game.player;
@@ -54,7 +54,7 @@ function movePresentation(game,dt,input,room=false){
       if(Math.abs(x)<.5&&Math.abs(z-1.7)<.55){x=p.x;z=p.z;}
     }else{
       const dx=x-s.center.x,dz=z-s.center.z,d=Math.hypot(dx,dz);
-      if(d<10.6||d>22){x=p.x;z=p.z;}
+      if(d>12){x=p.x;z=p.z;}
     }
     p.x=x;p.z=z;
   }
@@ -85,19 +85,28 @@ export function advanceSurvivalPresentation(game,dt,input,moveArrival){
   }else if(s.phase==='exit'){
     game.player.moving=false;
     if(s.time>=1.5){Object.assign(game.player,s.origin,{moving:false,sprinting:false});phase(s,'active');}
-  }else if(s.phase==='transform'){
-    game.player.moving=false;
-    if(Number.isFinite(input.yaw))game.player.yaw=input.yaw;
-    if(Number.isFinite(input.pitch))game.player.pitch=input.pitch;
-    if(s.time>=4){phase(s,'pit');game.objective='DEEPER ACCESS PERMITTED';}
-  }else if(s.phase==='pit'){
+  }else if(s.phase==='sadie'){
     movePresentation(game,dt,input);
-    if(input.interact&&pitPrompt(game)){s.jumped=true;phase(s,'fall');game.objective='';emitEvent(game,'pit_jump');}
-  }else if(s.phase==='fall'){
-    if(Number.isFinite(input.yaw))game.player.yaw=input.yaw;
-    if(Number.isFinite(input.pitch))game.player.pitch=input.pitch;
+    if(!s.sadieApproached&&Math.hypot(game.player.x-s.center.x,game.player.z-s.center.z)<=1.5){
+      s.sadieApproached=true;phase(s,'collapse');game.player.moving=false;game.objective='';
+      game.pendingStabs.length=0;emitEvent(game,'sadie_collapse');
+    }
+  }else if(s.phase==='collapse'){
     game.player.moving=false;
-    if(s.time>=3.2){game.mode='playtest-ended';game.metrics.outcome='playtest-ended';game.metrics.completionTime=game.elapsed;}
+    if(s.time>=3.2){phase(s,'classroom-card');game.player.yaw=0;game.player.pitch=0;}
+  }else if(s.phase==='classroom-card'){
+    game.player.moving=false;
+    if(s.time>=1.7){phase(s,'classroom');game.chapter='KINDERGARTEN';game.objective='LOOK AROUND · K TO SKIP MEMORY';}
+  }else if(s.phase==='classroom'){
+    game.player.moving=false;
+    if(Number.isFinite(input.yaw))game.player.yaw=input.yaw;
+    if(Number.isFinite(input.pitch))game.player.pitch=Math.max(-1.05,Math.min(1.05,input.pitch));
+    // Look-only memory always completes, including when looking away.
+    if(input.interact||s.time>=26){s.classroomSeen=true;phase(s,'hospital-card');game.chapter='';}
+  }else if(s.phase==='hospital-card'){
+    game.player.moving=false;
+    if(s.time>=1.7){phase(s,'handoff');game.mode='playtest-ended';game.metrics.outcome='playtest-ended';game.metrics.completionTime=game.elapsed;}
   }
+
   return true;
 }

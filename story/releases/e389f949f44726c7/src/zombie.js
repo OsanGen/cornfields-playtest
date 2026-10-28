@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {applyPS2Materials} from './ps2-style.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as cloneSkeleton} from 'three/addons/utils/SkeletonUtils.js';
 import {optionalAsset} from './asset-safety.js';
@@ -39,6 +40,8 @@ export function attachZombieModel(enemy, gltf, {primary = true,cinematic=false} 
       object.receiveShadow = false;
     }
   });
+  // Keep eyes and their gameplay-driven signals on the existing independent material.
+  applyPS2Materials(model,{profile:'character'});
   enemy.add(centered);
   const poses = createZombiePoses(model, enemy);
   const head = poses.bone('Head');

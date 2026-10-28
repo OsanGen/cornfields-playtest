@@ -97,6 +97,7 @@ export function createUI(document, {debug = false, reducedMotion = false, touch 
       document.body.classList.toggle('opening-active',active);
       document.body.classList.toggle('opening-story',playing&&story);
       document.body.classList.toggle('opening-paused',active&&(paused||ready));
+      node('intro-screen').style.zIndex=active&&(paused||ready)?'8':'5';
       node('intro-card').hidden=!active||preflight||ready||(!paused&&frame.stage!=='credits');
       node('intro-enter').hidden=true;
       node('intro-continue').hidden=!active||(!paused&&!ready);
@@ -132,7 +133,7 @@ export function createUI(document, {debug = false, reducedMotion = false, touch 
         else if(frame.chapter==='car'&&!frame.player.looked)tutorial=openingTouch?'DRAG THE RIGHT SIDE TO LOOK AROUND':'MOVE MOUSE TO LOOK AROUND';
         else if(frame.chapter==='exit')tutorial=openingTouch?'INTERACT: USE / OPEN DOORS':'E: INTERACT / OPEN DOORS';
         else if(frame.chapter==='flashlight'&&!frame.player.flashlightOn)tutorial=openingTouch?'TAP LIGHT TO TURN ON YOUR FLASHLIGHT':'TURN ON YOUR FLASHLIGHT / F';
-        else if(frame.followHeld||frame.chapter==='walk'&&frame.chapterTime<5)tutorial='FOLLOW STANLEY AND CLARENCE';
+        else if(frame.followHeld||frame.chapter==='walk'&&frame.chapterTime<5)tutorial='FOLLOW STANLEY AND MIKE';
       }
       text('story-tutorial',tutorial);node('story-tutorial').hidden=!tutorial;
       node('touch-controls').hidden=active?!(playing&&story&&openingTouch):node('touch-controls').hidden;
@@ -142,7 +143,7 @@ export function createUI(document, {debug = false, reducedMotion = false, touch 
         node('touch-interact').hidden=!frame.waitingForExit;node('touch-light').hidden=!frame.player?.flashlightOn&&!frame.canMove;
         node('touch-light').setAttribute?.('aria-pressed',String(!!frame.player?.flashlightOn));
         text('touch-interact','EXIT');
-      }else{node('move-stick').hidden=false;node('touch-pause').hidden=false;}
+      }else{node('move-stick').hidden=document.body.classList.contains('cf-child-memory');node('touch-pause').hidden=false;}
       const chapterFringe={car:.03,dispatch:.04,emergence:.16,walk:.22,history:.35,disappearance:.45,arrival:.5,rupture:.7};
       const distortion=Number.isFinite(frame.distortion)?frame.distortion:chapterFringe[frame.chapter]||0;
       node('story-caption').style.setProperty('--story-fringe',`${reducedMotion?0:Math.max(0,Math.min(1,distortion))*.8}px`);
@@ -185,9 +186,11 @@ export function createUI(document, {debug = false, reducedMotion = false, touch 
       node('recovery-timer').classList?.toggle('glitch',recovering&&!reducedMotion&&game.elapsed<glitchUntil);
       node('recovery-timer').classList?.toggle('urgent',seconds<=3);
       node('menu').hidden = mode !== 'menu';
-      node('hud').hidden = !playing;
+      const childView=['classroom','classroom-card','hospital-card','handoff'].includes(game.survivalEnding?.phase);
+      document.body.classList.toggle('cf-child-memory',childView);
+      node('hud').hidden = !playing||childView;
       node('touch-controls').hidden = !touch || !playing;
-      node('pause').hidden = mode !== 'paused';
+      node('pause').hidden = mode !== 'paused';node('pause').style.zIndex='8';
       node('result').hidden = !ended;
       document.body.classList.toggle('playing', playing);
       document.body.classList.toggle('dead', mode === 'dead');
@@ -198,7 +201,7 @@ export function createUI(document, {debug = false, reducedMotion = false, touch 
       text('flashlight-state', player.flashlightOn ? 'ON' : 'OFF');
       node('health-meter').style.setProperty('--health', player.health + '%');
       const ending=game.survivalEnding,active=ending?.phase==='active';
-      node('trial-timer').hidden=!playing||!ending||['arrival','entry','room','exit','fall'].includes(ending.phase);
+      node('trial-timer').hidden=!playing||!ending||['arrival','entry','room','exit','sadie','collapse','classroom-card','classroom','hospital-card','handoff'].includes(ending.phase);
       text('trial-timer',ending?`${active?'SURVIVE':'COMPLETE'} ${survivalTime(ending)}`:'');
 
       const prompt = interactionPrompt(game);
@@ -212,6 +215,8 @@ export function createUI(document, {debug = false, reducedMotion = false, touch 
         node('touch-light').setAttribute?.('aria-pressed', String(player.flashlightOn));
         node('touch-fire').disabled = player.ammo <= 0;
         if(ending&&!['arrival','active'].includes(ending.phase))node('touch-fire').hidden=true;
+        node('move-stick').hidden=childView;
+        if(childView){node('touch-light').hidden=true;node('touch-interact').hidden=ending?.phase!=='classroom';text('touch-interact','SKIP MEMORY');node('touch-stab').hidden=true;node('look-zone').hidden=false;}
       }
       text('hide-status', 'DO NOT MOVE. IT CAN HEAR YOU.');
       const corruption=horror?corruptionFrame(game,{reduced:reducedMotion,touch}):{fragments:[],taunt:null};

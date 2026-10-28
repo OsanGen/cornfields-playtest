@@ -5,8 +5,8 @@ import {REALISM_SEQUENCE} from './prologue-return-sequence.js';
 import {BANG_TIMES} from './prologue-confrontation.js';
 const freeze=Object.freeze;
 const VOICE_TAIL=.12,LINE_GAP=PROLOGUE_OPENING.lineGap;
-// 2026-10-04: the owner explicitly deferred recordings for these two new cues only.
-export const PROLOGUE_SUBTITLE_ONLY_IDS=freeze(['CAR-00','UND-01']);
+// CF-S1: role-adapted lines remain caption-only; do not play recordings owned by the old speaker.
+export const PROLOGUE_SUBTITLE_ONLY_IDS=freeze(['CAR-00','UND-01','RAD-02','CAB-01','FLA-03','CAB-02','FLA-01','WAL-10','WAL-15','END-01','FOL-01','FOL-03']);
 const raw=(id,voice,chapter,basis,text)=>freeze({id,voice,chapter,basis,text,audioMode:PROLOGUE_SUBTITLE_ONLY_IDS.includes(id)?'subtitle-only':'recorded',speaker:voice==='face'?'PROJECTED FACE':voice==='unknown'?'':voice.toUpperCase()});
 const SOURCE=freeze([
   raw('CAR-00','mike','car','U',PROLOGUE_OPENING.confession),
@@ -18,21 +18,21 @@ const SOURCE=freeze([
   raw('CAR-06','mike','car','R',"Don't be nervous. Be ready."),
   raw('CAR-07','mike','car','R',"That's what'll make you the man who tells the story back and wears it like a crown."),
   raw('RAD-01','dispatch','dispatch','N','Chief Hartmouth, Edwards. Missing child reported just down the road. Sadie Yates. Her father is at the cornfield.'),
-  raw('RAD-02','clarence','emergence','N',"That's close. Pulling over."),
+  raw('RAD-02','mike','emergence','N',"That's close. Pulling over."),
   raw('ARR-00','stanley','bang','U','The call was about me! My daughter! Please, help!'),
-  raw('CAB-01','mike','cabin','U','Calm the hell down! Step back. Give us a second.'),
-  raw('FLA-03','mike','cabin','A',"This guy's fucking insane. Let's just make sure he didn't kill his own daughter."),
-  raw('CAB-02','clarence','cabin','N',"All right. Let's talk to him."),
+  raw('CAB-01','clarence','cabin','U','Calm the hell down! Step back. Give us a second.'),
+  raw('FLA-03','clarence','cabin','A',"This guy's fucking insane. Let's just make sure he didn't kill his own daughter."),
+  raw('CAB-02','mike','cabin','N',"All right. Let's talk to him."),
   raw('ARR-01','stanley','exit','R','Officer, my name is Stanley Yates and my daughter Sadie has gone missing.'),
   raw('ARR-02','stanley','exit','N','Please. Come with me.'),
-  raw('FLA-01','mike','flashlight','N','Need some light.'),
+  raw('FLA-01','clarence','flashlight','N','Need some light.'),
   raw('FLA-02','stanley','flashlight','N',"Be careful. There are tales of undead in there. They don't like the light. Don't shine it at them."),
   raw('WAL-01','stanley','walk','A',"It didn't start today. A few weeks ago, at dinner, Sadie asked who lived in the cornfields behind our house."),
   raw('WAL-02','stanley','walk','N','I told her,'),
   raw('WAL-03','stanley','walk','R','Nothing lives in the cornfields, dearie.'),
   raw('WAL-04','stanley','walk','N','Then she said,'),
   raw('WAL-05','stanley','walk','R','I saw something earlier out there. A man. He had a gray jacket with holes in it.'),
-  raw('UND-01','mike','undead','U','What the fuck.'),
+  raw('UND-01','clarence','undead','U','What the fuck.'),
   raw('WAL-06','stanley','history','A','Those cornfields run on for miles and miles and miles. Far beyond our seven hundred acres.'),
   raw('WAL-07','stanley','history','A',"You could be holding a compass and you'd still get lost."),
   raw('WAL-08','stanley','history','A','Our rule was: only go as far as the mind sees north. If that gets blurry, even in the slightest bit, turn back immediately.'),
@@ -40,15 +40,15 @@ const SOURCE=freeze([
   raw('RED-01','face','redroom','N','Help me.'),
   raw('RED-02','face','redroom','N',"I'm trapped here."),
   raw('RED-03','face','redroom','N','Free me.'),
-  raw('WAL-10','mike','disappearance','R','When did she go missing exactly?'),
+  raw('WAL-10','clarence','disappearance','R','When did she go missing exactly?'),
   raw('WAL-11','stanley','disappearance','R','About two hours ago. I was out with her in the backyard.'),
   raw('WAL-12','stanley','disappearance','A','We were taking the dog out.'),
   raw('WAL-13','stanley','disappearance','R','She kept glancing into the cornfields and then I spun around because the dog was barking wild at something.'),
   raw('WAL-14','stanley','disappearance','R','Then I spun around, and she was nowhere to be seen.'),
-  raw('WAL-15','clarence','disappearance','R','And did you hear anything? Were there footsteps?'),
+  raw('WAL-15','mike','disappearance','R','And did you hear anything? Were there footsteps?'),
   raw('WAL-16','stanley','disappearance','R','Not at all. It was like something out of a horror movie. She just vanished.'),
   raw('LIQ-01','unknown','rupture','U','WE ARE ONE'),
-  raw('END-01','mike','reaction','U','Am I going crazy?'),
+  raw('END-01','clarence','reaction','U','Am I going crazy?'),
 ]);
 const CHAPTERS=freeze([
   {id:'car',title:'Police car',lead:PROLOGUE_OPENING.musicLead},
@@ -63,7 +63,7 @@ const CHAPTERS=freeze([
   {id:'history',title:'The field goes too far',lead:.1},
   {id:'disappearance',title:'Sadie disappears',lead:.15},
   {id:'arrival',title:'The threshold',duration:2},
-  {id:'rupture',title:'Mike and the world become liquid',duration:REALISM_SEQUENCE.rise,slots:[[5,8]]},
+  {id:'rupture',title:'Mike and Stanley disappear',duration:REALISM_SEQUENCE.rise,slots:[[5,8]]},
   {id:'solid_return',title:'The field becomes solid',duration:REALISM_SEQUENCE.solidReturn},
   {id:'gun_recovery',title:'Recover the fallen gun',duration:REALISM_SEQUENCE.gunRecovery},
   {id:'reaction',title:'Question reality',duration:REALISM_SEQUENCE.reaction,slots:[[.1,2.35]]},
@@ -122,10 +122,10 @@ const baseline=createPrologueTimeline();
 export const PROLOGUE_CHAPTERS=baseline.chapters;
 export const PROLOGUE_LINES=baseline.lines;
 export const PROLOGUE_FOLLOW_LINES=freeze([
-  raw('FOL-01','clarence','follow','N','Mike, stay with us.'),
+  raw('FOL-01','mike','follow','N','Clarence, stay with us.'),
   raw('FOL-02','stanley','follow','N','Officer! What the hell are you doing? My daughter is out here!'),
-  raw('FOL-03','clarence','follow','N','Mike! Get back over here!'),
+  raw('FOL-03','mike','follow','N','Clarence! Get back over here!'),
 ].map(line=>timedLine(line,0,durationFor(line,{}))));
-export const PROLOGUE_END_LINE=timedLine(raw('END-01','mike','gameplay','U','Am I going crazy?'),0,4);
+export const PROLOGUE_END_LINE=timedLine(raw('END-01','clarence','gameplay','U','Am I going crazy?'),0,4);
 export const PROLOGUE_AUDIO_LINES=freeze([...PROLOGUE_LINES,...PROLOGUE_FOLLOW_LINES].filter(line=>line.audioMode==='recorded'));
-export const PROLOGUE=freeze({duration:baseline.duration,storyCredit:'Jacob Nangle',perspective:'Mike Hartmouth',cues:baseline.cues,voiceTail:VOICE_TAIL,lateCueWindow:.35});
+export const PROLOGUE=freeze({duration:baseline.duration,storyCredit:'Jacob Nangle',perspective:'Clarence',cues:baseline.cues,voiceTail:VOICE_TAIL,lateCueWindow:.35});

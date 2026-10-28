@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {applyPS2Materials} from './ps2-style.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createPrologueActor} from './prologue-actors.js';
 import {createTexturedPrologueActor} from './prologue-model-actor.js';
@@ -62,7 +63,7 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
  let liquidUniforms=[],foliage=createFoliageMotion({playerPush:false}),borrowed=new Set(),ownedTextures=new Set(),disposed=false,loaded=false,attendant=false;
  const groundSupports=[];
  let cuffs=null,wound=null,hospitalWound=null,attendantActor=null,heldGun=null,mikePerformance=null,mikeAssets=[];
- const stats={status:'loading',error:null,trees:{},castRoles:{},frames:0};const skyNormal=new THREE.Color(0x24313d),fogNormal=new THREE.Color(0x202b2b);
+ const stats={status:'loading',error:null,trees:{},castRoles:{},frames:0};const skyNormal=new THREE.Color(0x1b2831),fogNormal=new THREE.Color(0x25322f);
  const cornAtlas=createCornSurfaceAtlas();const kitParts=[0,1,2].map(i=>({geometry:createCornGeometry(i),material:new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,side:THREE.DoubleSide,map:cornAtlas.map,normalMap:cornAtlas.normalMap,roughnessMap:cornAtlas.roughnessMap,normalScale:new THREE.Vector2(.72,.72)})}));
  const getCorn=()=>kitParts;
  const gun=new THREE.Group(),torch=new THREE.Group(),knife=new THREE.Group();
@@ -201,14 +202,14 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
         // Each optional role arrives independently; a missing asset retains only
         // that role's procedural fallback. Never replace the other identity.
         const police=role==='clarence';if(!police&&role!=='stanley')return;
-        const name=police?'Clarence':'Stanley Yates',old=police?clarence:stanley;
+        const name=police?'Mike':'Stanley Yates',old=police?clarence:stanley;
         const actor=createTexturedPrologueActor({name,police,gltf,onMaterial:mat=>liquidUniforms.push(attachPrologueLiquid(mat))});
         actor.root.position.copy(old.root.position);actor.root.quaternion.copy(old.root.quaternion);actor.root.scale.copy(old.root.scale);actor.root.visible=old.root.visible;
         // Keep the hidden fallback owned by this set for deterministic teardown.
         old.root.visible=false;actor.root.add(old.root);location.add(actor.root);
         if(police)clarence=actor;else stanley=actor;
-        stats.cast='Distinct Clarence and Stanley identities, adapted from CC0 NPC male Steve';
-        stats.castRoles[role]=`cast-${role}.glb`;
+        stats.cast='Mike and Stanley roles, using retained distinct full character assets';
+        stats.castRoles[role]=`cast-${role}.glb`;if(police)actor.root.userData.storyIdentity='Mike';
       },
       onGround(key,map){groundMaterial[key]=map;groundMaterial.needsUpdate=true;},
       onRoadsideCorn(gltf){stats.roadsideCorn=replaceVT1RoadsideCorn(road,gltf,foliage);for(const batch of road.children)if(batch.userData.cornfieldsVT1)treat(batch);},
@@ -243,8 +244,8 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
     });
   }
 
- buildLandscape();roadsideSet.position.z=CRASH.frontageOffsetZ;buildCar();clarence=createPrologueActor({name:'Clarence',police:true});stanley=createPrologueActor({name:'Stanley Yates',police:false});location.add(clarence.root,stanley.root);
- hemi=new THREE.HemisphereLight(0xa9b8c4,0x303021,1.12);scene.add(hemi);moon=new THREE.DirectionalLight(0xb3c9db,1.85);moon.position.set(-5,9,3);scene.add(moon);
+ buildLandscape();roadsideSet.position.z=CRASH.frontageOffsetZ;buildCar();clarence=createPrologueActor({name:'Mike',police:true});stanley=createPrologueActor({name:'Stanley Yates',police:false});location.add(clarence.root,stanley.root);
+ hemi=new THREE.HemisphereLight(0x9aafb9,0x343529,.86);scene.add(hemi);moon=new THREE.DirectionalLight(0xa8bed0,1.35);moon.position.set(-5,9,3);scene.add(moon);
     sky=new THREE.Mesh(new THREE.SphereGeometry(155,24,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{red:{value:0},liquid:{value:0},clock:{value:0},skyMap:{value:null},hasMap:{value:0}},vertexShader:'varying vec3 vWorld; void main(){vWorld=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 vWorld; uniform float red,liquid,clock,hasMap;uniform sampler2D skyMap; void main(){vec3 n=normalize(vWorld);float h=smoothstep(-.1,.6,n.y+liquid*sin(n.x*18.+n.z*11.+clock*.7)*.10);vec3 dusk=mix(vec3(.16,.20,.21),vec3(.021,.035,.064),h);vec3 blood=mix(vec3(.29,.048,.024),vec3(.080,.008,.009),h);vec3 color=mix(dusk,blood,red);color=mix(color,vec3(.17,.29,.28)+color*.3,liquid*.5);vec2 skyUV=vec2(atan(n.z,n.x)/6.2831853+.625,asin(clamp(n.y,-1.,1.))/3.14159265+.5);vec3 photo=texture2D(skyMap,skyUV).rgb;float veil=.5+.5*sin(n.x*5.+sin(n.z*7.+clock*.014)+n.y*9.);color=mix(color,mix(photo*.75,color,.28+veil*.21),hasMap*(1.-red*.7));gl_FragColor=vec4(color,1.);}' }));location.add(sky);
 
  const poleMat=standard(0x4a4437);const pole=mesh(location,new THREE.CylinderGeometry(.16,.20,8,12),poleMat,...[CRASH.pole[0],4,CRASH.pole[2]]);pole.name='Single standing telephone pole';pole.visible=false;
@@ -256,13 +257,16 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
  const ready=Promise.all([readyAssets(),hands.ready]).then(async()=>{
   if(disposed)throw new Error('Disposed load');if(hands.stats.status!=='ready'||hands.stats.flashlightStatus!=='ready')throw new Error('Critical hands/flashlight unavailable');
   const asset=await loader.loadAsync(new URL('../assets/intro/cast-clarence.glb',import.meta.url).href);if(disposed){disposeTree(asset.scene);throw new Error('Disposed late attendant');}
-  attendantActor=createTexturedPrologueActor({name:'Clarance',police:false,gltf:asset,uniformDetails:false});attendantActor.pose({mode:'standing'});attendantTreatment(attendantActor);hospital.root.add(attendantActor.root);hospitalWound=createWound(attendantActor);hospitalWound.setVisible(false);
+  attendantActor=createTexturedPrologueActor({name:'Mike',police:false,gltf:asset,uniformDetails:false});attendantActor.pose({mode:'standing'});attendantTreatment(attendantActor);attendantActor.root.userData.storyIdentity='Mike';hospital.root.add(attendantActor.root);hospitalWound=createWound(attendantActor);hospitalWound.setVisible(false);
   const mikeLoaded=await Promise.all([loader.loadAsync(new URL('../assets/intro/mike-body.glb',import.meta.url).href),loader.loadAsync(new URL('../assets/field/player-arms.glb',import.meta.url).href)]);
   if(disposed){for(const asset of mikeLoaded)disposeTree(asset.scene);throw new Error('Disposed late Mike body/arms');}
   mikeAssets=mikeLoaded;mikePerformance=createMikePerformance({bodyGltf:mikeLoaded[0],armsGltf:mikeLoaded[1]});asylum.root.add(mikePerformance.root);mikePerformance.root.visible=false;stats.castRoles.mike='existing first-person body and player arms';
   wound=createWound(clarence);cuffs=createCuffs();location.add(cuffs.root);
   const weapon=gun.getObjectByName('ServicePistol');if(!weapon)throw new Error('Critical existing pistol missing');heldGun=weapon.clone(true);heldGun.name='Stanley one-shot story pistol';heldGun.visible=false;bone(stanley,'handR').add(heldGun);heldGun.position.set(0,.075,0);heldGun.rotation.set(0,0,0);heldGun.scale.setScalar(.8);
   claranceContactFit=createClaranceContactFit({actor:clarence,car:asylum.root,wheel:cruiser.steering,floors:['InteriorFloor','InteriorFloormats'].map(name=>asylum.root.getObjectByName(name)),groundMeshes:groundSupports});
+  // All retained asynchronous assets are present; preserve their liquid/foliage hooks.
+  for(const actor of [clarence,stanley,attendantActor,mikePerformance])applyPS2Materials(actor.root,{profile:'character'});
+  applyPS2Materials(scene,{profile:'environment'});
   loaded=true;stats.status='ready';return true;
  }).catch(error=>{stats.status='error';stats.error=error.message;throw error;});
  function openingFrame(frame){
@@ -282,8 +286,9 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
  }
  function updateNew(frame){
   const id=frame.scene,t=frame.time,reduced=frame.comfort.reducedMotion;
-  equipment.reset();titles.release();mikePerformance.root.visible=['exit','custody'].includes(id);hospital.root.visible=id.startsWith('hospital')||id==='connector'||id==='boundary';location.visible=!hospital.root.visible;scene.fog=location.visible?new THREE.Fog(fogNormal,14,100):new THREE.Fog(0x758177,5,28);scene.background.set(location.visible?skyNormal:0x758177);
-  if(hospital.root.visible){attendantActor.root.position.fromArray(HOSPITAL.attendant);attendantActor.root.rotation.y=-Math.PI/2;attendantActor.pose({mode:'standing',time:t,reduced,speaking:frame.line?.speaker==='CLARANCE'});hospitalWound.setVisible(frame.profile!=='original-level-two');if(camera.parent!==scene)scene.add(camera);camera.position.set(frame.player.x,frame.player.y,frame.player.z);camera.rotation.set(frame.player.pitch,frame.player.yaw,0,'YXZ');return;}
+  equipment.reset();titles.release();mikePerformance.root.visible=['exit','custody'].includes(id);hospital.root.visible=id.startsWith('hospital')||id==='connector'||id==='boundary';location.visible=!hospital.root.visible;scene.fog=location.visible?new THREE.Fog(fogNormal,14,100):new THREE.Fog(0x34443f,6,24);scene.background.set(location.visible?skyNormal:0x34443f);
+  hemi.intensity=hospital.root.visible?.22:.86;moon.intensity=hospital.root.visible?.16:1.35;
+  if(hospital.root.visible){attendantActor.root.position.fromArray(HOSPITAL.attendant);attendantActor.root.rotation.y=-Math.PI/2;attendantActor.pose({mode:'standing',time:t,reduced,speaking:frame.line?.speaker==='MIKE'});hospitalWound.setVisible(false);if(camera.parent!==scene)scene.add(camera);camera.position.set(frame.player.x,frame.player.y,frame.player.z);camera.rotation.set(frame.player.pitch,frame.player.yaw,0,'YXZ');return;}
   if(camera.parent!==location)location.add(camera);for(const child of [...car.children])if(child.isLight||child===headlight.target)asylum.root.add(child);car.position.set(0,0,0);car.rotation.set(0,0,0);asylum.root.position.set(0,0,0);asylum.root.rotation.set(0,0,0);car.updateWorldMatrix(true,false);
   const fieldScene=['field','closure','return','shot','apology','stanley_engulf','mike_engulf','blackout'].includes(id);storyField.root.visible=fieldScene;car.visible=!fieldScene;road.visible=!fieldScene;roadsideSet.visible=!fieldScene;field.visible=false;pole.visible=!fieldScene;
   sky.position.copy(camera.position);rain.update(t,camera.position,sampleCrash(4),reduced,false,false);cuffs.root.visible=id==='custody';heldGun.visible=false;wound.setVisible(false);
@@ -306,7 +311,7 @@ export function createStoryView(renderer,{loader=new GLTFLoader(),textureLoader=
    const r=sampleRecovery(t);if(frame.profile==='crash-original-v3'){r.picking={...r.picking,active:false,weight:0,fragments:r.picking.fragments.map(f=>({...f,approach:0,extract:0,release:0,contact:false,held:false,removed:false,dropAge:0}))};r.cameraPitch=0;}asylum.update(sampleCrash(6),{time:t,reduced,driverDoor:r.driverDoor,passengerDoor:r.passengerDoor});
    moveParent(clarence,asylum.root);clarence.root.position.fromArray(r.driver);clarence.root.rotation.y=r.driverYaw;
    // The driver visibly exits, then settles continuously into the exact next
-   // scene's starting pose. The player camera always belongs to Mike.
+   // scene's starting pose. The player camera belongs to Clarence.
    stats.clarance=claranceContactFit.pose(t,reduced);
    moveParent(stanley,asylum.root);stanley.root.position.set(CRASH.stationaryStanley[0]-CRASH.parked[0],0,CRASH.stationaryStanley[2]-CRASH.parked[2]);stanley.root.rotation.y=0;stanley.pose({mode:'standing',time:0,reduced:true,chapter:frame.profile==='crash-original-v3'?'crash-recovery':'asylum-custody'});
    const compliance=frame.profile==='crash-original-v3'?0:smooth((t-3)/4);if(compliance>0){const targets=[[.075,1,-.14],[-.075,1,-.14]].map((p,i)=>stanley.root.worldToLocal(bone(stanley,'hand'+(i?'R':'L')).getWorldPosition(new THREE.Vector3())).lerp(new THREE.Vector3(...p),compliance).toArray());poseArms(stanley,targets,compliance,{behind:true});}
