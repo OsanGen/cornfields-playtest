@@ -1,0 +1,466 @@
+import {EMPTY_ASSET_VARIANTS,resolveV31Asset} from './cf-v31-asset-variants.js';
+import {applyPS2Materials} from './ps2-style.js';
+import {sampleRealismSequence} from './prologue-return-sequence.js';
+import {samplePrologueBodyReach} from './viewmodel-pose.js';
+import {sampleRoomTransition,createLiquidVeil} from './prologue-liquid-transition.js';
+import {sampleHallucination,createPrologueHallucination} from './prologue-hallucination.js';
+import {samplePrologueWake} from './prologue-performance.js';
+import {applyEnvironmentSurface,wetGroundGeometry,wetGroundHeight,createGroundedPuddles} from './environment-materials.js';
+import {grassGeometry} from './ground-details.js';
+import {createRoadsideDog} from './roadside-dog.js';
+import {createCabinWheel,createEntertainmentRadio,steeringAngle} from './prologue-cabin.js';
+import {WEST_APPROACH,approachStageTransform} from './prologue-layout.js';
+import {cornClearsParkedCruiser,PARKED_CRUISER_CLEARANCE} from './prologue-clearance.js';
+import {createFoliageMotion} from './foliage-motion.js';
+import {performanceFor,samplePrologueExit,EXIT_SECONDS} from './prologue-performance.js';
+import * as THREE from 'three';
+import {createPrologueActor, PROLOGUE_CAST_PROVENANCE} from './prologue-actors.js';
+import {samplePrologueMotion} from './prologue-motion.js';
+import {createBloodRoom} from './blood-room.js';
+import {createPrologueAssets,prepareCruiser,sampleCruiserLampState} from './prologue-assets.js';
+import {createVT1RoadsideGround,treatVT1Cruiser,treatVT1Glazing,replaceVT1RoadsideCorn} from './visual-vt1-roadside.js';
+import {createTexturedPrologueActor} from './prologue-model-actor.js';
+import {samplePrologueDriving} from './prologue-driving.js';
+import {createPrologueRain} from './prologue-rain.js';
+import {sampleRoadsideConfrontation,BANG_WINDOW_TARGET} from './prologue-confrontation.js';
+import {attachLiquidMaterial as attachPrologueLiquid} from './liquid-material.js';
+export {attachPrologueLiquid};
+export {prologueBlocking,prologueWorldTransition} from './prologue-motion.js';
+
+const clamp = value => Math.max(0, Math.min(1, Number(value) || 0));
+const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
+
+/** Readable event envelopes, with no repeated flashes or gameplay side effects. */
+export function prologueVisionState(frame={}){
+  const chapter=frame.chapter,duration={undead:5.2,redroom:12.4,liquid:5,rupture:12}[chapter]||1;
+  const t=Math.max(0,Number.isFinite(frame.chapterTime)?frame.chapterTime:clamp(frame.chapterProgress)*duration);
+  const reduced=!!frame.reduced,rupture=chapter==='rupture',liquid=chapter==='liquid';
+  const sequence=sampleRealismSequence(frame),hallucination=sampleHallucination(frame),transfer=sampleRoomTransition(frame);
+  const envelope=liquid?smooth(t)*smooth(5-t):rupture?smooth(t/2)*(1-smooth((t-8.5)/.5)):hallucination.bridge;
+  const reveal=(at,width=.75)=>t<at?0:Math.max(0,1-(t-at)/width);
+  return {
+    room:transfer.room,corpse:false,hallucination,roomCover:Math.max(transfer.cover,sequence.cover),sequence,liquid:sequence.active?sequence.worldLiquid:envelope*(reduced?.30:1),
+    red:rupture?smooth((t-4)/4)*.45:0,
+    mist:sequence.cover,
+    lightning:reduced?0:chapter==='undead'?reveal(0,1.2)*.7:rupture?Math.max(reveal(3.1),reveal(6.1))*.75:0,
+    // Keep the nearest escort's head and breakup inside a normal level gaze.
+    limp:rupture&&t>=1,limpWeight:rupture?smooth((t-1)/.7):0,rise:rupture?(t<6?.8*smooth((t-3)/3):.8+.6*smooth((t-6)/3)):0,
+    dissolve:rupture?smooth((t-6)/3):0,binary:rupture&&t>=8.5&&t<9,
+    escortsVisible:!frame.returning&&sequence.escortsVisible,time:t,
+  };
+}
+
+/** Free look never returns to an authored target after the player stops moving. */
+export function applyPrologueCamera(camera,motion,player={}){
+  camera.position.fromArray(motion.blocking.camera);
+  camera.rotation.set(Number(player.pitch)||0,Number.isFinite(player.yaw)?player.yaw:(motion.listener?.yaw||0),0,'YXZ');
+}
+
+/** Temporary presentation borrowing is transactional, including renderer errors. */
+export function withPrologueWorld(world, {camera, stage, actors=[], fog, background, red=0,liquid=0,time=0}, draw) {
+  const scene=world.scene, previousFog=scene.fog, previousBackground=scene.background;
+  const originalCameraVisibility=world.camera?.visible;
+  const moved=[stage,...actors].map(object=>({object,parent:object.parent,index:object.parent?.children.indexOf(object)??-1}));
+  const photograph=scene.getObjectByName('Photographic night sky');
+  const skyColor=photograph?.material?.color, previousSkyColor=skyColor?.clone();
+  const restored=[];
+  if(liquid>0)scene.traverse(o=>{for(const material of [o.material].flat().filter(Boolean)){if(!material.isMeshStandardMaterial)continue;const u=attachPrologueLiquid(material);if(restored.some(item=>item.u===u))continue;restored.push({u,amount:u.amount.value,time:u.time.value});u.amount.value=liquid;u.time.value=time;}});
+  try {
+    scene.fog=fog;scene.background=background;
+    if(world.camera)world.camera.visible=false;
+    if(skyColor)skyColor.lerp(new THREE.Color(0xff3020),red);
+    stage.add(...actors);scene.add(stage);stage.visible=true;
+    camera.updateWorldMatrix(true,false);return draw(scene,camera);
+  } finally {
+    for(const r of restored){r.u.amount.value=r.amount;r.u.time.value=r.time;}
+    for(const {object,parent}of moved)object.removeFromParent();
+    // Restore membership and order, not just the parent reference.
+    for(const {object,parent,index}of moved)if(parent){parent.add(object);const current=parent.children.indexOf(object);parent.children.splice(current,1);parent.children.splice(index,0,object);}
+    stage.visible=false;scene.fog=previousFog;scene.background=previousBackground;
+    if(world.camera)world.camera.visible=originalCameraVisibility;
+    if(skyColor)skyColor.copy(previousSkyColor);
+  }
+}
+
+function canvasTexture(kind) {
+  if(typeof document==='undefined'){const texture=new THREE.DataTexture(new Uint8Array([92,94,77,255]),1,1);texture.needsUpdate=true;return texture;}
+  const canvas = document.createElement('canvas'); canvas.width = canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = kind === 'wood' ? '#494737' : kind === 'road' ? '#353a3c' : '#444238'; ctx.fillRect(0, 0, 128, 128);
+  let seed = 7321;
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let i = 0; i < 1700; i++) {
+    const v = Math.floor(30 + random() * 60); ctx.fillStyle = `rgba(${v + 8},${v + 7},${v},${.1 + random() * .35})`;
+    const x = random() * 128, y = random() * 128;
+    ctx.fillRect(x, y, kind === 'wood' ? .4 + random() : .5 + random() * 2, kind === 'wood' ? 6 + random() * 55 : .5 + random() * 2);
+  }
+  if (kind === 'wood') for (let i = 0; i < 8; i++) { ctx.fillStyle = 'rgba(12,15,12,.50)'; ctx.fillRect(i * 16, 0, 1, 128); }
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(kind === 'wood' ? 1 : 10, kind === 'wood' ? 2 : 24); return texture;
+}
+
+function fallbackCorn() {
+  const vertices = [];
+  const quad = (a,b,c,d) => vertices.push(...a,...b,...c,...a,...c,...d);
+  quad([-.02,0,0],[.02,0,0],[.014,2.8,0],[-.014,2.8,0]);
+  for (let i=0;i<7;i++) { const s=i%2?1:-1,y=.40+i*.31; quad([0,y,0],[s*.38,y+.34,.04],[s*.78,y+.10,0],[s*.28,y+.13,-.035]); }
+  const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3)); geometry.computeVertexNormals(); return geometry;
+}
+
+/** Owns its staged set and cast; corn meshes and the WebGLRenderer remain borrowed. */
+export function createPrologueVisuals(renderer, {assetBindings=EMPTY_ASSET_VARIANTS,getCorn = () => null, getWorld = () => null, renderEquipment=()=>{}, spawn = {x: 0, z: 0, yaw: 0}, touch = false} = {}) {
+  let scene, location, camera, car, road, field, door, wheel, clarence, stanley, sky, haze, headlight, worldStage, worldFog, worldBackground,room,face,projectorLight,binary,flashlight,hemi,moon;
+  let live = false, dead = false, size = '', borrowed = new Set(), ownedTextures = new Set();
+  let dog=null,porchLight=null,puddleMaterial=null,backgroundTrees=null,vt1Ground=null;
+  let liquidUniforms=[],foliage=null,rain=null,entertainment=null,liquidVeil=null,hallucinations=null,ribbons=null,groundMaterial=null,groundContactUniforms=null;
+  let assets=null,cruiser=null,roadMaterial=null,woodMaterial=null,roadMist=null,roadsideSet=null,roadsideFallback=null,streetlight=null,policeSpill=[],fallbackLampMaterials=[],roomPresentation=null;
+  const stats = {live:false, frames:0, draws:0, chapter:null, cast:PROLOGUE_CAST_PROVENANCE, corn:'uninitialized', passenger:'Clarence', driver:'Mike', error:null};
+  const viewport = new THREE.Vector4(), scissor = new THREE.Vector4(), savedClear = new THREE.Color(), cameraWorld = new THREE.Vector3();
+  const skyNormal = new THREE.Color(0x19232a), skyRed = new THREE.Color(0x501512), fogNormal = new THREE.Color(0x242b29), fogRed = new THREE.Color(0x631f18);
+  function standard(color, extra={}) { return new THREE.MeshStandardMaterial({color,roughness:.85,...extra}); }
+  function mesh(parent, geometry, material, x=0,y=0,z=0, ry=0) { const item=new THREE.Mesh(geometry,material); item.position.set(x,y,z);item.rotation.y=ry;parent.add(item);return item; }
+  function box(parent, material, w,h,d,x=0,y=0,z=0,ry=0) { return mesh(parent,new THREE.BoxGeometry(w,h,d),material,x,y,z,ry); }
+  function group(parent,x=0,y=0,z=0) { const item=new THREE.Group();item.position.set(x,y,z);parent.add(item);return item; }
+  function disposeSet() {
+    rain?.dispose();rain=null;
+    hallucinations?.dispose();hallucinations=null;clarence?.dispose?.();stanley?.dispose?.();
+    dog?.dispose();dog=null;porchLight=null;puddleMaterial=null;backgroundTrees=null;vt1Ground=null;
+    const geometries=new Set(), materials=new Set();
+    scene?.traverse(item=>{ if(item.isInstancedMesh)item.dispose(); if(item.geometry&&!borrowed.has(item.geometry)&&!assets?.owns(item.geometry))geometries.add(item.geometry); for(const mat of Array.isArray(item.material)?item.material:item.material?[item.material]:[])if(!borrowed.has(mat)&&!assets?.owns(mat))materials.add(mat); });
+    for(const geometry of geometries)geometry.dispose();for(const material of materials)material.dispose();for(const texture of ownedTextures)texture.dispose();
+    assets?.dispose();assets=null;cruiser=null;roadsideSet=roadsideFallback=streetlight=roomPresentation=null;policeSpill=[];fallbackLampMaterials=[];roadMaterial=roadMist=groundMaterial=null;entertainment=liquidVeil=ribbons=null;
+    scene=location=camera=car=road=field=door=wheel=clarence=stanley=sky=haze=headlight=worldStage=worldFog=worldBackground=room=face=projectorLight=binary=flashlight=hemi=moon=null;borrowed=new Set();ownedTextures=new Set();liquidUniforms=[];foliage=null;live=false;stats.live=false;size='';
+  }
+  function buildCar() {
+    car=group(location);car.name='Cruiser interior, passenger on right';
+    const vinyl=standard(0x1d2224,{roughness:.68}), rubber=standard(0x101314),trim=standard(0x4f5656,{metalness:.35,roughness:.46}),body=standard(0x939b96,{metalness:.45,roughness:.47});
+    const leather=standard(0x333736,{roughness:.85}),glass=standard(0x9bb5bc,{transparent:true,opacity:.055,roughness:.14,metalness:.05,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true});
+    box(car,vinyl,1.72,.22,1.15,0,.68,-.91);box(car,vinyl,1.6,.09,.42,0,.77,-1.20);
+    box(car,rubber,1.65,.055,2.6,0,.02,.12);box(car,vinyl,.25,.38,1.05,0,.28,-.19);
+    box(car,body,1.83,.065,1.52,0,1.47,.32);box(car,vinyl,1.85,.07,.095,0,1.44,-.53);
+    for(const x of [-.86,.86]) {
+      const pillar=box(car,vinyl,.065,.79,.07,x,1.10,-.79);pillar.rotation.x=-.40;
+      box(car,vinyl,.058,.62,.095,x,1.18,.79);
+      box(car,body,.09,.50,2.10,x,.27,.1);
+      for(let i=0;i<7;i++)box(car,rubber,.032,.005,.06,x<0?-.67+i*.05:.26+i*.05,.802,-.99);
+    }
+    const windshield=mesh(car,new THREE.PlaneGeometry(1.62,.67),glass,0,1.11,-.84);windshield.name='Fallback windshield';windshield.rotation.x=-.40;
+    rain=createPrologueRain(location,car,{touch});rain.attachWindshield(windshield);
+    const rearview=box(car,rubber,.29,.102,.035,0,1.37,-.66);box(rearview,standard(0x4a6269,{metalness:.85,roughness:.22}),.25,.07,.007,0,0,.023);
+    for(const x of [-.45,.50]) {
+      box(car,leather,.58,.17,.57,x,.33,.26);const back=box(car,leather,.59,.64,.13,x,.67,.58);back.rotation.x=-.10;
+      box(car,leather,.28,.17,.11,x,1.08,.62);
+      for(let i=0;i<5;i++)box(car,vinyl,.002,.44,.005,x-.19+i*.095,.70,.501);
+      box(car,rubber,.035,.14,.03,x+(x<0?.33:-.33),.38,.29);
+    }
+    // Analog instruments and muted radio light belong to the set, not the HUD.
+    const glow=new THREE.MeshBasicMaterial({color:0x738f74}), redGlow=new THREE.MeshBasicMaterial({color:0xa26042});
+    box(car,rubber,.47,.17,.027,-.43,.785,-.79);box(car,rubber,.27,.155,.035,.045,.735,-.735);
+    for(const x of [-.55,-.31]) {mesh(car,new THREE.CircleGeometry(.065,24),glow,x,.80,-.767);mesh(car,new THREE.CircleGeometry(.057,24),vinyl,x,.80,-.763);const needle=box(car,glow,.003,.049,.003,x,.812,-.758);needle.rotation.z=-.7;}
+    box(car,glow,.14,.026,.008,.045,.766,-.711);for(let i=0;i<5;i++)box(car,redGlow,.021,.008,.005,-.039+i*.042,.714,-.711);
+    const fitted=createCabinWheel();car.add(fitted.assembly);wheel=fitted.steering;
+    entertainment=createEntertainmentRadio();car.add(entertainment.group);
+    door=group(car,.86,.45,-.52);box(door,vinyl,.065,.40,1.13,0,-.10,.54);box(door,trim,.10,.035,.33,-.055,.02,.49);box(door,rubber,.08,.035,.17,-.055,.035,.27);
+    box(car,vinyl,.065,.42,1.13,-.85,.36,.02);box(car,trim,.09,.035,.33,-.78,.48,.04);
+    box(car,body,1.80,.16,1.04,0,.63,-1.85);box(car,body,1.87,.24,.40,0,.42,1.40);
+    const dome=new THREE.PointLight(0xd0a56b,.48,2.5,2);dome.position.set(0,1.36,.30);car.add(dome);
+    headlight=new THREE.SpotLight(0xd9bd83,6,31,.47,.65,1.3);headlight.name='Cruiser forward headlight spill';headlight.position.set(0,.78,-2.39);headlight.target.position.set(0,0,-20);car.add(headlight,headlight.target);
+    const lampLens=standard(0xd9d6bc,{emissive:0xffe4b5,emissiveIntensity:1.8,roughness:.23});
+    for(const x of [-.65,.65]){const lens=box(car,lampLens,.28,.085,.023,x,.71,-2.385);lens.name='Fallback illuminated front lamp';}
+    box(car,trim,1.27,.055,.26,0,1.50,.85);
+    for(const side of [-1,1]){
+      const color=side<0?0xa01d26:0x205ba2,material=standard(color,{emissive:color,emissiveIntensity:.35,roughness:.25});fallbackLampMaterials.push(material);
+      const lens=box(car,material,.47,.085,.20,side*.34,1.565,.85);lens.name=side<0?'Fallback red lightbar lens':'Fallback blue lightbar lens';
+      const spill=new THREE.PointLight(color,0,5.3,2);spill.name=side<0?'Cruiser restrained red spill':'Cruiser restrained blue spill';spill.position.set(side*.48,1.62,.68);spill.castShadow=false;car.add(spill);policeSpill.push(spill);
+    }
+  }
+  function buildLandscape() {
+    const groundMap=canvasTexture('earth'), roadMap=canvasTexture('road'),woodMap=canvasTexture('wood');ownedTextures.add(groundMap);ownedTextures.add(roadMap);ownedTextures.add(woodMap);
+    const earth=standard(0x77715e,{map:groundMap}),asphalt=standard(0x646a6e,{map:roadMap}),wood=standard(0x8f8b74,{map:woodMap}),post=standard(0x4f5145);
+    groundMaterial=earth;earth.color.setHex(0xa29b88);earth.normalScale.set(.54,.54);groundContactUniforms=applyEnvironmentSurface(earth,{kind:'mud',terrainProfile:true});
+    vt1Ground=createVT1RoadsideGround(earth);
+    woodMaterial=wood;wood.normalScale.set(.35,.35);
+    roadMaterial=asphalt;asphalt.color.setHex(0xabb0b1);asphalt.normalScale.set(.33,.33);applyEnvironmentSurface(asphalt,{kind:'mud'});
+    const ground=mesh(location,wetGroundGeometry(),earth);ground.name='Continuous graded mud, verge and shallow hollows';
+    puddleMaterial=standard(0x343d36,{roughness:.24,metalness:.30,transparent:true,opacity:.82,depthWrite:false});
+    location.add(createGroundedPuddles(puddleMaterial));
+    road=group(location);road.position.x=-4.3;road.name='Continuous roadside';
+    const roadPlane=mesh(road,new THREE.PlaneGeometry(6.7,600,2,60),asphalt,0,-.01,120);roadPlane.rotation.x=-Math.PI/2;
+    const lane=standard(0x8e8762),edge=standard(0x8b9290),reflector=new THREE.MeshBasicMaterial({color:0xa5ae96});
+    const markers=new THREE.InstancedMesh(new THREE.BoxGeometry(.07,.006,3.2),lane,160),dummy=new THREE.Object3D();
+    for(let i=0;i<80;i++)for(let j=0;j<2;j++){dummy.position.set(j?.10:-.10,0,-176+i*7.5);dummy.scale.set(1,.8,.72+.28*(.5+.5*Math.sin(i*12.7)));dummy.updateMatrix();markers.setMatrixAt(i*2+j,dummy.matrix);}markers.computeBoundingSphere();road.add(markers);
+    dummy.scale.setScalar(1);
+    for(const x of [-3.1,3.1])box(road,edge,.075,.004,600,x,0,120);
+    for(let i=0;i<36;i++)for(const side of [-1,1]){
+      const z=-100+i*15,x=side*4.8;box(road,post,.08,1.2,.08,x,.60,z);box(road,reflector,.11,.09,.025,x,1.02,z+.05);
+      if(i%3===0){box(road,post,.14,7.5,.14,side*7.1,3.75,z);box(road,post,2.2,.07,.09,side*7.1,7.0,z);}
+    }
+    field=group(location,0,0,WEST_APPROACH.centerZ);field.rotation.y=WEST_APPROACH.fieldYaw;field.name='Westward cornfield approach and threshold';field.updateMatrix();road.updateMatrix();
+    const sources=getCorn();let parts=sources?.length?sources:null;
+    if(parts) {for(const item of parts){borrowed.add(item.geometry);for(const mat of Array.isArray(item.material)?item.material:[item.material])borrowed.add(mat);}stats.corn='borrowed game corn';}
+    else {parts=[{geometry:fallbackCorn(),material:standard(0x56623b,{side:THREE.DoubleSide})}];stats.corn='original procedural fallback';}
+    const total=touch?420:680,count=Math.ceil(total/parts.length);
+    for(let part=0;part<parts.length;part++){
+      const source=parts[part],material=Array.isArray(source.material)?source.material.map(m=>foliage.material(m)):foliage.material(source.material),plants=new THREE.InstancedMesh(source.geometry,material,count);plants.name='Borrowed corn, own instance buffer';
+      // Fallback source material is replaced by the owned wind clone; borrowed
+      // kit geometry, textures and source materials remain untouched.
+      if(!sources?.length)source.material.dispose();
+      let planted=0;
+      for(let i=0;i<count;i++){
+        const n=i*parts.length+part,side=n%2?1:-1,row=Math.floor(n/2),z=WEST_APPROACH.entranceX-(row%48)*1.08;
+        const x=side*(2.10+Math.floor(row/48)*.95+(Math.sin(n*42.4)*.5+.5)*.35);
+        const contact=new THREE.Vector3(x,0,z).applyMatrix4(field.matrix);dummy.position.set(x,wetGroundHeight(contact.x,contact.z)-.018,z);dummy.rotation.set(0,Math.sin(n*31.7)*Math.PI,Math.sin(n*7.3)*.018);dummy.scale.setScalar(.90+Math.sin(n*8.1)*.11);dummy.updateMatrix();
+        if(cornClearsParkedCruiser(source.geometry,dummy.matrix,field.matrix))plants.setMatrixAt(planted++,dummy.matrix);
+      }plants.count=planted;plants.computeBoundingSphere();plants.boundingSphere.radius+=PARKED_CRUISER_CLEARANCE.sway;field.add(plants);
+      const roadsideCount=Math.ceil((touch?180:300)/parts.length),roadside=new THREE.InstancedMesh(source.geometry,material,roadsideCount);
+      let roadsidePlanted=0;
+      for(let i=0;i<roadsideCount;i++){
+        const n=i*parts.length+part,side=n%2?1:-1,row=Math.floor(n/2);
+        const behind=n>=(touch?120:210),px=behind?19.8+(n%5)*.94:side*(5.4+Math.floor(row/150)*1.1),pz=behind?2.1+Math.floor((n-(touch?120:210))/5)*.78:-105+(row%150)*3.5;const contact=new THREE.Vector3(px,0,pz).applyMatrix4(road.matrix);if(contact.x>-.5&&contact.x<14.7&&contact.z>-1&&contact.z<13)continue;dummy.position.set(px,wetGroundHeight(contact.x,contact.z)-.018,pz);dummy.rotation.set(0,Math.sin(n*7.31)*Math.PI,0);dummy.scale.setScalar(.9+Math.sin(n*4.17)*.1);dummy.updateMatrix();if(cornClearsParkedCruiser(source.geometry,dummy.matrix,road.matrix))roadside.setMatrixAt(roadsidePlanted++,dummy.matrix);
+      }roadside.count=roadsidePlanted;roadside.name='Roadside corn with door and leaf clearance';roadside.computeBoundingSphere();roadside.boundingSphere.radius+=PARKED_CRUISER_CLEARANCE.sway;road.add(roadside);
+    }
+    // A restrained opening in the same wood-panel vocabulary as the live maze.
+    for(const side of [-1,1]) {
+      box(field,wood,.10,2.65,10,side*1.42,1.325,-56);
+      for(let z=-51;z>=-61;z-=2)box(field,post,.15,2.73,.16,side*1.40,1.365,z);
+      for(const y of [.55,1.95])box(field,post,.16,.10,10,side*1.37,y,-56);
+    }
+    roadsideSet=group(location);roadsideSet.name='Rural house driveway mailbox and streetlight';roadsideFallback=group(roadsideSet);roadsideFallback.name='Roadside load-failure silhouette';
+    const rural=standard(0x454b41),dark=standard(0x151e20),warm=standard(0xc59150,{emissive:0xd8a15c,emissiveIntensity:.4});
+    box(roadsideFallback,rural,5.9,4.65,6.4,10.2,2.355,7);
+    const roof=mesh(roadsideFallback,new THREE.ConeGeometry(4.6,1.8,4),dark,10.2,5.55,7);roof.rotation.y=Math.PI/4;
+    box(roadsideFallback,dark,.05,1.9,1,7.22,1.3,7);box(roadsideFallback,dark,1.6,.12,4.6,6.46,2.76,7);
+    box(roadsideFallback,rural,.12,1.09,.12,1.62,.545,4.14);box(roadsideFallback,dark,.48,.25,.30,1.57,1.23,4.14);
+    box(roadsideFallback,dark,.13,4.48,.13,3.02,2.24,3.75);box(roadsideFallback,warm,.34,.10,.52,3.02,4.44,4.61);
+    streetlight=new THREE.PointLight(0xc59a5d,4.6,10.5,2);streetlight.name='Bounded warm driveway streetlight';streetlight.position.set(3.02,4.38,4.61);streetlight.castShadow=false;roadsideSet.add(streetlight);
+    porchLight=new THREE.PointLight(0xd4a466,3.6,6.8,2);porchLight.name='Warm porch light on boards and ground';porchLight.position.set(6.95,2.38,7.75);porchLight.castShadow=false;roadsideSet.add(porchLight);
+    dog=createRoadsideDog(roadsideSet,{heightAt:wetGroundHeight});
+    const verge=new THREE.InstancedMesh(grassGeometry(),standard(0x66684b,{vertexColors:true,side:THREE.DoubleSide,roughness:.96}),100);verge.name='Graded verge grass and fallen husks';
+    for(let i=0;i<100;i++){const x=i<50?-.72+(i%10)*.66:-10.2-Math.floor(i/10)*1.9,z=i<50?3.5+Math.floor(i/10)*1.03:-8.1+(i%10)*.68;dummy.position.set(x,wetGroundHeight(x,z)+.002,z);dummy.rotation.set(0,i*2.399,0);dummy.scale.setScalar(.62+.3*Math.sin(i*8.1)**2);dummy.updateMatrix();verge.setMatrixAt(i,dummy.matrix);}verge.computeBoundingSphere();location.add(verge);
+    backgroundTrees=group(location);backgroundTrees.name='Original broadleaf near middle and far backdrop';
+    stats.trees={status:'loading',instances:0,draws:0};
+    const lamp=new THREE.PointLight(0xe7b976,.72,7,2);lamp.position.set(-1.3,2.0,-50.8);field.add(lamp);
+    const lantern=standard(0xba9d6a,{emissive:0xc5883a,emissiveIntensity:.6});box(field,post,.19,.28,.16,-1.28,2.0,-50.7);box(field,lantern,.115,.15,.01,-1.28,2.0,-50.60);
+  }
+  function buildVisions(){
+    const sharedRoom=createBloodRoom({touch});roomPresentation=sharedRoom;({group:room,face,projectorLight}=sharedRoom);
+    room.name='Ten second red room';room.position.copy(location.position);room.quaternion.copy(location.quaternion);scene.add(room);room.visible=false;room.userData.roomUpdate=sharedRoom.update;
+    liquidVeil=createLiquidVeil();scene.add(liquidVeil.mesh);
+    hallucinations=createPrologueHallucination(location,{enabled:typeof document!=='undefined'});
+    ribbons=new THREE.Group();ribbons.name='Connected upward liquid escort silhouettes';location.add(ribbons);
+    for(let actor=0;actor<2;actor++){const root=new THREE.Group();root.name='Liquid silhouette '+actor;ribbons.add(root);for(let strand=0;strand<3;strand++){const x=(strand-1)*.18;const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(x,.15,0),new THREE.Vector3(x*.6,.70,.02),new THREE.Vector3(x*.5,1.30,-.03),new THREE.Vector3(0,1.85,0)]);const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,14,strand===1?.13:.065,6,false),standard(0x601c24,{roughness:.19,metalness:.18,transparent:true,opacity:0,depthWrite:false}));mesh.userData.liquid=attachPrologueLiquid(mesh.material);root.add(mesh);}}
+    // A tiny original 0/1 atlas, shared by two capped instance draws.
+    const width=32,height=24,data=new Uint8Array(width*height*4);
+    for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+      const digit=x<16?0:1,px=x%16,py=y,i=(y*width+x)*4;
+      const zero=px>=3&&px<=12&&py>=3&&py<=20&&(px<=5||px>=10||py<=5||py>=18);
+      const one=py>=3&&py<=20&&(px>=7&&px<=9||py>=18&&px>=4&&px<=12||py>=4&&py<=6&&px>=5&&px<=8);
+      data[i]=255;data[i+1]=157;data[i+2]=143;data[i+3]=(digit?one:zero)?255:0;
+    }
+    const atlas=new THREE.DataTexture(data,width,height);atlas.magFilter=THREE.NearestFilter;atlas.needsUpdate=true;ownedTextures.add(atlas);
+    binary=new THREE.Group();binary.name='Two escorts dissolving into zeros and ones';location.add(binary);binary.visible=false;
+    const count=touch?24:48;
+    for(let digit=0;digit<2;digit++){
+      const geometry=new THREE.PlaneGeometry(.15,.23),uv=geometry.attributes.uv;
+      for(let i=0;i<uv.count;i++)uv.setX(i,(uv.getX(i)+digit)/2);
+      const mesh=new THREE.InstancedMesh(geometry,new THREE.MeshBasicMaterial({map:atlas,transparent:true,alphaTest:.15,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),count);
+      mesh.name=digit?'Binary ones':'Binary zeros';mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);mesh.count=0;binary.add(mesh);
+    }
+  }
+  function updateBinary(vision,time,reduced){
+    binary.visible=vision.binary;stats.binaryFragments=0;if(!vision.binary)return;
+    const dummy=new THREE.Object3D(),progress=vision.dissolve;
+    for(const [digit,batch]of binary.children.entries()){
+      const count=batch.instanceMatrix.count;batch.count=count;
+      for(let i=0;i<count;i++){
+        const actor=i%2?stanley:clarence,n=Math.floor(i/2),seed=n*12.713+digit*8.137;
+        const drift=(reduced?.10:.28)*progress;
+        dummy.position.set(actor.root.position.x+Math.sin(seed)*(.23+drift),actor.root.position.y+.12+(n%12)/12*1.6+progress*.12,actor.root.position.z+Math.cos(seed)*(.13+drift));
+        dummy.rotation.set(0,camera.rotation.y+(reduced?0:Math.sin(seed+time)*.13),0);dummy.scale.setScalar(.8+(Math.sin(seed)*.5+.5)*.45);dummy.updateMatrix();batch.setMatrixAt(i,dummy.matrix);
+      }
+      batch.material.opacity=1-smooth((vision.time-8.5)/.5);batch.instanceMatrix.needsUpdate=true;batch.computeBoundingSphere();stats.binaryFragments+=count;
+    }
+  }
+  function loadSetAssets(){
+    const treat=object=>{object.traverse(item=>{for(const mat of [item.material].flat().filter(Boolean))if(mat.isMeshStandardMaterial)liquidUniforms.push(attachPrologueLiquid(mat));});applyPS2Materials(object);};
+    assets=createPrologueAssets({assetBindings,
+      onRoadside(gltf){gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(!o.isMesh||!o.name.includes('gravel'))return;const p=o.geometry.attributes.position,inv=o.matrixWorld.clone().invert(),v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld);v.y=wetGroundHeight(v.x,v.z)+.002;v.applyMatrix4(inv);p.setXYZ(i,v.x,v.y,v.z);}p.needsUpdate=true;o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();});roadsideFallback.visible=false;gltf.scene.name='Original roadside exterior shell';roadsideSet.add(gltf.scene);treatVT1Glazing(gltf.scene,puddleMaterial?.envMap);treat(gltf.scene);},
+      onProjector(gltf){roomPresentation.setProjector(gltf);},
+      onCar(gltf){
+        const prepared=prepareCruiser(gltf.scene);
+        treatVT1Cruiser(prepared.model,puddleMaterial?.envMap);
+        prepared.model.traverse(o=>{for(const m of [o.material].flat().filter(Boolean))for(const value of Object.values(m))if(value?.isTexture&&!assets?.owns(value))ownedTextures.add(value);});
+        for(const child of car.children)if(!child.isLight&&child!==headlight.target&&child!==entertainment.group)child.visible=false;
+        cruiser=prepared;car.add(cruiser.model);treat(cruiser.model);headlight.position.set(0,.81,-1.49);
+        rain.attachWindshield(cruiser.model.getObjectByName('BodyWindshield'));
+      },
+      onCast(role,gltf){
+        // Each optional role arrives independently; a missing asset retains only
+        // that role's procedural fallback. Never replace the other identity.
+        const police=role==='clarence';if(!police&&role!=='stanley')return;
+        const name=police?'Mike':'Stanley Yates',old=police?clarence:stanley;
+        const actor=createTexturedPrologueActor({name,police,gltf,onMaterial:mat=>liquidUniforms.push(attachPrologueLiquid(mat))});
+        actor.root.position.copy(old.root.position);actor.root.quaternion.copy(old.root.quaternion);actor.root.scale.copy(old.root.scale);actor.root.visible=old.root.visible;
+        // Keep the hidden fallback owned by this set for deterministic teardown.
+        old.root.visible=false;actor.root.add(old.root);location.add(actor.root);
+        actor.root.userData.storyIdentity=police?'mike':'stanley';
+        if(police)clarence=actor;else stanley=actor;
+        stats.cast='Mike and Stanley, reusing the existing officer and father assets';
+        stats.castRoles[role]=`cast-${role}.glb`;
+        applyPS2Materials(actor.root,{profile:'character'});
+      },
+      onGround(key,map){groundMaterial[key]=map;groundMaterial.needsUpdate=true;applyPS2Materials(groundMaterial);},
+      onRoadsideCorn(gltf){stats.roadsideCorn=replaceVT1RoadsideCorn(road,gltf,foliage);for(const batch of road.children)if(batch.userData.cornfieldsVT1)treat(batch);},
+      onDog(gltf){dog.accept(gltf);treat(gltf.scene);},
+      onTrees(gltf){
+        gltf.scene.updateMatrixWorld(true);
+        const variants=[0,1,2].map(i=>gltf.scene.getObjectByName('Broadleaf_'+i));
+        if(variants.some(v=>!v)){stats.trees.status='failed';return;}
+        const matrix=new THREE.Object3D();
+        for(const [variant,root]of variants.entries())root.traverse(source=>{
+          if(!source.isMesh)return;
+          const geometry=source.geometry.clone();geometry.applyMatrix4(source.matrixWorld);
+          const material=source.material;material.alphaTest=material.transparent?.45:0;material.transparent=false;material.depthWrite=true;material.side=THREE.DoubleSide;material.needsUpdate=true;
+          const batch=new THREE.InstancedMesh(geometry,material,5);batch.name=source.name+' | depth-batched';
+          for(let i=0;i<5;i++){
+            const x=[17,28,49,-32,-57][i]+variant*4.1,z=[12,-17,-34,18,-22][i]+variant*7.3;
+            matrix.position.set(x,wetGroundHeight(x,z),z);matrix.rotation.set(0,variant*.8+i*1.71,0);matrix.scale.setScalar(.82+.25*Math.sin(i*3.1+variant)**2);matrix.updateMatrix();batch.setMatrixAt(i,matrix.matrix);
+          }
+          batch.computeBoundingSphere();backgroundTrees.add(batch);stats.trees.draws++;
+        });
+        stats.trees.status='ready';stats.trees.instances=15;treat(backgroundTrees);
+      },
+      onSky(map){if(puddleMaterial){puddleMaterial.envMap=map;puddleMaterial.envMap.mapping=THREE.EquirectangularReflectionMapping;puddleMaterial.envMapIntensity=.30;puddleMaterial.needsUpdate=true;}if(cruiser){treatVT1Cruiser(cruiser.model,map);applyPS2Materials(cruiser.model);}if(roadsideSet)treatVT1Glazing(roadsideSet,map);sky.material.uniforms.skyMap.value=map;sky.material.uniforms.hasMap.value=1;},
+      onRoad(key,map){roadMaterial[key]=map;roadMaterial.needsUpdate=true;applyPS2Materials(roadMaterial);},
+      onWood(key,map){woodMaterial[key]=map;if(key==='map')woodMaterial.color.setHex(0xffffff);woodMaterial.needsUpdate=true;applyPS2Materials(woodMaterial);},
+      onMist(map){
+        roadMist=group(location);roadMist.name='Low roadside mist';
+        const material=new THREE.MeshBasicMaterial({map,transparent:true,opacity:.11,depthWrite:false,side:THREE.DoubleSide,color:0x819397});
+        const geometry=new THREE.PlaneGeometry(20,3);
+        for(let i=0;i<(touch?3:6);i++){const sheet=mesh(roadMist,geometry,material,0,.7,0);sheet.userData.index=i;}
+      },
+    });
+  }
+  function start() {
+    if(dead)return;disposeSet();scene=new THREE.Scene();scene.background=skyNormal.clone();scene.fog=new THREE.Fog(fogNormal.clone(),14,100);
+    location=new THREE.Group();const alignment=approachStageTransform(spawn);location.rotation.y=alignment.yaw;location.position.fromArray(alignment.position);scene.add(location);
+    camera=new THREE.PerspectiveCamera(65,1,.035,175);location.add(camera);
+    worldStage=new THREE.Group();worldStage.name='Temporary prologue cast and lighting';worldStage.position.copy(location.position);worldStage.quaternion.copy(location.quaternion);worldStage.visible=false;scene.add(worldStage);
+    const castFill=new THREE.HemisphereLight(0xb8c4cd,0x302922,.40);worldStage.add(castFill);
+    worldFog=new THREE.FogExp2(fogNormal.clone(),.075);worldBackground=new THREE.Color();
+    hemi=new THREE.HemisphereLight(0x9aaab7,0x342d23,.86);scene.add(hemi);
+    moon=new THREE.DirectionalLight(0x9eb2c4,1.38);moon.position.set(-5,9,3);scene.add(moon);
+    sky=new THREE.Mesh(new THREE.SphereGeometry(155,24,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{red:{value:0},liquid:{value:0},clock:{value:0},skyMap:{value:null},hasMap:{value:0}},vertexShader:'varying vec3 vWorld; void main(){vWorld=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 vWorld; uniform float red,liquid,clock,hasMap;uniform sampler2D skyMap; void main(){vec3 n=normalize(vWorld);float h=smoothstep(-.1,.6,n.y+liquid*sin(n.x*18.+n.z*11.+clock*.7)*.10);vec3 dusk=mix(vec3(.10,.13,.14),vec3(.018,.027,.044),h);vec3 blood=mix(vec3(.29,.048,.024),vec3(.080,.008,.009),h);vec3 color=mix(dusk,blood,red);color=mix(color,vec3(.17,.29,.28)+color*.3,liquid*.5);vec2 skyUV=vec2(atan(n.z,n.x)/6.2831853+.625,asin(clamp(n.y,-1.,1.))/3.14159265+.5);vec3 photo=texture2D(skyMap,skyUV).rgb;float veil=.5+.5*sin(n.x*5.+sin(n.z*7.+clock*.014)+n.y*9.);color=mix(color,mix(photo*.52,color,.48+veil*.16),hasMap*(1.-red*.7));gl_FragColor=vec4(color,1.);}' }));location.add(sky);
+    foliage=createFoliageMotion({playerPush:false});
+    buildLandscape();buildCar();clarence=createPrologueActor({name:'Mike',police:true});stanley=createPrologueActor({name:'Stanley Yates',police:false});clarence.root.userData.storyIdentity='mike';location.add(clarence.root,stanley.root);
+    const treated=new Set();location.traverse(item=>{for(const mat of Array.isArray(item.material)?item.material:item.material?[item.material]:[])if(mat.isMeshStandardMaterial&&!treated.has(mat)){treated.add(mat);liquidUniforms.push(attachPrologueLiquid(mat));}});
+    buildVisions();
+    // Material-only treatment retains liquid/wind hooks and the original set ownership.
+    applyPS2Materials(location);
+    for(const actor of [clarence,stanley])applyPS2Materials(actor.root,{profile:'character'});
+    flashlight=new THREE.SpotLight(0xffe9cc,0,25,.48,.60,1.2);flashlight.position.set(-.26,-.22,-.53);flashlight.target.position.set(.08,-.08,-8);camera.add(flashlight,flashlight.target);
+    // A low-frequency camera-space veil guarantees the vanishing is concealed.
+    haze=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({transparent:true,depthTest:false,depthWrite:false,uniforms:{amount:{value:0},red:{value:0},clock:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,.0,1.);}',fragmentShader:'varying vec2 vUv;uniform float amount,red,clock;void main(){float cloud=.88+.12*sin(vUv.x*9.+sin(vUv.y*8.+clock*.09))*sin(vUv.y*7.-clock*.06);vec3 c=mix(vec3(.19,.24,.23),vec3(.32,.075,.050),red);gl_FragColor=vec4(c,clamp(amount*cloud,0.,1.));}'}));haze.frustumCulled=false;haze.renderOrder=1000;scene.add(haze);
+    live=true;stats.live=true;stats.error=null;stats.cast=PROLOGUE_CAST_PROVENANCE;stats.castRoles={clarence:'procedural fallback',stanley:'procedural fallback'};
+    if(typeof document!=='undefined')loadSetAssets();
+  }
+  function render(frame = {}) {
+    if(dead)return;if(!live)start();
+    const world=getWorld(),locomotion=frame.motion||samplePrologueMotion(frame,{worldAvailable:!!world?.scene?.isScene}),b=locomotion.blocking,transition=locomotion,vision=prologueVisionState(frame);
+    location.updateWorldMatrix(true,false);groundContactUniforms?.terrainFromWorld.value.copy(location.matrixWorld).invert();
+    const time=locomotion.time,p=b.progress,reduced=!!frame.reduced,chapter=b.chapter;
+    const v31Sky=frame.v31Sky===true||!!frame.v31Sky&&typeof frame.v31Sky==='object';
+    const v31SkyStage=frame.v31Sky===true?(frame.chapter==='solid_return'?'solid':'rise'):frame.v31Sky?.stage;
+    if(v31Sky&&!['rise','solid'].includes(v31SkyStage))throw new Error('Unknown V3.1 sky stage');
+    if(v31Sky&&v31SkyStage==='rise'&&(frame.chapter!=='rupture'||vision.time>=8.5))throw new Error('V3.1 sky requires a cue-driven pre-transfer sample');
+    if(v31Sky&&v31SkyStage==='solid'&&(frame.chapter!=='solid_return'||vision.sequence.worldLiquid!==0||vision.sequence.cover!==0))throw new Error('V3.1 solid sky requires the settled authored return sample');
+    if(v31Sky){vision.binary=false;if(v31SkyStage==='solid'){vision.escortsVisible=false;vision.liquid=0;vision.rise=0;vision.dissolve=0;vision.limp=false;vision.limpWeight=0;}}
+    for(const light of worldStage.children)if(light.isHemisphereLight)light.intensity=vision.sequence.afterTitles?0:.40;
+    foliage.update(time,null,reduced);
+    const width=Math.max(1,renderer.domElement.clientWidth||renderer.domElement.width),height=Math.max(1,renderer.domElement.clientHeight||renderer.domElement.height),key=`${width}:${height}`,fov=transition.world?(world.camera?.fov??70):65;
+    if(size!==key||camera.fov!==fov){camera.aspect=width/height;camera.fov=fov;camera.updateProjectionMatrix();size=key;}
+    const cameraParent=vision.room?room:location;if(camera.parent!==cameraParent)cameraParent.add(camera);
+    applyPrologueCamera(camera,locomotion,frame.player);
+    // Memory borrows the existing outdoor set, never its adult controller or equipment.
+    if(frame.childMemory){camera.position.set(frame.player.x,frame.player.y??.95,frame.player.z);}
+    camera.rotation.x+=vision.sequence.cameraPitch;
+    const motion=reduced?0:1;
+    location.visible=!vision.room;room.visible=vision.room;
+    room.userData.roomUpdate?.(Math.max(0,vision.time-1.2),reduced,vision.room&&!frame.returning);liquidVeil.update(frame);
+    // Directional moon shape carries the exterior; restrained ambient fill keeps
+    // corn and people readable without flattening their surfaces. No extra lights.
+    hemi.intensity=vision.room?0:.86+vision.lightning*1.8;moon.intensity=vision.room?0:1.38+vision.lightning*4;
+    flashlight.intensity=!frame.childMemory&&frame.player?.flashlightOn?18:0;
+    hemi.color.setHex(frame.childMemory?0xffe9bf:0x9aaab7);moon.color.setHex(frame.childMemory?0xffe3a1:0x9eb2c4);
+    if(frame.childMemory){hemi.intensity=1.8;moon.intensity=2.0;}
+    for(const uniforms of liquidUniforms){uniforms.amount.value=vision.liquid;uniforms.time.value=reduced&&vision.sequence.active?time*.25:time;uniforms.scale.value=reduced&&vision.sequence.active?.28:1;}
+    const drive=frame.driving||samplePrologueDriving(frame),wake=samplePrologueWake(frame);
+    vt1Ground?.update(drive,!frame.returning&&!vision.room&&!transition.world);
+    const bodyReach=samplePrologueBodyReach(wake.reach);
+    car.position.fromArray(drive.position);car.rotation.set(drive.bodyPitch,drive.yaw,drive.bodyRoll,'YXZ');car.updateMatrix();
+    if(b.inCar&&!vision.room){camera.position.add(new THREE.Vector3().fromArray(bodyReach.eyeOffset));camera.position.applyMatrix4(car.matrix);camera.quaternion.premultiply(car.quaternion);}
+    const confrontation=sampleRoadsideConfrontation(frame)||{bang:0,impact:0};
+    if(b.inCar&&!reduced&&confrontation.impact){camera.position.x+=confrontation.impact*.012;camera.rotation.z+=confrontation.impact*.008;}
+    sky.position.copy(camera.position);sky.visible=!frame.childMemory;
+    rain.update(time,camera.position,drive,reduced,!frame.childMemory&&!vision.room&&!transition.world&&!frame.returning,!frame.childMemory&&!frame.returning);
+    road.visible=!frame.returning;
+    field.visible=chapter!=='car'&&(chapter!=='dispatch'||p>.8);car.visible=!frame.returning;
+    const exitPose=frame.exitPose||samplePrologueExit((frame.exitProgress??b.exit)*EXIT_SECONDS);door.rotation.y=exitPose.door*1.05;wheel.rotation.z=steeringAngle(drive.steer);const lampState=sampleCruiserLampState(time,{reduced,active:!vision.room&&!frame.returning&&!transition.world});
+    headlight.intensity=lampState.headlights?6:0;cruiser?.setLampState(lampState);cruiser?.update(drive,exitPose.door);
+    for(const [i,light] of policeSpill.entries()){light.intensity=i?lampState.blueSpill:lampState.redSpill;fallbackLampMaterials[i].emissiveIntensity=i?lampState.blue:lampState.red;}
+    roadsideSet.visible=!vision.room&&!frame.returning&&!transition.world;streetlight.intensity=roadsideSet.visible?4.6:0;
+    porchLight.intensity=roadsideSet.visible?3.6:0;dog.update(frame,roadsideSet.visible);
+    stats.roadside={house:[10.2,0,7],streetlight:streetlight.intensity>0,porchLight:porchLight.intensity>0,dogVisible:dog.stats.visible,dogAudio:false,dog:{...dog.stats},source:roadsideFallback.visible?'procedural fallback':'roadside-set.glb'};stats.lamps={...lampState,parked:drive.parked,speed:drive.speed};stats.projector={...roomPresentation.stats};
+    entertainment.update(wake);car.updateWorldMatrix(true,true);
+    frame.cabinMatrix=car.matrixWorld.toArray();frame.locationMatrix=location.matrixWorld.toArray();
+    frame.radioKnobQuaternion=entertainment.knob.getWorldQuaternion(new THREE.Quaternion()).toArray();frame.radioHandTarget=entertainment.contact.getWorldPosition(new THREE.Vector3()).toArray();frame.radioHandReach=wake.reach;frame.radioHandTurn=wake.turn;
+    const doorWorld=(cruiser?.door||door).localToWorld(new THREE.Vector3(-.055,.035,.48));
+    frame.exitHandTarget=doorWorld.toArray();frame.exitHandQuaternion=(cruiser?.door||door).getWorldQuaternion(new THREE.Quaternion()).toArray();
+    if(roadMist){roadMist.visible=!vision.room&&!frame.returning;for(const sheet of roadMist.children){const i=sheet.userData.index;sheet.position.set(-4.3+(reduced?0:Math.sin(time*.07+i)*1.2),.65,camera.position.z-12-i*16);}}
+    const speech=String(frame.speaker||'').toLowerCase(),isMike=speech.includes('mike'),isStanley=speech.includes('stanley');
+    const menVisible=!frame.childMemory&&vision.escortsVisible&&!vision.room&&(chapter==='rupture'||b.menVisible);
+    clarence.root.visible=menVisible;stanley.root.visible=menVisible&&chapter!=='car'&&chapter!=='dispatch'&&!v31Sky;
+    const driver=locomotion.actors.clarence,father=locomotion.actors.stanley,roadside=b.inCar||chapter==='emergence';
+    clarence.root.position.fromArray(driver.position);clarence.root.position.y+=vision.rise;clarence.root.rotation.set(0,driver.yaw,0,'YXZ');
+    if(driver.mode==='drive'){clarence.root.position.applyMatrix4(car.matrix);clarence.root.quaternion.premultiply(car.quaternion);}
+    stanley.root.position.fromArray(father.position);stanley.root.position.y+=vision.rise;stanley.root.rotation.set(0,father.yaw,0,'YXZ');
+    const bangTargets=father.mode==='bang'?[1,-1].map(sign=>stanley.root.worldToLocal(location.localToWorld(new THREE.Vector3(BANG_WINDOW_TARGET[0],BANG_WINDOW_TARGET[1],BANG_WINDOW_TARGET[2]+sign*.18))).toArray()):null;
+    const effect={corpse:false,dissolve:0}; // Whole liquid silhouettes remain until opaque cover; no grain disappearance.
+    const driverAct=performanceFor(frame,'mike',driver,(locomotion.listener?.position||b.camera)),fatherAct=performanceFor(frame,'stanley',father,(locomotion.listener?.position||b.camera));
+    (cruiser?.steering||wheel).updateWorldMatrix(true,false);
+    clarence.pose({wheelMatrix:(cruiser?.steering||wheel).matrixWorld,time,phase:driver.phase,mode:vision.limp?'limp':driver.mode,speaking:isMike,look:driverAct.look,reduced,steer:drive.steer,performance:driverAct,gait:driver.gait,support:driver.support,exitPose:driver.exitPose,limpWeight:vision.limpWeight,...effect});
+    stanley.pose({time,chapter,chapterTime:frame.chapterTime,phase:father.phase,mode:vision.limp?'limp':father.mode,speaking:isStanley,distress:roadside?1:chapter==='disappearance'?.7:.32,look:fatherAct.look,gesture:fatherAct.emphasis*.30,bang:father.bang??confrontation.bang,bangTargets,reduced,performance:fatherAct,crouch:father.crouch||0,runWeight:father.runWeight,gait:father.gait,support:father.support,limpWeight:vision.limpWeight,...effect});
+    stats.confrontation={...confrontation,windowTargets:bangTargets,cameraImpact:reduced?0:confrontation.impact};
+    const hallucination=hallucinations.update(frame,[clarence,stanley]);
+    if(v31Sky)hallucinations.roots[1].visible=false;
+    if(frame.childMemory){
+      const anchor=frame.memoryAnchor||frame.player,figure=hallucinations.roots[0];
+      figure.position.set(anchor.x-Math.sin(anchor.yaw||0)*6,0,anchor.z-Math.cos(anchor.yaw||0)*6);
+      figure.rotation.set(0,(anchor.yaw||0)+Math.PI,0);
+      figure.visible=hallucinations.stats.status==='ready';hallucinations.roots[1].visible=false;
+      car.visible=false;roadsideSet.visible=false;headlight.intensity=0;streetlight.intensity=0;porchLight.intensity=0;
+      for(const light of policeSpill)light.intensity=0;
+    }
+    for(const human of [clarence,stanley])human.root.traverse(o=>{for(const m of [o.material].flat().filter(Boolean)){const u=m.userData?.prologueLiquid;if(u){u.handover.value=hallucinations.stats.status==='ready'?hallucination.zombie:0;u.lift.value=chapter==='rupture'?vision.dissolve:0;}}});
+    ribbons.visible=chapter==='rupture'&&vision.time>=5&&vision.time<11.35;
+    for(const [i,root]of ribbons.children.entries()){root.visible=!v31Sky||i===0;const actor=i?stanley:clarence;root.position.copy(actor.root.position);root.quaternion.copy(actor.root.quaternion);for(const strand of root.children){strand.material.opacity=smooth((vision.time-5)/1.5)*(1-vision.sequence.cover);strand.userData.liquid.amount.value=reduced?.25:1;strand.userData.liquid.time.value=time;strand.userData.liquid.lift.value=vision.dissolve;}}
+    updateBinary(vision,time,reduced);
+    stats.v31Sky={active:v31Sky,stage:v31Sky?v31SkyStage:null,mikeVisible:clarence.root.visible,stanleyVisible:stanley.root.visible,stanleyHallucinationVisible:hallucinations.roots[1].visible,stanleyRibbonVisible:ribbons.visible&&ribbons.children[1].visible,sampleTime:vision.time};
+    const red=chapter==='rupture'?vision.red:clamp(frame.red),mist=chapter==='rupture'?vision.mist:clamp(frame.mist),cover=Math.max(mist,transition.cover||0);scene.background.copy(skyNormal).lerp(skyRed,red);scene.fog.color.copy(fogNormal).lerp(fogRed,red);scene.fog.near=vision.room?6:14*(1-cover);scene.fog.far=vision.room?55:100-cover*93;stats.fog={near:scene.fog.near,far:scene.fog.far,scope:'staged roadside and approach only'};
+    if(frame.childMemory){scene.background.setHex(0xb6c8b2);scene.fog.color.setHex(0xc5c8a7);scene.fog.near=14;scene.fog.far=100;}
+    sky.material.uniforms.red.value=red;sky.material.uniforms.liquid.value=vision.liquid;sky.material.uniforms.clock.value=time;haze.material.uniforms.red.value=red;haze.material.uniforms.amount.value=Math.max(mist*1.34,(transition.cover||0)*1.34);haze.material.uniforms.clock.value=reduced?0:time;haze.visible=!vision.room&&cover>.001;
+    const target=renderer.getRenderTarget(),auto=renderer.autoClear,infoAuto=renderer.info.autoReset,test=renderer.getScissorTest();renderer.getViewport(viewport);renderer.getScissor(scissor);renderer.getClearColor(savedClear);const alpha=renderer.getClearAlpha();
+    try {
+      renderer.autoClear=true;renderer.info.autoReset=false;renderer.info.reset();renderer.setRenderTarget(null);renderer.setScissorTest(false);
+      if(transition.world&&world?.scene&&!vision.room){
+        worldFog.color.copy(world.scene.fog?.color||fogNormal).lerp(fogRed,red);worldFog.density=(world.scene.fog?.density??.075)+cover*.14;
+        const background=world.scene.background?.isColor?worldBackground.copy(world.scene.background).lerp(skyRed,red):world.scene.background;
+        withPrologueWorld(world,{camera,stage:worldStage,actors:[clarence.root,stanley.root,binary,ribbons,haze,liquidVeil.mesh],fog:worldFog,background,red,liquid:vision.liquid,time},(actualScene,cinematicCamera)=>renderer.render(actualScene,cinematicCamera));
+      }else renderer.render(scene,camera);
+      if(!frame.childMemory)renderEquipment(camera,frame);
+      stats.frames++;stats.draws=renderer.info.render.calls;stats.chapter=chapter;stats.childMemory=!!frame.childMemory;stats.controlledCharacter='Clarence';stats.environment=vision.room?'red room':transition.world?'live maze':'staged approach';stats.transitionCover=transition.cover||0;camera.getWorldPosition(cameraWorld);stats.camera={x:cameraWorld.x,y:cameraWorld.y,z:cameraWorld.z,yaw:camera.rotation.y,pitch:camera.rotation.x};stats.menVisible=menVisible;stats.vision={...vision};stats.hallucination={...hallucinations.stats,...hallucination};stats.ribbons=ribbons.visible?ribbons.children.length*3:0;stats.roomContents=vision.room?['projector','original detailed anonymous face projection']:[];stats.liquidMaterials=vision.liquid?liquidUniforms.length:0;stats.flashlight=flashlight.intensity>0;
+    } catch(error){stats.error=error.message;throw error;}
+    finally {renderer.setRenderTarget(target);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(test);renderer.setClearColor(savedClear,alpha);renderer.autoClear=auto;renderer.info.autoReset=infoAuto;}
+  }
+  return {start,render,release:disposeSet,dispose(){disposeSet();dead=true;},diagnostics:()=>({...stats,castRoles:stats.castRoles?{...stats.castRoles}:null,rain:rain?{...rain.stats}:null,assets:assets?{...assets.stats}:null,camera:stats.camera?{...stats.camera}:null,actors:live?[clarence.diagnostics(),stanley.diagnostics()]:[]})};
+}
