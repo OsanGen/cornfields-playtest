@@ -1,0 +1,380 @@
+{
+  "type": "temporary synthetic playtest dialogue",
+  "story": "Jacob Nangle; approved roadside confrontation and private Mike cabin exchange; existing cast, natural synthetic playtest delivery",
+  "generator": "Installed Piper, offline ONNX CPU, two intra-op threads",
+  "model": "en_US-libritts_r-medium",
+  "model_url": "https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/libritts_r/medium",
+  "model_card": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/libritts_r/medium/MODEL_CARD",
+  "model_sha256": "10bb85e071d616fcf4071f369f1799d0491492ab3c5d552ec19fb548fac13195",
+  "license": "CC BY 4.0 per model card; attribution and modified-output notice in LICENSES.md",
+  "cast_corpus_ids": {
+    "mike": "5918",
+    "clarence": "3370",
+    "stanley": "5914",
+    "dispatch": "783",
+    "face": "783",
+    "unknown": "5914"
+  },
+  "voice_selection_reference": "https://github.com/line/LibriTTS-P",
+  "modifications": "New scripted speech; gain normalization and mono MP3 encoding at natural delivery speed. Radio, face and unidentified-voice filtering applied at runtime.",
+  "files": {
+    "CAR-01.mp3": {
+      "bytes": 21404,
+      "sha256": "b67cb726d650d65073459d1ea41bcee9f698360d09b83ef1e440c23940a270a6",
+      "duration": 2.9722
+    },
+    "CAR-02.mp3": {
+      "bytes": 11828,
+      "sha256": "81891dc31e0d43ae1fc17e6c5d140613a01900ceb3e43a9775fbba7c43c95ae6",
+      "duration": 1.6022
+    },
+    "CAR-03.mp3": {
+      "bytes": 30308,
+      "sha256": "cd67dfdc8856fe33cf43764c3b5615f1dd59fc7a6a45c4e79ad0115e8f19ec8e",
+      "duration": 4.2377
+    },
+    "CAR-04.mp3": {
+      "bytes": 22244,
+      "sha256": "67508935fb071908ffed19c8f792767d2024d2b624d84ce7ceab125e7027314e",
+      "duration": 3.0882
+    },
+    "CAR-05.mp3": {
+      "bytes": 9308,
+      "sha256": "da93054318a1928b15c31d2c99de85f45dd406e90b5e7d2dc9c35b3f93f45abc",
+      "duration": 1.2423
+    },
+    "CAR-06.mp3": {
+      "bytes": 9476,
+      "sha256": "8a3f2ff7d943e30869392738157b5f23d0b4cff89e0fbfd010c23ee54964befb",
+      "duration": 1.2655
+    },
+    "CAR-07.mp3": {
+      "bytes": 24932,
+      "sha256": "5181c3afc152831b8548d3a86f7d0f26d362c5d5bc8be022494ed07ae4e56166",
+      "duration": 3.4714
+    },
+    "RAD-01.mp3": {
+      "bytes": 40892,
+      "sha256": "10867cc25ce2d23a37485ca38187416b7ac648c70c70eb82060554e41daf72e1",
+      "duration": 5.747
+    },
+    "RAD-02.mp3": {
+      "bytes": 10484,
+      "sha256": "a60593109857c7873838816674fed89567c4ad28cebda340cc96631ed81de053",
+      "duration": 1.394
+    },
+    "ARR-00.mp3": {
+      "bytes": 17372,
+      "sha256": "4453e41528dc89ec882adbb51a1b4477c0e5a4baddacb775f5307d0f39c6f9ca",
+      "duration": 2.38
+    },
+    "CAB-01.mp3": {
+      "bytes": 16028,
+      "sha256": "0feda9d9f059d6559b0b4458c4e6b94ab0ba6000e9ab5f1089b6717bde5192fa",
+      "duration": 2.2059
+    },
+    "FLA-03.mp3": {
+      "bytes": 23420,
+      "sha256": "99dadfab412e610b938c2111dcdb232646f9ec357578a2a85fe465c07025d984",
+      "duration": 3.2624
+    },
+    "CAB-02.mp3": {
+      "bytes": 9476,
+      "sha256": "705aa2aa4512aafd244394097c14016a3422af3bab6b1b8fc8802e67227ad171",
+      "duration": 1.2655
+    },
+    "ARR-01.mp3": {
+      "bytes": 28796,
+      "sha256": "27d5ac8a867db91ab779d49756e5ab0a00eef8e9a223f72d33ce2eb5d1f8d03f",
+      "duration": 4.0171
+    },
+    "ARR-02.mp3": {
+      "bytes": 9476,
+      "sha256": "84edf1f5da8ca811712ddb1b62d8dccb940cc1e7bbdbf9de3103f8ae1b3070b8",
+      "duration": 1.2539
+    },
+    "FLA-01.mp3": {
+      "bytes": 5948,
+      "sha256": "5252da7edb0685cc05330fb60aa43228c45604f8bf421d920f0011964e601593",
+      "duration": 0.7663
+    },
+    "FLA-02.mp3": {
+      "bytes": 32156,
+      "sha256": "4bb6ed664d01c84850bc9c7805b017248542a3ad8241bbf2266353374f2e9bbf",
+      "duration": 4.4931
+    },
+    "WAL-01.mp3": {
+      "bytes": 40724,
+      "sha256": "7f698114e5c6ae0972e604bb46b180d5e367ea84a68059d9e89bdc697ce92133",
+      "duration": 5.7353
+    },
+    "WAL-02.mp3": {
+      "bytes": 6956,
+      "sha256": "b0bf0470bd033d34d24393275ade8f299f6600e0ed071c89878207492b0294f6",
+      "duration": 0.894
+    },
+    "WAL-03.mp3": {
+      "bytes": 13676,
+      "sha256": "f24c479876a9c85c2040e06d31ec0fa8d3c46d44350a8ac6f8aa0a9913ab3a30",
+      "duration": 1.8692
+    },
+    "WAL-04.mp3": {
+      "bytes": 6452,
+      "sha256": "6c489ce32144280c8887b0744e070db882283a38bcb3ce4a98d19f374c4b1cca",
+      "duration": 0.8359
+    },
+    "WAL-05.mp3": {
+      "bytes": 29804,
+      "sha256": "db49ff7340a921ed1f6d11509669a1a58e5cd6e04755a142a3f275f09989058e",
+      "duration": 4.168
+    },
+    "WAL-06.mp3": {
+      "bytes": 34844,
+      "sha256": "9f72527f095b93d470f33ae5dfce6633d9ee70a5d3551928af1698061177c43f",
+      "duration": 4.8878
+    },
+    "WAL-07.mp3": {
+      "bytes": 20900,
+      "sha256": "feb36a981ba49c0579ec1d3f0384286c058414ba55ea0b9bab44b699c6205e14",
+      "duration": 2.8909
+    },
+    "WAL-08.mp3": {
+      "bytes": 48116,
+      "sha256": "e07eb685f74d359cb14f8311f14b3dac549aaeaea4f944b5d7fd802188d6ba08",
+      "duration": 6.77
+    },
+    "WAL-09.mp3": {
+      "bytes": 14012,
+      "sha256": "27b808f5a037b12671ded872abdc8907bcf292476e2d167960d0e9fb03b7d087",
+      "duration": 1.904
+    },
+    "RED-01.mp3": {
+      "bytes": 4604,
+      "sha256": "252ceee57a59400fe7eb055f3dba22e3f126136427eedfc456c5548c94b42cec",
+      "duration": 0.5573
+    },
+    "RED-02.mp3": {
+      "bytes": 6452,
+      "sha256": "8c0b589360d6e3214f36363361f7abe56d1130dd0b8f6a37c627905b58adae1a",
+      "duration": 0.8243
+    },
+    "RED-03.mp3": {
+      "bytes": 4772,
+      "sha256": "62054762b16c289167e25af65c643faec8d5de583eed40bfac600e3dd058c7ce",
+      "duration": 0.5805
+    },
+    "RET-01.mp3": {
+      "bytes": 20060,
+      "sha256": "0dd7c68c38c69798aca988bf47420ac0ea14d0a2612deeda06ca7e0d91c92061",
+      "duration": 2.7748
+    },
+    "WAL-10.mp3": {
+      "bytes": 11156,
+      "sha256": "857c617649c406520fd5ef327b7ac0ceaa051c8e1be9ff132a5190ec06bb92ea",
+      "duration": 1.4977
+    },
+    "WAL-11.mp3": {
+      "bytes": 20732,
+      "sha256": "221efdf4ab8116b7de1ef251425eae478eceb67558861bee683dccd377847c4f",
+      "duration": 2.858
+    },
+    "WAL-12.mp3": {
+      "bytes": 11156,
+      "sha256": "b380d65dbc6ad8ced9aad1904fb48af8480926b8cc7b0a53eb3ff86f2fd7161c",
+      "duration": 1.5093
+    },
+    "WAL-13.mp3": {
+      "bytes": 40388,
+      "sha256": "3d66b599c1a023edea628fa77835cff0b2d8ac8e3b782033a6dc2ca887ba9fab",
+      "duration": 5.6773
+    },
+    "WAL-14.mp3": {
+      "bytes": 19052,
+      "sha256": "f55b1b8262387fcb4c5eed331e4e4b450138cf5fcba508ebe0bedbf6f7e93f2d",
+      "duration": 2.6239
+    },
+    "WAL-15.mp3": {
+      "bytes": 15188,
+      "sha256": "a8a4fc3bd205c90bfa057875151f5c7f1d0269978415157f07323b6f65d6a547",
+      "duration": 2.0782
+    },
+    "WAL-16.mp3": {
+      "bytes": 27452,
+      "sha256": "c0211e72981a3cfa4f72a0a16f300a33f9d3025019a41efb10d49dbae4e07b41",
+      "duration": 3.8313
+    },
+    "LIQ-01.mp3": {
+      "bytes": 5948,
+      "sha256": "e16a521da5a5929f28f91a7eb70a5ada64d092ba24a8857db69099a40862f5e9",
+      "duration": 0.7547
+    },
+    "FOL-01.mp3": {
+      "bytes": 11492,
+      "sha256": "ed0161dc3e737f3dde391759f10fcd681c30e2bb4a144d510c64b9902faefbd8",
+      "duration": 1.5441
+    },
+    "FOL-02.mp3": {
+      "bytes": 22916,
+      "sha256": "723a1408d1e4dc3feb4831c48acd0a38d2765cbaa6b9103b01df7bd23ecc4636",
+      "duration": 3.17
+    },
+    "FOL-03.mp3": {
+      "bytes": 11996,
+      "sha256": "a0bc6060366a5b986003300c7be79704e75ccc6fcfcbc47ee0c9e4bfc56da34d",
+      "duration": 1.6254
+    },
+    "END-01.mp3": {
+      "bytes": 9644,
+      "sha256": "2f437ea51a38f510d241105359fc27ceb336517ad868e62f63090a5a4ecf2a38",
+      "duration": 1.1240416666666666
+    }
+  },
+  "subtitle_only_cues": [
+    {
+      "id": "CAR-00",
+      "text": "Clarence, I gotta tell you something.",
+      "mode": "subtitle-only"
+    },
+    {
+      "id": "UND-01",
+      "text": "What the fuck.",
+      "mode": "subtitle-only"
+    }
+  ],
+  "subtitle_only_decision": "2026-10-04: owner explicitly deferred the voice requirement for these two new cues only; no new speech generated.",
+  "humanRoadsideV2": {
+    "newSound": "Original bounded two-tone car horn synthesized locally at the single car_honk reaction cue",
+    "implementation": "src/prologue-audio.js",
+    "frequenciesHz": [
+      370,
+      466
+    ],
+    "durationSeconds": 0.32,
+    "newVoiceGeneration": false,
+    "voiceFiles": "Byte-identical to pinned private v12; inherited provenance is retained, not independently recertified",
+    "newMusic": {
+      "file": "entertainment-music.mp3",
+      "title": "Cold Funk",
+      "artist": "Kevin MacLeod",
+      "sourceURL": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100499",
+      "downloadURL": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cold%20Funk.mp3",
+      "license": "CC-BY-4.0",
+      "licenseURL": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "a7d0b772f05b99c4ac3df28cb2feaa5190781c2b87bceef5052cc45408b6fc75",
+      "sha256": "5a913c704a2edb73f49015bfe0ae2f91e023929b4ec1a437388730b0fce17c6f",
+      "bytes": 321035,
+      "sourceIntervalSeconds": [
+        0,
+        20
+      ],
+      "decodedDurationSeconds": 20,
+      "containerDurationSeconds": 20.035918,
+      "codec": "MP3 stereo 44.1kHz 128kbps",
+      "modifications": "Excerpted from 0:00 to 0:20; runtime bandpass for fictional car radio. Playback cut, knob and hand share CAR-01 start; not word-level aligned.",
+      "newSpendUSD": 0,
+      "historicalV2": {
+        "sha256": "c0658371c2b08c838351ff54fb77b6f403a08aa40d55dd2f2b30ee45c7b50550",
+        "bytes": 50512,
+        "sourceIntervalSeconds": [
+          0,
+          4.15
+        ],
+        "decodedDurationSeconds": 4.15,
+        "containerDurationSeconds": 4.179592,
+        "codec": "MP3 mono 44.1kHz 96kbps",
+        "modifications": "Excerpted from0:00 to0:04.15, 18ms onset and20ms ending fades, volume-adjusted; runtime bandpass for a fictional car radio"
+      },
+      "audition": "Unverified; owner uninterrupted listening review required",
+      "musicLeadSeconds": 14,
+      "byteCap": 524288
+    },
+    "dogBark": "Historical v2 had no bark; see visualOverhaulV3.bark for approved v3 integration.",
+    "newExternalProcessing": false,
+    "titleMusic": {
+      "file": "title-music.mp3",
+      "title": "The House of Leaves",
+      "artist": "Kevin MacLeod",
+      "isrc": "USUAN1100710",
+      "sourceURL": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100710",
+      "downloadURL": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20House%20of%20Leaves.mp3",
+      "license": "CC-BY-4.0",
+      "licenseURL": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "ceb97d6a0b8553f765a15ba7c4acbfd8e127bce472606a3d3667562247229573",
+      "sha256": "2689f129cd95b016e1e5eb23879b3af8879222eeaedc4f5134a8c96e7c6b2dc0",
+      "bytes": 27315,
+      "sourceIntervalSeconds": [
+        22,
+        24.2
+      ],
+      "decodedDurationSeconds": 2.2,
+      "containerDurationSeconds": 2.246531,
+      "codec": "MP3 mono44.1kHz96kbps",
+      "modifications": "Excerpted from0:22.0 to0:24.2,30ms onset fade,350ms ending fade,0.8 gain; bounded title-window playback",
+      "newSpendUSD": 0,
+      "audition": "Owner listening QA pending; technical signal checks are not an audition",
+      "signal": {
+        "meanDbFS": -24.1,
+        "peakDbFS": -10.9,
+        "longSilenceDetected": false,
+        "silenceThresholdDbFS": -45,
+        "silenceWindowSeconds": 0.15
+      }
+    }
+  },
+  "visualOverhaulV3": {
+    "openingLeadSeconds": 14,
+    "radioOffCue": "CAR-01 start",
+    "musicContinuesUnder": "CAR-00 subtitle",
+    "newVoiceAudio": false,
+    "newSpendUSD": 0,
+    "listening": "unverified",
+    "bark": {
+      "file": "roadside-dog-bark.wav",
+      "title": "Dog barking mono",
+      "artist": "Brandon Morris",
+      "uploader": "HaelDB",
+      "sourceURL": "https://opengameart.org/content/dog-barking-mono",
+      "downloadURL": "https://opengameart.org/sites/default/files/dog_barking_mono.wav",
+      "license": "CC0-1.0",
+      "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "licenseChoice": "CC0 selected from publisher offered OGA-BY 3.0 / CC0; OpenGameArt FAQ allows choosing one license.",
+      "licenseChoiceSource": "https://opengameart.org/content/faq#q-multilicense",
+      "verifiedAtUTC": "2026-10-05T13:52:00Z",
+      "sha256": "bbd0f908b3514dd3bd7d2bc04dcf64f8d360a161e7f43cac5d6761e7add79451",
+      "bytes": 179848,
+      "byteCap": 262144,
+      "codec": "PCM signed 16-bit little-endian mono WAV, 44100 Hz",
+      "sampleFrames": 89902,
+      "decodedDurationSeconds": 2.03859410430839,
+      "modifications": "Original source bytes unchanged. Runtime 8 ms onset and 20 ms end envelopes, bounded attenuation/pan and car lowpass. One source, 9.4-second presentation cycle, pause/release owned by prologue bus. Jaw uses measured 20 ms RMS envelope of this recording.",
+      "signal": {
+        "peakDbFS": -7.04,
+        "rmsDbFS": -25.74
+      },
+      "audition": "Unverified; technical measurements and mocked audio lifecycle tests do not establish listening quality.",
+      "newSpendUSD": 0,
+      "newExternalProcessing": false
+    }
+  },
+  "realismLiquidV1": {
+    "end01": {
+      "file": "END-01.mp3",
+      "text": "Am I going crazy?",
+      "sourceFileRecord": {
+        "bytes": 14012,
+        "sha256": "e28eebd99e4e28dd1f814da3fd0fa524353ccfe23e2faeb6a09e1fcbb5436072",
+        "duration": 1.904
+      },
+      "sourceCommit": "115d3343f58a23cfc78811071c5e45bbe7a5e3a4",
+      "sha256": "2f437ea51a38f510d241105359fc27ceb336517ad868e62f63090a5a4ecf2a38",
+      "bytes": 9644,
+      "decodedDurationSeconds": 1.1240416666666666,
+      "sampleRate": 24000,
+      "sampleFrames": 26977,
+      "modifications": "Existing recording trimmed from 0.780 seconds with 8 ms onset and 22 ms ending fades; mono MP3 64 kbps. No new recording or voice provider.",
+      "newSpendUSD": 0,
+      "newExternalProcessing": false,
+      "timingContract": "Prologue dialogue uses decodedDuration 26977/24000 seconds. The existing legacy duration field of 1.904 seconds remains unchanged for the separate survival-arrival presentation clock."
+    }
+  }
+}
