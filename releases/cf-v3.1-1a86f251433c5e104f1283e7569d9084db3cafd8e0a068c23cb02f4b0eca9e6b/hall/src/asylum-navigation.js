@@ -1,0 +1,26 @@
+/** A small floor-only navigation graph over the existing hall and two original rooms. */
+export const FLOOR_NODES=Object.freeze([
+ ['start',0,5.2],['center',0,0],['west',-7,0],['southwest',-5,4],['northwest',-5,-4],['northeast',5,-4],['southeast',5,4],['hall-fold',-4,-5.35],
+ ['a-entry',-9.7,0],['a-south-entry',-10.2,1.55],['a-south',-12.3,1.65],['a-key',-13.7,0],['a-north',-13.7,-1.8],['a-east-north',-10.2,-2.1],
+
+].map(([id,x,z])=>Object.freeze({id,x,z})));
+export function createNavigation(world,progress){
+ const caches=new Map();
+ const floorNodes=[...FLOOR_NODES,{id:'bay-fold',x:world.layout.foldBayArrival.x,z:world.layout.foldBayArrival.z},...world.layout.mansion.spaces.map(s=>({id:'space-'+s.id,x:s.center[0],z:s.center[2]})),...world.layout.mansion.tokenLocations.map((p,i)=>({id:'token-'+i,x:p.x,z:p.z})),...world.layout.mansion.doors.flatMap(d=>[-1,1].map(side=>({id:d.id+':'+side,x:d.x+(d.axis==='x'?side*.65:0),z:d.z+(d.axis==='z'?side*.65:0)})))];
+ const allowed=(p,room=null)=>{const a=world.areaAt(p.x,p.z);return !!a&&(!room||a===room)&&(a!=='A'||progress.firstUnlocked)&&(a!=='B'||progress.unlocked);};
+ function walkable(a,b,radius=.28,room=null){if(!allowed(a,room)||!allowed(b,room))return false;const distance=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.ceil(distance/.12));for(let i=0;i<=steps;i++){const p={x:a.x+(b.x-a.x)*i/steps,z:a.z+(b.z-a.z)*i/steps};if(!allowed(p,room)||!world.isSafe(p,radius))return false;}return true;}
+ function neighbours(a,b){const aa=world.areaAt(a.x,a.z),ba=world.areaAt(b.x,b.z);if(aa==='B'||ba==='B')return aa===ba&&(world.spaceAt(a.x,a.z)===world.spaceAt(b.x,b.z)||Math.hypot(a.x-b.x,a.z-b.z)<=2);return true;}
+ function graph(radius,room,traverseDoors=false){const key=[radius,room,progress.firstUnlocked,progress.unlocked,world.doorVersion,traverseDoors].join(':');if(caches.has(key))return caches.get(key);const nodes=floorNodes.filter(p=>allowed(p,room)&&world.isSafe(p,radius)).map(p=>({...p}));const edges=nodes.map(()=>[]);for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++)if(neighbours(nodes[i],nodes[j])&&walkable(nodes[i],nodes[j],radius,room)){const cost=Math.hypot(nodes[i].x-nodes[j].x,nodes[i].z-nodes[j].z);edges[i].push({to:j,cost,kind:'walk'});edges[j].push({to:i,cost,kind:'walk'});}if(!room&&progress.unlocked){const a=nodes.findIndex(n=>n.id==='hall-fold'),b=nodes.findIndex(n=>n.id==='bay-fold');if(a>=0&&b>=0){edges[a].push({to:b,cost:3,kind:'fold'});edges[b].push({to:a,cost:3,kind:'fold'});}}if(traverseDoors)for(const d of world.interiorDoors.values()){if(d.open)continue;const a=nodes.findIndex(n=>n.id===d.id+':-1'),b=nodes.findIndex(n=>n.id===d.id+':1');if(a>=0&&b>=0){edges[a].push({to:b,cost:1.3,kind:'door',doorId:d.id});edges[b].push({to:a,cost:1.3,kind:'door',doorId:d.id});}}const value={nodes,edges};if(caches.size>8)caches.clear();caches.set(key,value);return value;}
+ function route(from,to,{radius=.28,room=null,traverseDoors=false}={}){
+  if(!allowed(from,room)||!allowed(to,room)||!world.isSafe(from,radius))return [];
+  const base=graph(radius,room,traverseDoors);if(!base.nodes.length)return [];
+  const goal=world.isSafe(to,radius)?to:[...base.nodes].sort((a,b)=>Math.hypot(a.x-to.x,a.z-to.z)-Math.hypot(b.x-to.x,b.z-to.z))[0];
+  const nodes=[...base.nodes,{id:'from',x:from.x,z:from.z},{id:'to',x:goal.x,z:goal.z}],edges=base.edges.map(e=>e.map(v=>({...v})));edges.push([],[]);const start=nodes.length-2,end=nodes.length-1;
+  for(let i=start;i<nodes.length;i++)for(let j=0;j<i;j++)if(neighbours(nodes[i],nodes[j])&&walkable(nodes[i],nodes[j],radius,room)){const cost=Math.hypot(nodes[i].x-nodes[j].x,nodes[i].z-nodes[j].z);edges[i].push({to:j,cost,kind:'walk'});edges[j].push({to:i,cost,kind:'walk'});}
+  const distance=nodes.map(()=>Infinity),previous=new Map(),open=new Set(nodes.map((_,i)=>i));distance[start]=0;
+  while(open.size){let at=-1;for(const i of open)if(at<0||distance[i]<distance[at])at=i;if(!Number.isFinite(distance[at])||at===end)break;open.delete(at);for(const e of edges[at])if(open.has(e.to)&&distance[at]+e.cost<distance[e.to]){distance[e.to]=distance[at]+e.cost;previous.set(e.to,{from:at,kind:e.kind,doorId:e.doorId});}}
+  if(!Number.isFinite(distance[end]))return [];const path=[];for(let at=end;at!==start;){const e=previous.get(at);if(!e)return [];path.unshift({...nodes[at],kind:e.kind,...(e.doorId?{doorId:e.doorId}:{})});at=e.from;}return path;
+ }
+ function move(enemy,target,distance){const dx=target.x-enemy.x,dz=target.z-enemy.z,n=Math.hypot(dx,dz);if(n<.03)return true;const step=Math.min(n,Math.max(0,distance)),count=Math.max(1,Math.ceil(step/.05));enemy.yaw=Math.atan2(-dx,-dz);for(let i=0;i<count;i++){const next={x:enemy.x+dx/n*step/count,z:enemy.z+dz/n*step/count};if(!allowed(next,enemy.room)||!world.isSafe(next,enemy.radius))return false;enemy.x=next.x;enemy.z=next.z;}return n<=distance+.03;}
+ return {route,walkable,move,targets(enemy){const g=graph(enemy.radius,enemy.room),seen=new Set(),queue=[];for(let i=0;i<g.nodes.length;i++)if(neighbours(enemy,g.nodes[i])&&walkable(enemy,g.nodes[i],enemy.radius,enemy.room)){seen.add(i);queue.push(i);}for(let i=0;i<queue.length;i++)for(const e of g.edges[queue[i]])if(!seen.has(e.to)){seen.add(e.to);queue.push(e.to);}return g.nodes.filter((_,i)=>seen.has(i));},dispose(){caches.clear();}};
+}
