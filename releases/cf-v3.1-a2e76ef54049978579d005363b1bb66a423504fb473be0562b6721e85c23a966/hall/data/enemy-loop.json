@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "version": "lean-1",
+  "floorOnly": true,
+  "enemyHP": false,
+  "enemies": [
+    {
+      "id": "rabbit",
+      "kind": "rabbit",
+      "area": "hall",
+      "x": 4.6,
+      "z": -4.8,
+      "yaw": 3.141592653589793,
+      "speedScale": 0.45
+    }
+  ],
+  "ammoPoint": {
+    "x": 1.7,
+    "y": 1.15,
+    "z": 4.5,
+    "maxRounds": 6,
+    "cooldownActiveSeconds": 8
+  },
+  "retryGraceSeconds": 1.5,
+  "scope": "One unchanged persistent slower floor-route rabbit. Two room zombies disabled and deferred. Pillsbury-inspired three-space loop with invented connector."
+}
