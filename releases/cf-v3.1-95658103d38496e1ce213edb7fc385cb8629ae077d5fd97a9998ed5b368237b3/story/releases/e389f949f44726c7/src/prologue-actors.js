@@ -1,0 +1,284 @@
+import {defaultActorWheelMatrix,wheelGrip} from './prologue-cabin.js';
+import {sampleSpeech} from './prologue-speech.js';
+import * as THREE from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {reachPrologueArm} from './prologue-confrontation.js';
+import {installCharacterSurfaces} from './character-surfaces.js';
+
+// Original articulated playtest cast. No imported character or motion capture.
+// Clothing contours and facial details are authored here; this is not MakeHuman.
+export const PROLOGUE_CAST_PROVENANCE = 'Original articulated meshes and animation authored for the Cornfields prologue playtest';
+
+function material(color, roughness = .86) { return new THREE.MeshStandardMaterial({color, roughness}); }
+function shape(profile, sx = 1, sz = 1) {
+  const geometry = new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), 10);
+  geometry.scale(sx, 1, sz); return geometry;
+}
+function ellipsoid(x, y, z) { return new THREE.SphereGeometry(1, 8, 6).scale(x, y, z); }
+function piece(parent, geometry, mat, position = [0, 0, 0], rotation = [0, 0, 0]) {
+  const mesh = new THREE.Mesh(geometry, mat); mesh.position.fromArray(position); mesh.rotation.set(...rotation); parent.add(mesh); return mesh;
+}
+function group(parent, x, y, z) { const item = new THREE.Group(); item.position.set(x, y, z); parent.add(item); return item; }
+
+// Combine the unmoving details of each joint into one draw per material.
+function compact(parent) {
+  for (const child of [...parent.children]) if (child.isGroup) compact(child);
+  const sets = new Map();
+  for (const child of parent.children) if (child.isMesh) {
+    if (!sets.has(child.material)) sets.set(child.material, []);
+    sets.get(child.material).push(child);
+  }
+  for (const [mat, meshes] of sets) {
+    if (meshes.length < 2) continue;
+    const geometries = meshes.map(mesh => { mesh.updateMatrix(); return mesh.geometry.clone().applyMatrix4(mesh.matrix); });
+    const merged = mergeGeometries(geometries, false);
+    geometries.forEach(geometry => geometry.dispose());
+    if (!merged) continue;
+    for (const mesh of meshes) { parent.remove(mesh); mesh.geometry.dispose(); }
+    piece(parent, merged, mat);
+  }
+}
+
+export function createPrologueActor({name = 'Clarence', police = true, profile = null, surfaceLoader,faceEnabled=true} = {}) {
+  if(profile==='glenda')return createGlendaActor({name:name==='Clarence'?'Glenda Yates':name,surfaceLoader,faceEnabled});
+  const root = new THREE.Group(); root.name = `Prologue ${name}`;
+  const identity=police?'clarence':'stanley';
+  root.userData.actorIdentity=identity;
+  const skin = material(police ? 0x61402d : 0xc09d88, .74);
+  const shade = material(police ? 0x432b22 : 0x92654e, .88);
+  const cloth = material(police ? 0x202e39 : 0x625544);
+  const clothEdge = material(police ? 0x17212b : 0x423e36);
+  const pants = material(police ? 0x182129 : 0x394442);
+  const boots = material(0x151617, .66), hair = material(police ? 0x28211f : 0x706962);
+  const eyeWhite = material(0xc3bbae, .46), iris = material(police?0x483326:0x687d89, .42);
+  const mouthMat = material(0x49372f), brass = material(0xb59b58, .42);
+  const shirt = material(police ? 0x19212a : 0x9b9989);
+  const hip = group(root, 0, .91, 0);
+  piece(hip, shape([[.12,-.08],[.19,-.045],[.185,.08],[.15,.11]], 1.06, .66), pants);
+  const body = group(hip, 0, .08, 0);
+  piece(body, shape([[.145,0],[.169,.075],[.185,.24],[.21,.34],[.195,.40],[.095,.465]], 1.08, .63), cloth);
+  piece(body, shape([[.166,-.022],[.17,.015],[.168,.036]], 1.07, .66), boots);
+  piece(body, new THREE.BoxGeometry(.045,.042,.015), brass, [0,.005,.119]);
+  // Shirt opening, collar, pockets, seams and shoulders give the torso clothing structure.
+  piece(body, new THREE.BoxGeometry(.065,.25,.012), shirt, [0,.30,.13]);
+  for (const sign of [-1,1]) {
+    piece(body, new THREE.BoxGeometry(.069,.079,.022), clothEdge, [sign*.049,.399,.133], [0,0,sign*.32]);
+    piece(body, new THREE.BoxGeometry(.086,.074,.015), clothEdge, [sign*.105,.27,.128]);
+    piece(body, new THREE.BoxGeometry(.09,.019,.020), cloth, [sign*.105,.313,.134]);
+    piece(body, ellipsoid(.085,.042,.091), cloth, [sign*.183,.373,-.002]);
+    if(police) piece(body, new THREE.BoxGeometry(.075,.013,.066), clothEdge, [sign*.173,.415,-.005]);
+  }
+  for(let i=0;i<4;i++) piece(body, ellipsoid(.004,.004,.003), brass, [0,.11+i*.06,.145]);
+  if(police) {
+    piece(body, new THREE.CylinderGeometry(.028,.024,.009,6), brass, [-.102,.346,.146], [Math.PI/2,0,0]);
+    piece(body, new THREE.BoxGeometry(.071,.014,.009), brass, [.10,.343,.14]);
+    piece(body, new THREE.BoxGeometry(.057,.112,.047), boots, [-.15,.10,.10], [0,0,-.09]);
+    piece(body, new THREE.CylinderGeometry(.012,.012,.09,7), boots, [-.15,.193,.10]);
+    piece(body, new THREE.BoxGeometry(.066,.13,.055), boots, [.175,-.024,0]);
+  } else {
+    // Open work jacket over a faded undershirt; vertical seams and worn cuffs.
+    for(const sign of [-1,1]) piece(body,new THREE.BoxGeometry(.009,.31,.008),clothEdge,[sign*.045,.20,.142],[0,0,sign*.025]);
+  }
+  piece(body, shape([[.049,0],[.047,.09],[.053,.13]],1,.93),skin,[0,.428,-.008]);
+  const head = group(body,0,.60,0);head.name=`Fallback ${identity} head`;
+  // Independent jaw/cheek silhouettes keep each role recognizable without
+  // relying on wardrobe, hair or color when the optional GLB is unavailable.
+  const contour=police
+    ? [[.026,-.119],[.043,-.102],[.057,-.071],[.073,-.027],[.078,.029],[.076,.074],[.060,.109],[.026,.131],[0,.134]]
+    : [[.049,-.110],[.074,-.090],[.087,-.057],[.097,-.017],[.094,.032],[.087,.076],[.065,.112],[.027,.131],[0,.134]];
+  piece(head,shape(contour,1,police?1.055:.98),skin,[0,0,-.006]);
+  for(const sign of [-1,1]) {
+    piece(head,ellipsoid(.013,.028,.014),skin,[sign*(police?.075:.091),-.010,-.002]);
+    piece(head,ellipsoid(.005,.017,.004),shade,[sign*(police?.084:.100),-.009,.006]);
+    piece(head,ellipsoid(.027,.010,.007),shade,[sign*.031,.027,.077]);
+    piece(head,ellipsoid(.020,.007,.005),eyeWhite,[sign*.030,.026,.080]);
+    piece(head,ellipsoid(.006,.006,.003),iris,[sign*.030,.026,.085]);
+    piece(head,ellipsoid(.003,.004,.002),boots,[sign*.030,.026,.088]);
+    piece(head,ellipsoid(.024,.003,.004),hair,[sign*.031,.044,.082],[0,0,sign*(police?-.035:.11)]);
+    if(!police) piece(head,ellipsoid(.022,.007,.006),shade,[sign*.037,.009,.084],[0,0,sign*.1]);
+  }
+  piece(head,ellipsoid(police?.008:.014,police?.031:.026,.014),skin,[0,.004,police?.092:.087],[-.13,0,0]);
+  piece(head,ellipsoid(police?.011:.021,police?.009:.012,police?.015:.012),skin,[0,-.021,police?.101:.097]);
+  for(const sign of [-1,1])piece(head,ellipsoid(.004,.002,.003),shade,[sign*.009,-.027,.099]);
+  const jaw = group(head,0,-.063,.059);
+  piece(jaw,ellipsoid(.021,.004,.004),shade);
+  piece(jaw,ellipsoid(.018,.0015,.003),mouthMat,[0,-.001,.003]);
+  // Hair follows the skull rather than making a detached helmet silhouette.
+  piece(head,shape(police?[[.079,.024],[.079,.050],[.078,.075],[.062,.112],[.028,.134],[0,.138]]:[[.090,.074],[.087,.087],[.066,.118],[.028,.134],[0,.138]],1.045,1.08),hair,[0,0,-.006]);
+  for(const sign of [-1,1])piece(head,ellipsoid(.015,.040,.059),hair,[sign*.072,.043,-.022]);
+  if(!police) {
+    piece(head,ellipsoid(.039,.008,.010),hair,[0,-.043,.086]);
+    piece(head,ellipsoid(.050,.026,.014),hair,[0,-.089,.066]);
+  }
+
+  const arms=[],legs=[];
+  for(const sign of [-1,1]) {
+    const shoulder=group(body,sign*.217,.353,0);
+    piece(shoulder,shape([[.041,-.315],[.058,-.27],[.068,-.13],[.068,-.045],[.051,.005]],1,.95),cloth);
+    const elbow=group(shoulder,0,-.31,0);
+    piece(elbow,shape([[.036,-.285],[.041,-.265],[.047,-.18],[.056,-.025],[.044,.025]],1,.95),cloth);
+    piece(elbow,shape([[.041,-.291],[.042,-.269]],1,1),clothEdge);
+    const hand=group(elbow,0,-.306,0);
+    piece(hand,ellipsoid(.036,.057,.023),skin,[0,-.038,.004]);
+    for(let finger=0;finger<4;finger++){
+      const x=(finger-1.5)*.015, length=[.058,.069,.064,.047][finger];
+      piece(hand,ellipsoid(.009,length*.5,.010),skin,[x,-.079-length*.28,.010],[-.16,0,0]);
+      piece(hand,ellipsoid(.007,.014,.010),shade,[x,-.079-length*.55,.015],[-.4,0,0]);
+    }
+    piece(hand,ellipsoid(.013,.034,.014),skin,[sign*.034,-.026,.020],[.2,0,-sign*.48]);
+    arms.push({shoulder,elbow,hand,sign});
+    const thigh=group(hip,sign*.102,-.045,0);
+    piece(thigh,shape([[.055,-.415],[.067,-.31],[.086,-.13],[.085,0],[.07,.045]],1,1),pants);
+    const knee=group(thigh,0,-.42,0);
+    piece(knee,shape([[.043,-.365],[.047,-.31],[.058,-.15],[.06,.012]],1,1.06),pants);
+    piece(knee,ellipsoid(.059,.058,.126),boots,[0,-.377,.044]);
+    piece(knee,new THREE.BoxGeometry(.112,.026,.235),boots,[0,-.423,.046]);
+    legs.push({thigh,knee,sign});
+  }
+  compact(root);
+  // Fallback hands have a separate curled silhouette for driving. The generic
+  // open fingers remain available for the window knock and other performances.
+  for(const arm of arms){
+    arm.openHandMeshes=arm.hand.children.filter(child=>child.isMesh);
+    const grip=new THREE.Group();grip.name='Fallback curled wheel grip';grip.visible=false;arm.hand.add(grip);arm.wheelHand=grip;
+    piece(grip,ellipsoid(.035,.050,.020),skin,[0,-.035,.008]);
+    for(let finger=0;finger<4;finger++){
+      const x=(finger-1.5)*.016,y=[-.072,-.078,-.075,-.064][finger];
+      const curve=new THREE.CatmullRomCurve3([[x,y,.011],[x,y-.010,-.008],[x,y-.006,-.033],[x,y+.014,-.040]].map(p=>new THREE.Vector3(...p)));
+      piece(grip,new THREE.TubeGeometry(curve,8,.008,5,false),skin);
+    }
+    const thumb=new THREE.CatmullRomCurve3([[arm.sign*.035,-.024,.018],[arm.sign*.045,-.044,.011],[arm.sign*.027,-.060,-.008]].map(p=>new THREE.Vector3(...p)));
+    piece(grip,new THREE.TubeGeometry(thumb,6,.010,5,false),skin);compact(grip);
+  }
+  const materials=[skin,shade,cloth,clothEdge,pants,boots,hair,eyeWhite,iris,mouthMat,brass,shirt];
+  const colors=materials.map(m=>m.color.clone()),decay={value:0};
+  for(const mat of materials){
+    mat.onBeforeCompile=shader=>{
+      shader.uniforms.prologueDecay=decay;
+      shader.vertexShader='varying vec3 vPrologueBody;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvPrologueBody=position;');
+      shader.fragmentShader='uniform float prologueDecay; varying vec3 vPrologueBody;\n'+shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
+        vec3 cell=floor(vPrologueBody*24.);
+        float grain=fract(sin(dot(cell,vec3(17.13,71.7,43.9)))*43758.5453);
+        if(prologueDecay>0.&&grain<prologueDecay)discard;`);
+    };
+    mat.customProgramCacheKey=()=> 'prologue-body-decay-v1';
+  }
+  let lastPose='standing',lastCorpse=false,lastDissolve=0;
+  let windowContacts=[],windowTargets=[];
+  return {
+    root,
+    pose({time=0,phase=0,mode='standing',speaking=false,distress=0,look=0,gesture=0,reduced=false,corpse=false,dissolve=0,steer=0,wheelMatrix=null,bang=0,bangTargets=null,performance={},exitPose=null,crouch=0,limpWeight=mode==='limp'?1:0}={}) {
+      lastPose=mode;
+      lastCorpse=!!corpse;lastDissolve=Math.max(0,Math.min(1,dissolve));decay.value=lastDissolve;
+      materials.forEach((mat,i)=>mat.color.copy(colors[i]));
+      if(corpse){skin.color.setHex(0x849079);shade.color.setHex(0x303d35);eyeWhite.color.setHex(0xb2b8a1);iris.color.setHex(0x191e19);mouthMat.color.setHex(0x201519);}
+      const motion=reduced?.35:1,walking=mode==='walk'||mode==='run',running=mode==='run';
+      const cycle=Number.isFinite(phase)?phase:0,stride=walking?(running?.50:.24):0;
+      hip.position.y=.91+(walking?Math.abs(Math.sin(cycle))*(running?.033:.009):Math.sin(time*(2+distress*2))*.006*(1+distress));
+      body.rotation.set(-distress*.035,0,walking?Math.sin(cycle)*.022:0);
+      head.rotation.set(Math.sin(time*1.1)*.013*motion-distress*.03,Math.max(-.72,Math.min(.72,look)),Math.sin(time*.71)*.014*motion);
+      jaw.scale.y=speaking?1+sampleSpeech(performance.lineId,performance.lineOffset)*.9:1;
+      for(const {thigh,knee,sign} of legs){
+        const phase=cycle+(sign>0?Math.PI:0);
+        thigh.rotation.set(Math.sin(phase)*stride,0,0);
+        knee.rotation.set(Math.max(0,-Math.sin(phase))*(running?.75:.33),0,0);
+      }
+      for(const {shoulder,elbow,hand,sign} of arms){
+        const phase=cycle+(sign>0?0:Math.PI);
+        shoulder.rotation.set(Math.sin(phase)*stride*.72-distress*.12,0,sign*(.045+distress*.04));
+        elbow.rotation.set(-.11-(running?.65:0)-distress*.15,0,0);hand.rotation.set(.04,0,sign*.05);
+      }
+      if(mode==='drive'||mode==='seated'||mode==='exit'){
+        const seated=mode==='drive'||mode==='seated'?1:1-(exitPose?.transfer??1);
+        hip.position.y=.91;body.rotation.x=-.035*seated;
+        for(const {thigh,knee}of legs){thigh.rotation.x=-1.34*seated;knee.rotation.x=1.48*seated;}
+        for(const {shoulder,elbow,hand,sign}of arms){shoulder.rotation.set(-.88*seated,sign*.10*seated,-sign*.10*seated);elbow.rotation.x=-.55*seated;hand.rotation.x=-.40*seated;}
+      }else if(gesture>0){
+        const arm=arms[1];arm.shoulder.rotation.x=-.45*gesture;arm.shoulder.rotation.z=-.2*gesture;arm.elbow.rotation.x=-.9*gesture;
+        arm.hand.rotation.z=-.2*gesture;
+      }
+      if(mode==='point'){
+        arms[0].shoulder.rotation.set(-1.0,-.18,.28);arms[0].elbow.rotation.x=-.26;
+      }
+      if(mode==='breathe'){
+        body.rotation.x=-.09-distress*.055;head.rotation.x=-.10;
+        for(const arm of arms){arm.shoulder.rotation.x=-.25;arm.elbow.rotation.x=-.46;}
+      }
+      if(crouch){hip.position.y-=.15*crouch;body.rotation.x+=.07*crouch;for(const leg of legs){leg.thigh.rotation.x-=.22*crouch;leg.knee.rotation.x+=.46*crouch;}}
+      if(corpse){head.rotation.x=.20;head.rotation.z=police?.09:-.12;jaw.scale.y=3.8;body.rotation.x=.05;}
+      if(mode==='limp'){
+        hip.position.y=.91;body.rotation.set(.12,0,police?.06:-.05);head.rotation.set(.72,0,police?.16:-.18);jaw.scale.y=1.5;
+        for(const {shoulder,elbow,hand,sign}of arms){shoulder.rotation.set(.03,0,sign*.09);elbow.rotation.set(-.04,0,0);hand.rotation.set(.50,0,sign*.15);}
+        for(const {thigh,knee,sign}of legs){thigh.rotation.set(sign*.055,0,sign*.015);knee.rotation.set(.13,0,0);}
+      }
+      for(const arm of arms){arm.wheelHand.visible=mode==='drive';for(const mesh of arm.openHandMeshes)mesh.visible=mode!=='drive';}
+      if(mode==='drive'){
+        const matrix=wheelMatrix||defaultActorWheelMatrix(root,steer);root.updateWorldMatrix(true,true);
+        for(const arm of arms){
+          const grip=wheelGrip(arm.sign>0?'L':'R',matrix),target=root.worldToLocal(grip.wrist.clone());
+          reachPrologueArm(root,arm.shoulder,arm.elbow,arm.hand,target,new THREE.Vector3(arm.sign*.36,1.10,.22));
+          const rotation=grip.rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.PI));
+          arm.hand.quaternion.copy(arm.hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(rotation));
+        }
+      }
+      windowContacts=[];windowTargets=[];
+      if(mode==='bang'&&bangTargets)for(const [index,arm]of arms.entries()){
+        const contact=new THREE.Vector3().fromArray(bangTargets[1-index]),target=contact.clone();target.z-=.20*(1-Math.max(0,Math.min(1,bang)));
+        windowTargets.push(contact.toArray());windowContacts.push(reachPrologueArm(root,arm.shoulder,arm.elbow,arm.hand,target,new THREE.Vector3(arm.sign*.40,1.1,.12)));
+      }
+    },
+    diagnostics:()=>({name,identity,assetId:`fallback:${identity}`,kind:police?'uniformed police officer':'civilian father',pose:lastPose,corpse:lastCorpse,dissolve:lastDissolve,provenance:PROLOGUE_CAST_PROVENANCE,windowTargets,windowContacts}),
+  };
+}
+
+// Distinct articulated adult geometry with optional supplied PNG surfaces.
+// The existing story role, skeleton-free pose and presentation clock are kept.
+export function createGlendaActor({name='Glenda Yates',surfaceLoader,faceEnabled=true}={}) {
+  const root=new THREE.Group();root.name='Code-native '+name;root.userData.actorIdentity='glenda';root.userData.actorProfile='glenda-code-native';
+  const skin=material(0xbc8d70,.8),shade=material(0x855d4d),cardigan=material(0x616345),edge=material(0x454a34),blouse=material(0xc4b7a0),skirt=material(0x67472f),shoe=material(0x4b3425),hair=material(0x4c3023),eyes=material(0xc9c3b3,.5),iris=material(0x514f3a),mouth=material(0x65443e);
+  for(const [key,value]of Object.entries({skin,cardigan,edge,blouse,skirt,shoe,hair}))value.name='Glenda '+key;
+  const fabricBindings=[{material:cardigan,rect:[690,840,20,50]},{material:edge,rect:[690,840,20,50]},{material:blouse,rect:[791,842,30,47]},{material:skirt,rect:[943,838,57,55]}];
+  for(const binding of fabricBindings)binding.material.userData.ps2Exclude=true;
+  const hip=group(root,0,.86,0);hip.name='Glenda hips';
+  const skirtGroup=group(hip,0,0,0);skirtGroup.name='Glenda calf skirt';piece(skirtGroup,shape([[.235,-.53],[.24,-.50],[.19,-.20],[.15,.035]],1,.72),skirt);
+  // Overlap the cardigan hem and close the skirt rim at the shared waist.
+  const waistJoin=group(skirtGroup,0,.023,0);waistJoin.name='Glenda waist join';piece(waistJoin,ellipsoid(.154,.028,.112),skirt);
+  const body=group(hip,0,.08,0);body.name='Glenda cardigan';piece(body,shape([[.15,-.07],[.13,0],[.15,.13],[.18,.30],[.19,.36],[.145,.415],[.07,.45]],1,.65),cardigan);
+  piece(body,new THREE.BoxGeometry(.085,.25,.014),blouse,[0,.285,.122]);for(const side of [-1,1])piece(body,new THREE.BoxGeometry(.018,.31,.014),edge,[side*.055,.24,.132],[0,0,side*.05]);
+  for(let i=0;i<3;i++)piece(body,ellipsoid(.005,.005,.004),blouse,[.053,.14+i*.075,.142]);
+  piece(body,shape([[.043,0],[.042,.09],[.048,.12]],1,.95),skin,[0,.41,0]);
+  const headProfile=[[.027,-.105],[.049,-.08],[.070,-.035],[.073,.027],[.068,.078],[.049,.112],[.020,.132],[0,.136]];
+  const head=group(body,0,.54,0);head.name='Glenda head';piece(head,shape(headProfile,1,1.02),skin,[0,0,-.006]);
+  const hairGroup=group(head,0,0,0);hairGroup.name='Glenda swept hair';
+  const scalp=shape([[.078,.025],[.079,.07],[.065,.112],[.030,.146],[0,.15]],1.05,1.09),scalpPositions=scalp.attributes.position;
+  // Lift only the forward hairline so the PNG brows and forehead stay visible;
+  // the sides and low bun retain the same three-dimensional head silhouette.
+  for(let i=0;i<scalpPositions.count;i++){const x=scalpPositions.getX(i),y=scalpPositions.getY(i),z=scalpPositions.getZ(i),front=Math.max(0,z/Math.max(.001,Math.hypot(x,z)));scalpPositions.setY(i,y+.060*front*front*Math.max(0,(.15-y)/.125));}
+  scalp.computeVertexNormals();piece(hairGroup,scalp,hair,[0,0,-.012]);piece(hairGroup,ellipsoid(.072,.08,.035),hair,[0,-.005,-.075]);piece(hairGroup,ellipsoid(.049,.045,.041),hair,[0,-.033,-.099]);
+  piece(hairGroup,ellipsoid(.015,.055,.012),hair,[-.047,.09,.052],[0,0,-.35]);piece(hairGroup,ellipsoid(.012,.040,.011),hair,[.057,.08,.043],[0,0,.16]);
+  const features=group(head,0,0,0);features.name='Glenda fallback facial features';
+  for(const side of [-1,1]){piece(head,ellipsoid(.012,.024,.012),skin,[side*.071,-.008,0]);piece(features,ellipsoid(.02,.007,.005),eyes,[side*.028,.025,.070]);piece(features,ellipsoid(.006,.006,.003),iris,[side*.028,.025,.075]);piece(features,ellipsoid(.024,.003,.004),hair,[side*.028,.042,.073],[0,0,side*.07]);}
+  piece(features,ellipsoid(.009,.024,.013),skin,[0,.001,.083],[-.1,0,0]);
+  const jaw=group(features,0,-.053,.064);jaw.name='Glenda jaw';piece(jaw,ellipsoid(.022,.003,.004),shade);piece(jaw,ellipsoid(.018,.002,.004),mouth,[0,-.002,.003]);
+  const arms=[];
+  for(const side of [-1,1]){
+    const shoulder=group(body,side*.192,.345,0);shoulder.name='Glenda shoulder '+side;piece(shoulder,shape([[.033,-.265],[.043,-.22],[.055,-.045],[.044,.015]],1,.9),cardigan);
+    // A closed rounded shoulder overlaps both the torso and the sleeve rim.
+    const shoulderJoin=group(shoulder,0,0,0);shoulderJoin.name='Glenda shoulder join '+side;piece(shoulderJoin,ellipsoid(.060,.045,.055),cardigan);
+    const elbow=group(shoulder,0,-.26,0);piece(elbow,shape([[.029,-.235],[.033,-.20],[.041,-.01],[.034,.018]],1,.9),cardigan);
+    const hand=group(elbow,0,-.25,0);piece(hand,ellipsoid(.028,.058,.018),skin,[0,-.035,.008]);arms.push({shoulder,elbow,hand,side});
+    piece(root,shape([[.032,.07],[.035,.30],[.043,.38]],1,1),skin,[side*.085,0,0]);piece(root,ellipsoid(.047,.038,.097),shoe,[side*.085,.045,.038]);
+  }
+  compact(root);
+  const surfaces=installCharacterSurfaces({loader:surfaceLoader,atlas:'glenda-reference-r1.png',bindings:fabricBindings,face:faceEnabled?{file:'glenda-face-r1.png',parent:head,fallback:[features],geometry:{width:.142,height:.24,center:[0,.016,-.006],depth:1.02,profile:headProfile}}:null});
+  root.userData.characterSurfaces=surfaces.stats;
+  let disposed=false,lastTime=0,lastSpeaking=false;
+  return {root,pose({time=0,speaking=false,reduced=false,performance={}}={}){
+    if(disposed)return;lastTime=Number.isFinite(time)?time:0;lastSpeaking=!!speaking;const motion=reduced?.25:1;
+    hip.position.y=.86+Math.sin(lastTime*1.8)*.003*motion;head.rotation.set(Math.sin(lastTime*.8)*.012*motion,Math.sin(lastTime*.45)*.018*motion,0);
+    // Subtitle-only canonical lines have no recorded envelope: restrained visual articulation uses the same presentation clock.
+    const speech=sampleSpeech(performance.lineId,Math.max(0,performance.lineOffset||0));jaw.scale.y=speaking?1+(speech||(.25+.35*Math.sin(lastTime*8.7)**2))*.9:1;
+    surfaces.setSpeech((jaw.scale.y-1)/.9);
+    for(const {shoulder,elbow,side}of arms){shoulder.rotation.set(-.035+Math.sin(lastTime*.7+side)*.012*motion,0,side*.045);elbow.rotation.x=-.12;}
+  },ready:surfaces.ready,diagnostics:()=>({name,identity:'glenda',assetId:'code-native:glenda',kind:'adult civilian mother',pose:'standing',time:lastTime,speaking:lastSpeaking,surfaces:surfaces.snapshot(),provenance:PROLOGUE_CAST_PROVENANCE}),dispose(){if(disposed)return;disposed=true;surfaces.dispose();const geometries=new Set(),materials=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of [].concat(o.material||[]))materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());root.clear();root.removeFromParent();}};
+}

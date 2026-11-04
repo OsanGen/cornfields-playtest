@@ -1,0 +1,6 @@
+import * as THREE from 'three';
+
+// The existing prologue sky shader, shared with narrative scene presets.
+export function createEnvironmentSkyMaterial({daylight=false}={}){
+ return new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{horizon:{value:daylight?new THREE.Color(0xc8d3bf):new THREE.Color(.10,.13,.14)},zenith:{value:daylight?new THREE.Color(0x809fa8):new THREE.Color(.018,.027,.044)},red:{value:0},liquid:{value:0},clock:{value:0},skyMap:{value:null},hasMap:{value:0}},vertexShader:'varying vec3 vWorld; void main(){vWorld=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 vWorld; uniform float red,liquid,clock,hasMap;uniform vec3 horizon,zenith;uniform sampler2D skyMap; void main(){vec3 n=normalize(vWorld);float h=smoothstep(-.1,.6,n.y+liquid*sin(n.x*18.+n.z*11.+clock*.7)*.10);vec3 dusk=mix(horizon,zenith,h);vec3 blood=mix(vec3(.29,.048,.024),vec3(.080,.008,.009),h);vec3 color=mix(dusk,blood,red);color=mix(color,vec3(.17,.29,.28)+color*.3,liquid*.5);vec2 skyUV=vec2(atan(n.z,n.x)/6.2831853+.625,asin(clamp(n.y,-1.,1.))/3.14159265+.5);vec3 photo=texture2D(skyMap,skyUV).rgb;float veil=.5+.5*sin(n.x*5.+sin(n.z*7.+clock*.014)+n.y*9.);color=mix(color,mix(photo*.52,color,.48+veil*.16),hasMap*(1.-red*.7));gl_FragColor=vec4(color,1.);}' });
+}

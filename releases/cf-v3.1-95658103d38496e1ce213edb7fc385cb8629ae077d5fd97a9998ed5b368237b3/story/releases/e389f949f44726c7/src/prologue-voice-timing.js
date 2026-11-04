@@ -1,0 +1,131 @@
+// Generated voice timings. END-01 decodedDuration is the short clip.
+// Its legacy duration also owns an existing survival-arrival hold and stays fixed.
+export const PROLOGUE_VOICE_TIMING = Object.freeze({
+  "CAR-01": {
+    "duration": 2.9722
+  },
+  "CAR-02": {
+    "duration": 1.6022
+  },
+  "CAR-03": {
+    "duration": 4.2377
+  },
+  "CAR-04": {
+    "duration": 3.0882
+  },
+  "CAR-05": {
+    "duration": 1.2423
+  },
+  "CAR-06": {
+    "duration": 1.2655
+  },
+  "CAR-07": {
+    "duration": 3.4714
+  },
+  "RAD-01": {
+    "duration": 5.747
+  },
+  "RAD-02": {
+    "duration": 1.394
+  },
+  "ARR-00": {
+    "duration": 2.38
+  },
+  "CAB-01": {
+    "duration": 2.2059
+  },
+  "FLA-03": {
+    "duration": 3.2624
+  },
+  "CAB-02": {
+    "duration": 1.2655
+  },
+  "ARR-01": {
+    "duration": 4.0171
+  },
+  "ARR-02": {
+    "duration": 1.2539
+  },
+  "FLA-01": {
+    "duration": 0.7663
+  },
+  "FLA-02": {
+    "duration": 4.4931
+  },
+  "WAL-01": {
+    "duration": 5.7353
+  },
+  "WAL-02": {
+    "duration": 0.894
+  },
+  "WAL-03": {
+    "duration": 1.8692
+  },
+  "WAL-04": {
+    "duration": 0.8359
+  },
+  "WAL-05": {
+    "duration": 4.168
+  },
+  "WAL-06": {
+    "duration": 4.8878
+  },
+  "WAL-07": {
+    "duration": 2.8909
+  },
+  "WAL-08": {
+    "duration": 6.77
+  },
+  "WAL-09": {
+    "duration": 1.904
+  },
+  "RED-01": {
+    "duration": 0.5573
+  },
+  "RED-02": {
+    "duration": 0.8243
+  },
+  "RED-03": {
+    "duration": 0.5805
+  },
+  "RET-01": {
+    "duration": 2.7748
+  },
+  "WAL-10": {
+    "duration": 1.4977
+  },
+  "WAL-11": {
+    "duration": 2.858
+  },
+  "WAL-12": {
+    "duration": 1.5093
+  },
+  "WAL-13": {
+    "duration": 5.6773
+  },
+  "WAL-14": {
+    "duration": 2.6239
+  },
+  "WAL-15": {
+    "duration": 2.0782
+  },
+  "WAL-16": {
+    "duration": 3.8313
+  },
+  "LIQ-01": {
+    "duration": 0.7547
+  },
+  "FOL-01": {
+    "duration": 1.5441
+  },
+  "FOL-02": {
+    "duration": 3.17
+  },
+  "FOL-03": {
+    "duration": 1.6254
+  },
+  "END-01": {
+    "duration": 1.904,
+    "decodedDuration": 1.1240416666666666
+  }
+});
