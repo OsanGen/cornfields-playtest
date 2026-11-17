@@ -1,0 +1,5 @@
+/* Connection controls share each original page's typography and palette. */
+.entry-status { max-width: 48rem; line-height: 1.5; }
+.entry-return { display: inline-block; padding: .65rem 1rem; color: inherit; border: 1px solid currentColor; border-radius: .35rem; }
+.entry-return:focus-visible { outline: 3px solid #f4dc96; outline-offset: 4px; }
+#entry-volumes { font-size: .9rem; }
