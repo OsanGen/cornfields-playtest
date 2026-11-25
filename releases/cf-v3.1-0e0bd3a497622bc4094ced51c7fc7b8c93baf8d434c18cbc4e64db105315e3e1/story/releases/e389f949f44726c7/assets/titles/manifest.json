@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "kind": "character-title-wordmark-pack",
+  "candidate": "CT-O1-rev11",
+  "asset": {
+    "file": "character-wordmarks.glb",
+    "sha256": "bef0b2578e0440a9cec607e33f06f990d76d1a5886aa6b1112f631dbf36d42ff",
+    "bytes": 2221776
+  },
+  "font": {
+    "path": "../fonts/barlow-condensed.ttf",
+    "sha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9",
+    "family": "Barlow Condensed",
+    "weight": "SemiBold",
+    "license": "SIL OFL 1.1"
+  },
+  "coordinates": {
+    "up": "+Y",
+    "front": "+Z",
+    "center": "geometry-bounds origin",
+    "transforms": "identity",
+    "selection": "one named wordmark at a time"
+  },
+  "recipe": {
+    "blender": "4.3.2",
+    "size": 1,
+    "characterSpacing": 1.03,
+    "extrude": 0.025,
+    "bevelDepth": 0.004,
+    "bevelResolution": 1,
+    "curveResolution": 6,
+    "materials": "ivory front, oxidized dark sides",
+    "externalResources": false,
+    "requiredExtensions": [],
+    "authoringScriptSha256": "70cd28b0ff1c6956ec14cbcb240ac2829db8c23034700bc19995bc5db31c99ea"
+  },
+  "wordmarks": [
+    {
+      "text": "CLARENCE",
+      "name": "CT_CLARENCE",
+      "bounds": {
+        "min": [
+          -1.4267700910568237,
+          -0.2804531455039978,
+          -0.029000001028180122
+        ],
+        "max": [
+          1.4267700910568237,
+          0.2804531455039978,
+          0.029000001028180122
+        ]
+      },
+      "width": 2.8535401821136475,
+      "height": 0.5609062910079956,
+      "depth": 0.058000002056360245
+    },
+    {
+      "text": "SADIE",
+      "name": "CT_SADIE",
+      "bounds": {
+        "min": [
+          -0.789600133895874,
+          -0.2804533839225769,
+          -0.029000001028180122
+        ],
+        "max": [
+          0.789600133895874,
+          0.2804533839225769,
+          0.029000001028180122
+        ]
+      },
+      "width": 1.579200267791748,
+      "height": 0.5609067678451538,
+      "depth": 0.058000002056360245
+    },
+    {
+      "text": "WAYNE PROBST",
+      "name": "CT_WAYNE_PROBST",
+      "bounds": {
+        "min": [
+          -2.172241687774658,
+          -0.2804533839225769,
+          -0.029000001028180122
+        ],
+        "max": [
+          2.172241687774658,
+          0.2804533839225769,
+          0.029000001028180122
+        ]
+      },
+      "width": 4.344483375549316,
+      "height": 0.5609067678451538,
+      "depth": 0.058000002056360245
+    },
+    {
+      "text": "SEARCH TEAM",
+      "name": "CT_SEARCH_TEAM",
+      "bounds": {
+        "min": [
+          -1.9006233215332031,
+          -0.2804533839225769,
+          -0.029000001028180122
+        ],
+        "max": [
+          1.9006233215332031,
+          0.2804533839225769,
+          0.029000001028180122
+        ]
+      },
+      "width": 3.8012466430664062,
+      "height": 0.5609067678451538,
+      "depth": 0.058000002056360245
+    },
+    {
+      "text": "ELSEWHERE",
+      "name": "CT_ELSEWHERE",
+      "bounds": {
+        "min": [
+          -1.6493279933929443,
+          -0.2804533839225769,
+          -0.029000001028180122
+        ],
+        "max": [
+          1.6493279933929443,
+          0.2804533839225769,
+          0.029000001028180122
+        ]
+      },
+      "width": 3.2986559867858887,
+      "height": 0.5609067678451538,
+      "depth": 0.058000002056360245
+    },
+    {
+      "text": "DALE ARKINS",
+      "name": "CT_DALE_ARKINS",
+      "bounds": {
+        "min": [
+          -1.7983064651489258,
+          -0.2804533839225769,
+          -0.029000001028180122
+        ],
+        "max": [
+          1.7983064651489258,
+          0.2804533839225769,
+          0.029000001028180122
+        ]
+      },
+      "width": 3.5966129302978516,
+      "height": 0.5609067678451538,
+      "depth": 0.058000002056360245
+    },
+    {
+      "text": "PAM ARKINS",
+      "name": "CT_PAM_ARKINS",
+      "bounds": {
+        "min": [
+          -1.6649377346038818,
+          -0.2804533839225769,
+          -0.029000001028180122
+        ],
+        "max": [
+          1.6649377346038818,
+          0.2804533839225769,
+          0.029000001028180122
+        ]
+      },
+      "width": 3.3298754692077637,
+      "height": 0.5609067678451538,
+      "depth": 0.058000002056360245
+    }
+  ],
+  "acceptance": {
+    "geometry": "CPU_VALIDATED",
+    "visual": "USER_QA_PENDING",
+    "byteReproduction": "PASS_TWO_FRESH_BLENDER_RUNS"
+  }
+}
