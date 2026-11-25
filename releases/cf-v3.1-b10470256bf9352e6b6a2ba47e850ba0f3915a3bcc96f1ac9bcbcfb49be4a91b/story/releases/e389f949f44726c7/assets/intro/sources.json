@@ -1,0 +1,873 @@
+{
+  "sources": [
+    {
+      "name": "Car Concept",
+      "author": "Darmstadt Graphics Group GmbH / Eric Chadwick; original Unity Fan",
+      "license": "CC-BY-4.0",
+      "url": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept",
+      "changes": "Removed logo surfaces, reduced meshes and textures, charcoal cruiser materials, upright -Z orientation"
+    },
+    {
+      "name": "NPC male Steve",
+      "author": "supersteve",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/content/npc-male-steve",
+      "changes": "PBR conversion, bundled textures, seated/talk/walk clips, slightly recessed eyes; 2026-10-03 same-rig ear UV fit to original head atlas, removed unrelated ear arm/eye and shirt mouth weights, runtime skin/eye roughness separation"
+    },
+    {
+      "name": "Small Plastic Torch",
+      "author": "Abiyyu Panggalih (Abiyyu_xyz) / Poly Haven",
+      "license": "CC0-1.0",
+      "url": "https://polyhaven.com/a/small_plastic_torch",
+      "changes": "512px textures, simplified mesh, GLB"
+    },
+    {
+      "name": "Asphalt 03",
+      "author": "Charlotte Baglioni / Dario Barresi / Poly Haven",
+      "license": "CC0-1.0",
+      "url": "https://polyhaven.com/a/asphalt_03",
+      "changes": "1K color, OpenGL normal, roughness"
+    }
+  ],
+  "runtime": {
+    "carParts": {
+      "BodyWindshield": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          [
+            0.8788451552391052,
+            1.679556965827942,
+            1.4077284336090088
+          ],
+          [
+            0.8788450360298157,
+            0.06906218081712723,
+            1.4077281951904297
+          ],
+          [
+            0.8788450360298157,
+            0.0690622627735138,
+            1.0185827016830444
+          ],
+          [
+            0.8788451552391052,
+            1.6795570850372314,
+            1.0185829401016235
+          ],
+          [
+            -0.8696357607841492,
+            1.6795570850372314,
+            1.4077284336090088
+          ],
+          [
+            -0.8696358799934387,
+            0.06906233727931976,
+            1.4077281951904297
+          ],
+          [
+            -0.8696358799934387,
+            0.06906241178512573,
+            1.0185827016830444
+          ],
+          [
+            -0.8696357607841492,
+            1.679557204246521,
+            1.0185829401016235
+          ]
+        ]
+      },
+      "InteriorSeatsColor1": {
+        "position": [
+          -0.5086424350738525,
+          0.13346752524375916,
+          -0.1996964067220688
+        ],
+        "bounds": [
+          [
+            0.7906796336174011,
+            1.0817012786865234,
+            1.3359248638153076
+          ],
+          [
+            0.7906794548034668,
+            -1.3451286554336548,
+            1.335924506187439
+          ],
+          [
+            0.7906794548034668,
+            -1.3451284170150757,
+            0.13391625881195068
+          ],
+          [
+            0.7906796336174011,
+            1.0817015171051025,
+            0.13391658663749695
+          ],
+          [
+            -0.7906800508499146,
+            1.081701397895813,
+            1.3359248638153076
+          ],
+          [
+            -0.7906802296638489,
+            -1.3451285362243652,
+            1.335924506187439
+          ],
+          [
+            -0.7906802296638489,
+            -1.3451282978057861,
+            0.13391625881195068
+          ],
+          [
+            -0.7906800508499146,
+            1.081701636314392,
+            0.13391658663749695
+          ]
+        ]
+      },
+      "InteriorSteeringWheel01": {
+        "position": [
+          -0.0014875363558530807,
+          0.9292101263999939,
+          0.8021767139434814
+        ],
+        "bounds": [
+          [
+            0.1861102283000946,
+            0.9737299680709839,
+            0.9200025200843811
+          ],
+          [
+            0.17542730271816254,
+            0.8625092506408691,
+            0.9216362237930298
+          ],
+          [
+            0.1161319687962532,
+            0.8653929233551025,
+            0.6225337982177734
+          ],
+          [
+            0.12681488692760468,
+            0.9766136407852173,
+            0.6209000945091248
+          ],
+          [
+            -0.11193245649337769,
+            1.0032294988632202,
+            1.0127676725387573
+          ],
+          [
+            -0.12261538207530975,
+            0.8920087814331055,
+            1.0144013166427612
+          ],
+          [
+            -0.18191072344779968,
+            0.8948924541473389,
+            0.7152988910675049
+          ],
+          [
+            -0.17122779786586761,
+            1.0061131715774536,
+            0.7136651873588562
+          ]
+        ]
+      },
+      "BodyRoofPanel": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          [
+            0.6672007441520691,
+            0.2904486656188965,
+            1.4358187913894653
+          ],
+          [
+            0.6672006845474243,
+            -0.4536699056625366,
+            1.4358186721801758
+          ],
+          [
+            0.6672006845474243,
+            -0.45366987586021423,
+            1.3952621221542358
+          ],
+          [
+            0.6672007441520691,
+            0.29044869542121887,
+            1.3952622413635254
+          ],
+          [
+            -0.6672103404998779,
+            0.29044878482818604,
+            1.4358187913894653
+          ],
+          [
+            -0.6672104001045227,
+            -0.45366978645324707,
+            1.4358186721801758
+          ],
+          [
+            -0.6672104001045227,
+            -0.45366978645324707,
+            1.3952621221542358
+          ],
+          [
+            -0.6672103404998779,
+            0.29044878482818604,
+            1.3952622413635254
+          ]
+        ]
+      },
+      "BodyDoorRColor1": {
+        "position": [
+          1.0871999263763428,
+          0.9975424408912659,
+          0.8037078380584717
+        ],
+        "bounds": [
+          [
+            1.1099574565887451,
+            0.994152307510376,
+            1.200060486793518
+          ],
+          [
+            1.109957218170166,
+            -0.6748816967010498,
+            1.200060248374939
+          ],
+          [
+            1.109957218170166,
+            -0.6748815178871155,
+            0.19409777224063873
+          ],
+          [
+            1.1099574565887451,
+            0.9941525459289551,
+            0.19409799575805664
+          ],
+          [
+            0.9212260842323303,
+            0.9941523671150208,
+            1.200060486793518
+          ],
+          [
+            0.9212259650230408,
+            -0.6748816967010498,
+            1.200060248374939
+          ],
+          [
+            0.9212259650230408,
+            -0.6748815178871155,
+            0.19409777224063873
+          ],
+          [
+            0.9212260842323303,
+            0.9941525459289551,
+            0.19409799575805664
+          ]
+        ]
+      },
+      "BodyDoorLColor1": {
+        "position": [
+          -1.0886820554733276,
+          0.9975706338882446,
+          0.8037732839584351
+        ],
+        "bounds": [
+          [
+            -0.9212023615837097,
+            0.9941568970680237,
+            1.200058937072754
+          ],
+          [
+            -0.921202540397644,
+            -0.6748123168945312,
+            1.2000586986541748
+          ],
+          [
+            -0.921202540397644,
+            -0.6748120784759521,
+            0.1944984346628189
+          ],
+          [
+            -0.9212023615837097,
+            0.994157075881958,
+            0.19449865818023682
+          ],
+          [
+            -1.1099568605422974,
+            0.9941568970680237,
+            1.200058937072754
+          ],
+          [
+            -1.109956979751587,
+            -0.6748122572898865,
+            1.2000586986541748
+          ],
+          [
+            -1.109956979751587,
+            -0.6748120784759521,
+            0.1944984346628189
+          ],
+          [
+            -1.1099568605422974,
+            0.9941571354866028,
+            0.19449865818023682
+          ]
+        ]
+      }
+    },
+    "cruiser.glb": {
+      "bytes": 5093584,
+      "sha256": "167060a8d6668424a9bf47a0972e9d9f3185d1e5552c3a41daca2acd9cb3a1f4"
+    },
+    "cast.glb": {
+      "bytes": 714324,
+      "sha256": "739d9b6604511712ddab6c4bff76b12ea65b2b57b5ef18e6cc15b9519c27c096",
+      "repair": {
+        "date": "2026-10-03",
+        "sourceSha256": "3b1bfcafb69fd33eac98e6767d5362b9f8ce512413e033dc95ac9964b1ee116d",
+        "source": "Same bundled NPC male Steve by supersteve, CC0-1.0",
+        "method": "scripts/repair-cast-face.py; binary edit limited to 2 UV accessors and 3 weight accessors",
+        "newAssets": 0,
+        "topologyChanged": false,
+        "skeletonChanged": false,
+        "animationChanged": false
+      }
+    },
+    "handheld-flashlight.glb": {
+      "bytes": 687100,
+      "sha256": "cbb713cea1fc114abf4df4fffb8770b58a66c2171525e246de2598f906d764f3"
+    },
+    "cast-clarence.glb": {
+      "sha256": "22f66118a0881ed8779952031e5f710b40569fc3ca894f1a022a911a68e80073",
+      "bytes": 716440,
+      "triangles": 4843,
+      "sourceSha256": "739d9b6604511712ddab6c4bff76b12ea65b2b57b5ef18e6cc15b9519c27c096",
+      "identity": {
+        "cinematicCharacter": "clarence",
+        "revision": "cinematic-v2",
+        "sourceSha256": "739d9b6604511712ddab6c4bff76b12ea65b2b57b5ef18e6cc15b9519c27c096",
+        "heightPreserved": true,
+        "lidSkinColorLinear": [
+          0.6,
+          0.49,
+          0.37
+        ],
+        "geometryIdentity": "narrow angular jaw, lean cheek and straight slender nose",
+        "eyeColor": "brown",
+        "runtimeEyelids": "fitted from actual eye bounds; 384 additional runtime triangles (four five-row strips)",
+        "armRefinement": [
+          {
+            "mesh": 8,
+            "movedVertices": 208,
+            "blendedElbowVertices": 60,
+            "handAndFingerWeights": "unchanged"
+          },
+          {
+            "mesh": 9,
+            "movedVertices": 47,
+            "blendedElbowVertices": 0,
+            "handAndFingerWeights": "unchanged"
+          }
+        ]
+      },
+      "headMapSize": [
+        512,
+        512
+      ],
+      "eyeMapSize": [
+        256,
+        256
+      ],
+      "joints": 56,
+      "runtimeLidTriangles": 384,
+      "totalWithLids": 5227,
+      "authoring": "art/working/cast-distinct-v2.blend",
+      "method": "scripts/export-cinematic-characters.py",
+      "license": "CC0-1.0",
+      "changes": "Independently authored head/jaw/nose/eye geometry, role-specific embedded 512 skin and 256 iris maps, matching hand skin, local elbow silhouette/weight refinement. Original 56-joint rig, original clips, repaired ear UVs and unrelated-weight removal retained. No new downloaded assets."
+    },
+    "cast-stanley.glb": {
+      "sha256": "5c07d36da61e10485b0ae63f7dc66ec0a73b927e5480f39c3b9868e556d7ffbd",
+      "bytes": 715200,
+      "triangles": 4843,
+      "sourceSha256": "739d9b6604511712ddab6c4bff76b12ea65b2b57b5ef18e6cc15b9519c27c096",
+      "identity": {
+        "cinematicCharacter": "stanley",
+        "revision": "cinematic-v2",
+        "sourceSha256": "739d9b6604511712ddab6c4bff76b12ea65b2b57b5ef18e6cc15b9519c27c096",
+        "heightPreserved": true,
+        "lidSkinColorLinear": [
+          0.7,
+          0.58,
+          0.5
+        ],
+        "geometryIdentity": "broad heavy jaw, full cheek and wide rounded nose",
+        "eyeColor": "gray-blue",
+        "runtimeEyelids": "fitted from actual eye bounds; 384 additional runtime triangles (four five-row strips)",
+        "armRefinement": [
+          {
+            "mesh": 8,
+            "movedVertices": 208,
+            "blendedElbowVertices": 60,
+            "handAndFingerWeights": "unchanged"
+          },
+          {
+            "mesh": 9,
+            "movedVertices": 47,
+            "blendedElbowVertices": 0,
+            "handAndFingerWeights": "unchanged"
+          }
+        ]
+      },
+      "headMapSize": [
+        512,
+        512
+      ],
+      "eyeMapSize": [
+        256,
+        256
+      ],
+      "joints": 56,
+      "runtimeLidTriangles": 384,
+      "totalWithLids": 5227,
+      "authoring": "art/working/cast-distinct-v2.blend",
+      "method": "scripts/export-cinematic-characters.py",
+      "license": "CC0-1.0",
+      "changes": "Independently authored head/jaw/nose/eye geometry, role-specific embedded 512 skin and 256 iris maps, matching hand skin, local elbow silhouette/weight refinement. Original 56-joint rig, original clips, repaired ear UVs and unrelated-weight removal retained. No new downloaded assets."
+    }
+  },
+  "cinematicRevision": {
+    "date": "2026-10-04",
+    "revision": "cinematic-v2",
+    "baselineCastPreserved": true,
+    "surfaceEvidence": "Matched isolated Blender renders are asset inspection only, not browser or continuous playtest acceptance",
+    "landmarks": {
+      "baseline": {
+        "jawWidthSourceUnits": 0.2664874196052551,
+        "meanCheekFrontSourceUnits": 0.2358412742614746,
+        "headCrownY": 3.3764808177948,
+        "neckMinY": 2.6726808547973633
+      },
+      "clarence": {
+        "jawWidthSourceUnits": 0.21875691413879395,
+        "meanCheekFrontSourceUnits": 0.2129187285900116,
+        "headCrownY": 3.3764808177948,
+        "neckMinY": 2.6726808547973633
+      },
+      "stanley": {
+        "jawWidthSourceUnits": 0.35042792558670044,
+        "meanCheekFrontSourceUnits": 0.24283263087272644,
+        "headCrownY": 3.3764808177948,
+        "neckMinY": 2.6726808547973633
+      }
+    }
+  },
+  "facesRadioV1": {
+    "date": "2026-10-04",
+    "releaseMode": "local candidate only; not deployed",
+    "sourceCommit": "547be8b117031249bc14fdafe4a4cbb94b9e7c74",
+    "faces": {
+      "stanley": {
+        "sha256": "412378dae8059494615c82717a634db7c9a14b0bf4d024a4a6aa34f578a54da6",
+        "bytes": 2957068,
+        "triangles": 15353,
+        "topology": {
+          "1": 1508,
+          "2": 180,
+          "3": 180,
+          "6": 9078
+        },
+        "joints": 56,
+        "runtimeLidTriangles": 384,
+        "totalWithLids": 15737,
+        "sourceSha256": "5c07d36da61e10485b0ae63f7dc66ec0a73b927e5480f39c3b9868e556d7ffbd"
+      },
+      "clarence": {
+        "sha256": "d1c31bb31b1a012d5e16ff32b4e6f484d9f2699c009bd553827973d238f0547e",
+        "bytes": 2909688,
+        "triangles": 15319,
+        "topology": {
+          "1": 1504,
+          "2": 180,
+          "3": 180,
+          "6": 9048
+        },
+        "joints": 56,
+        "runtimeLidTriangles": 384,
+        "totalWithLids": 15703,
+        "sourceSha256": "22f66118a0881ed8779952031e5f710b40569fc3ca894f1a022a911a68e80073"
+      }
+    },
+    "faceAuthoring": "art/working/prologue-faces-v3.blend",
+    "faceMethod": "scripts/export-prologue-faces-v3.py",
+    "faceChanges": "Independent Black Clarence and older Stanley directions: sculpted nose/lip/cheek/brow planes; continuous welded facial loops and budgeted retopology; locally authored 1K color with transferred microdetail from the credited CC0 role atlas, packed surface maps, and Blender CPU high-to-low tangent normal bake; 512px irises and anatomically narrower runtime lid openings; matching exposed skin. Original source neck points and joint influences, crown, 56-joint rigs, body geometry and clip bytes retained. Reviewed local diagonal repairs remove seven orientation outliers without moving any point. No face service, scans, downloads or concept image textures.",
+    "radio": {
+      "runtimeFile": "dispatch-radio.glb",
+      "asset": "assets/intro/dispatch-radio.glb",
+      "sha256": "8f854a30f58d90f5f3c7c32ad95f195def460297f18cd03b1c85dad72d666d9e",
+      "bytes": 264232,
+      "triangles": 1970,
+      "materialDraws": 3,
+      "materials": [
+        "Original charcoal polymer",
+        "Soft dark rubber and recesses",
+        "Muted green LCD"
+      ],
+      "bodyDimensionsMm": [
+        65,
+        145,
+        40
+      ],
+      "provenance": "Original locally authored unbranded mesh and textures; no downloads.",
+      "textureCount": 3,
+      "workingSource": "art/working/prologue-radio-v1.blend",
+      "evidenceClass": "Asset inventory; not runtime or performance evidence",
+      "authoring": "art/working/prologue-radio-v1.blend",
+      "method": "scripts/export-prologue-radio-v1.py",
+      "license": "Original Cornfields project artwork; no third-party asset or texture inputs",
+      "changes": "New unbranded 65 \u00d7 145 \u00d7 40 mm beveled housing; actual open recessed LCD bezel and speaker bed; round antenna and knobs; thumb-side PTT; parting seam; restrained original texture wear. Original local 256px polymer base-color and packed roughness/metalness; original 256 \u00d7 128 LCD image. One GLB mesh, three material primitives. Existing Mike arm geometry/weights/maps are unchanged; dispatch-only finger rotations and attachment are fitted.",
+      "conceptUse": "Proposal concept was direction only, not a runtime texture",
+      "placement": [
+        -0.02,
+        0.027,
+        -0.088
+      ]
+    },
+    "evidenceLimits": "Offline renders and CPU poses are not runtime screenshots, continuous playtests or GPU/device performance measurements."
+  },
+  "liquid_cinematic_v1": {
+    "date": "2026-10-04",
+    "authorship": "Original local RKNIGHT implementation at the project owner's direction",
+    "changes": [
+      "Unbranded sedan hood/trunk, black-white panels, POLICE door graphics and unlit lightbar",
+      "Original dashboard entertainment receiver",
+      "Bundled Brown Mud/Asphalt/Solitude Night reuse; bounded material/cloud refinements",
+      "Original projector reels/stand and analytic face details",
+      "Two render-only copies of the already licensed Pixelhouse zombie, liquid ribbons and screen veil"
+    ],
+    "newExternalAssets": false,
+    "newSpendingUSD": 0,
+    "offlineVoiceStatus": "CAR-00 and UND-01 intentionally subtitle-only by explicit owner decision on 2026-10-04; no new speech generated",
+    "sourceHashes": {
+      "src/prologue-assets.js": "46ebb911760825527e9f3c88fd9d2ccd15732eae0e9ceb14e51c9ec3e385f592",
+      "src/prologue-cabin.js": "29ac4e429b3a9a39f1929cd92f771f49f57a086529921a3cdd6f2dc5d5725eb0",
+      "src/blood-room.js": "16514b89c1067304d69f4b0438d37c190fe72b5dc5e3900b1e202ae224fb6ae4",
+      "src/prologue-hallucination.js": "536c1cb246b4b992e775ff44c9a3423fe2696c2834a13eec1ab5c13ed5c7f27e",
+      "src/prologue-liquid-transition.js": "f99071bd8850c751e3676d46cdf0379acace5ff6da8fc2c6ccb7a0d98d9b8327",
+      "src/liquid-material.js": "00869a9f5fc38c30bde65af5857bf2563cc2394da25977dfcd08092e9e76f7cd"
+    }
+  },
+  "humanRoadsideV2": "human-roadside-v2-source.json",
+  "visualOverhaulV3": {
+    "date": "2026-10-05",
+    "revision": "visual-upgrade-v3-clarence-v1",
+    "releaseMode": "Local candidate only; not deployed",
+    "sourceCheckpoint": "f5216ccb1f2dca7624e91b88b687a0d3d0347143",
+    "baselineCommit": "3d8b872b987905f4726c4408d712e719369ce375",
+    "baselineLocalImportCommit": "c169100aa24e580b4b4a9f6cc907faadf5a2102d",
+    "historicalRecords": "runtime.cast-clarence.glb and facesRadioV1.faces.clarence retain their original revision hashes and provenance; current candidate identity is recorded below.",
+    "currentAssets": {
+      "cast-clarence.glb": {
+        "file": "assets/intro/cast-clarence.glb",
+        "sha256": "0202b3dbb978bd97546a6d9ac3a6971644aca28ff9000a0219ed3c6ef4fecc1c",
+        "bytes": 3018452,
+        "triangles": 16556,
+        "draws": 14,
+        "images": 10,
+        "joints": 56,
+        "runtimeLidTriangles": 384,
+        "wholeActorTriangles": 17012,
+        "sourceSha256": "d1c31bb31b1a012d5e16ff32b4e6f484d9f2699c009bd553827973d238f0547e",
+        "sourceRecord": "facesRadioV1.faces.clarence",
+        "authoredUniformV3": true,
+        "appendedClothingNodes": 4,
+        "appendedClothingTriangles": 1237,
+        "clothMapSize": [
+          1024,
+          1024
+        ],
+        "clothMapFormat": "Embedded PNG color, tangent normal and packed roughness/metalness maps",
+        "authoring": "art/working/visual-overhaul-v3.blend",
+        "method": "scripts/export-visual-overhaul-v3.py: refine_clarence",
+        "license": "CC0-1.0 source NPC male Steve by supersteve; original locally authored Cornfields uniform details and cloth maps",
+        "changes": "Fitted matte navy cloth; four appended skinned meshes for panels, seams, dark buttons and a fictional badge with anonymous nameplate. Restrained lip, cheek, ear and shirt refinement. Original nodes and hierarchy retained with only the four clothing children appended to the existing root; 56-joint rig, bind matrices, animation samples, hand/finger data, protected neck band, shoes and pants retained. No new downloaded assets or external image processing."
+      }
+    },
+    "newExternalAssets": false,
+    "newExternalAIProcessing": false,
+    "newSpendingUSD": 0,
+    "evidenceLimits": "Asset hashes and structural measurements only; browser motion, owner QA, listening and device performance remain separate acceptance requirements."
+  },
+  "realismLiquidV1": {
+    "baselineCommit": "115d3343f58a23cfc78811071c5e45bbe7a5e3a4",
+    "authoring": "Original Blender 4.3.2 mesh and texture authoring; no external input",
+    "currentAssets": {
+      "roadside-dog-v2.glb": {
+        "file": "assets/intro/roadside-dog-v2.glb",
+        "sha256": "9023bf740daf4bf3fd3bded5b8cc06bebd0ef100d0dd16671c767df1b126f0a3",
+        "bytes": 1692000,
+        "triangles": 29913,
+        "draws": 10,
+        "images": 2
+      },
+      "background-trees-v1.glb": {
+        "file": "assets/intro/background-trees-v1.glb",
+        "sha256": "63c047ef575a596e15834ebd24aaad5b31080f8dbb6abe867bb95541f8cb986b",
+        "bytes": 512088,
+        "triangles": 8940,
+        "draws": 6,
+        "images": 1
+      }
+    },
+    "newExternalAssets": false,
+    "newExternalAIProcessing": false,
+    "newSpendingUSD": 0,
+    "dogRefinement": {
+      "dateUTC": "2026-10-06",
+      "method": "Original continuous anatomical loft and sculpt refinement, fitted collar, shorter muzzle, inset eyes, articulated paw contours and locally painted irregular short-coat maps. Existing bark, collar anchor, shader origin, tree bytes and runtime motion source unchanged.",
+      "costUSD": 0
+    },
+    "dogRefinementV2": {
+      "dateUTC": "2026-10-06",
+      "revision": "dog-cranial-and-coat-correction-v2",
+      "originalArt": "Continuous narrower nasal bridge and flatter cranial planes; recessed almond eye seats; closed cupped pinnae rooted inside the skull; finer restrained fur relief, whiskers and fitted mouth. No imported mesh, texture or image.",
+      "barkRepair": "Own a clone of the existing torso coat material so the torso effort shader cannot deform the independently moving head, jaw coat or tail. Existing time, bark recording, shader amounts, node motion and gameplay unchanged.",
+      "readOnlyProportionReference": "https://cdn.akc.org/GermanShepherdDog.pdf",
+      "costUSD": 0
+    }
+  },
+  "graphicsG1": {
+    "version": "G1 v1.0",
+    "date": "2026-10-07",
+    "baselineCommit": "8b7f8a7059e0113ce6052bee852ad586038dda97",
+    "currentAssets": {
+      "cast-clarence.glb": {
+        "file": "assets/intro/cast-clarence.glb",
+        "sourceSha256": "0202b3dbb978bd97546a6d9ac3a6971644aca28ff9000a0219ed3c6ef4fecc1c",
+        "sha256": "856dfef5a64c8629526349e2af751d585f67683c4a1157c35c9474e601bff9f9",
+        "bytes": 3018452,
+        "triangles": 16556,
+        "draws": 14,
+        "allTopologyAndUVsExact": true,
+        "allWeightsAndJointIndicesExact": true,
+        "allNodesTransformsBindAndAnimationExact": true,
+        "authoring": "art/working/cornfields-graphics-g1.blend",
+        "method": "scripts/export-graphics-g1.py",
+        "license": "CC0-1.0 source NPC male Steve by supersteve; local Cornfields garment refinement",
+        "authoredUniformV3": true,
+        "changes": "Bounded outward relief of numerically intersecting collar stand facets",
+        "fit": {
+          "operation": "Bounded outward relief of numerically intersecting collar stand facets",
+          "positiveSideOnly": false,
+          "referenceAsset": "cast-clarence.glb",
+          "referenceSha256": "0202b3dbb978bd97546a6d9ac3a6971644aca28ff9000a0219ed3c6ef4fecc1c",
+          "referenceQualification": "Actual unchanged character neck",
+          "sourceUnitsToRuntimeMeters": 0.5334327294273731,
+          "changedUniquePositions": 47,
+          "collarClearanceBeforeMm": {
+            "count": 47,
+            "minimum": 3.7798739122192164,
+            "mean": 13.842951257201074,
+            "p95": 23.037231370241063,
+            "maximum": 23.921402875900906
+          },
+          "collarClearanceAfterMm": {
+            "count": 47,
+            "minimum": 6.594544177643814,
+            "mean": 15.402889785331379,
+            "p95": 23.072576951684223,
+            "maximum": 23.92156563624516
+          },
+          "vertexDisplacementMm": {
+            "count": 47,
+            "minimum": 0.0001630950647488671,
+            "mean": 1.5599385261225358,
+            "p95": 3.2005963559022046,
+            "maximum": 3.2005984242670755
+          },
+          "minimumTriangleAreaRatio": 0.7268288350621678,
+          "allTriangleWindingPreserved": true,
+          "faceAndEarMeshesExact": true,
+          "allGarmentOutsideNeckRegionExact": true,
+          "sourceHeightAndBoundsExact": true,
+          "unclaimedRegions": [
+            "No shoulder/elbow/hem/waist remodel without a demonstrated numerical defect",
+            "No full-pose or continuous-motion acceptance from these metrics"
+          ],
+          "visualMotionAndPerformanceQA": "DEFERRED; not rendered or reviewed"
+        }
+      },
+      "cast-stanley.glb": {
+        "file": "assets/intro/cast-stanley.glb",
+        "sourceSha256": "412378dae8059494615c82717a634db7c9a14b0bf4d024a4a6aa34f578a54da6",
+        "sha256": "49a32284d9c0d64318cb71e871e98e578042041a9602c926628666c638b411db",
+        "bytes": 2957068,
+        "triangles": 15353,
+        "draws": 10,
+        "allTopologyAndUVsExact": true,
+        "allWeightsAndJointIndicesExact": true,
+        "allNodesTransformsBindAndAnimationExact": true,
+        "authoring": "art/working/cornfields-graphics-g1.blend",
+        "method": "scripts/export-graphics-g1.py",
+        "license": "CC0-1.0 source NPC male Steve by supersteve; local Cornfields garment refinement",
+        "authoredUniformV3": false,
+        "changes": "Bounded outward relief of numerically intersecting collar stand facets",
+        "fit": {
+          "operation": "Bounded outward relief of numerically intersecting collar stand facets",
+          "positiveSideOnly": true,
+          "referenceAsset": "cast-stanley.glb",
+          "referenceSha256": "412378dae8059494615c82717a634db7c9a14b0bf4d024a4a6aa34f578a54da6",
+          "referenceQualification": "Actual unchanged character neck",
+          "sourceUnitsToRuntimeMeters": 0.5334327294273731,
+          "changedUniquePositions": 22,
+          "collarClearanceBeforeMm": {
+            "count": 22,
+            "minimum": 5.504548839331919,
+            "mean": 12.612780874535789,
+            "p95": 18.77028555083974,
+            "maximum": 21.344174705632557
+          },
+          "collarClearanceAfterMm": {
+            "count": 22,
+            "minimum": 7.90499518443402,
+            "mean": 13.929483017209675,
+            "p95": 19.14115019092649,
+            "maximum": 21.483679143518824
+          },
+          "vertexDisplacementMm": {
+            "count": 22,
+            "minimum": 0.13950430437043645,
+            "mean": 1.3167021407115067,
+            "p95": 2.400448657712416,
+            "maximum": 2.400448979268883
+          },
+          "minimumTriangleAreaRatio": 0.80308702191475,
+          "allTriangleWindingPreserved": true,
+          "faceAndEarMeshesExact": true,
+          "allGarmentOutsideNeckRegionExact": true,
+          "sourceHeightAndBoundsExact": true,
+          "unclaimedRegions": [
+            "No shoulder/elbow/hem/waist remodel without a demonstrated numerical defect",
+            "No full-pose or continuous-motion acceptance from these metrics"
+          ],
+          "visualMotionAndPerformanceQA": "DEFERRED; not rendered or reviewed"
+        }
+      },
+      "mike-body.glb": {
+        "file": "assets/intro/mike-body.glb",
+        "sourceSha256": "d9cbd5c5598465f9297cbcad2b3d507d325696b9c9d8171f194b7b121096c209",
+        "sha256": "d9cbd5c5598465f9297cbcad2b3d507d325696b9c9d8171f194b7b121096c209",
+        "bytes": 468528,
+        "triangles": 1515,
+        "draws": 3,
+        "allTopologyAndUVsExact": true,
+        "allWeightsAndJointIndicesExact": true,
+        "allNodesTransformsBindAndAnimationExact": true,
+        "authoring": "art/working/cornfields-graphics-g1.blend",
+        "method": "scripts/export-graphics-g1.py",
+        "license": "CC0-1.0 source NPC male Steve by supersteve; local Cornfields garment refinement",
+        "authoredUniformV3": false,
+        "changes": "Retain exact baseline: no justified contact-safe repair",
+        "fit": {
+          "operation": "Retain exact baseline: no justified contact-safe repair",
+          "reason": "Mike has no rendered neck/head; a virtual neck-fit edit would not establish an actual defect. Shoulder/sleeve geometry is retained because the measured elbow interface already passes.",
+          "sourceHeightAndBoundsExact": true,
+          "visualMotionAndPerformanceQA": "DEFERRED; not rendered or reviewed"
+        }
+      },
+      "roadside-dog-v2.glb": {
+        "file": "assets/intro/roadside-dog-v2.glb",
+        "sourceSha256": "9023bf740daf4bf3fd3bded5b8cc06bebd0ef100d0dd16671c767df1b126f0a3",
+        "sha256": "57a3538d2d72cbe9447f77d2f90d4a4970b6cb70e7f1e6f442ee2e621390fc9d",
+        "bytes": 1692000,
+        "triangles": 29913,
+        "draws": 10,
+        "vertices": 24230,
+        "license": "Original locally authored Cornfields project artwork; existing maps unchanged",
+        "authoring": "art/working/cornfields-graphics-g1.blend",
+        "method": "scripts/export-graphics-g1.py",
+        "changes": "Bounded smoothing of the existing muzzle profile transition and ear meridians; head POSITION/NORMAL only. Nose, eyes, jaw, ear roots/tips, paws, body, collar/tether, topology, UVs and all texture bytes retained.",
+        "maxPositionDeltaMeters": 0.003307115286588669,
+        "earMaxPositionDeltaMeters": 0.0007993504405021667,
+        "jsonChunkByteIdentical": true,
+        "allOtherBufferViewsByteIdentical": true,
+        "newDegenerateTriangles": 0,
+        "invertedTriangles": 0,
+        "visualAcceptance": "DEFERRED"
+      }
+    },
+    "newExternalAssets": false,
+    "newExternalAIProcessing": false,
+    "newSpendingUSD": 0,
+    "method": "scripts/export-graphics-g1.py",
+    "editableSource": "art/working/cornfields-graphics-g1.blend",
+    "evidenceLimits": "Numerical geometry and structural checks only. Game visual, continuous-motion, audible and device-performance acceptance remains deferred to verified Shared Visual Testing System V1 and owner QA.",
+    "collarEvidence": {
+      "posesPerRole": 66,
+      "countsAndTotalIntersectionLength": "No sampled increase; residual inherited intersections remain",
+      "clarenceLongestSegmentTradeoff": "One sampled longest triangle-cut segment increases by approximately 0.029 mm while total intersection length decreases. No clipping-free or unqualified no-regression acceptance claimed.",
+      "stanley": "Positive-side collar relief at 75% amplitude; no sampled count, total-length or longest-segment increases",
+      "rejectedCandidate": "Initial inward contraction was rejected after crossing regressions; not shipped",
+      "mike": "Mesh retained exactly; source interface already passes. Runtime material changes are separate."
+    }
+  },
+  "realismR1": {
+    "status": "AUTHORING_IN_PROGRESS_NOT_ACCEPTED",
+    "manifest": "assets/realism-r1/sources.json",
+    "baselineSourceCommit": "6bdcaca8272ecb5ef3d4dd7b171366affd5969a1",
+    "scope": [
+      "cast-stanley.glb",
+      "roadside-dog-v2.glb"
+    ],
+    "newExternalAssets": false,
+    "newExternalAIProcessing": false,
+    "newSpendingUSD": 0,
+    "originalAudioFilesUnchanged": 125,
+    "evidenceLimits": "No real-game render, audible playtest, device performance, V1 acceptance or owner acceptance is claimed."
+  },
+  "visualVT1": {
+    "version": "VT1-A-v1.1",
+    "status": "UNACCEPTED_VISUAL_PROOF_IN_PROGRESS",
+    "manifest": "assets/intro/vt1-asset-manifest.json",
+    "editableSources": "art/cornfields-vt1-source-manifest.json",
+    "baselineSourceCommit": "8dec18ed38f6333d39ad99c53b1083f7d3251d4d",
+    "scope": "Stanley and the complete existing roadside/cruiser visual proof only; no gameplay/story/camera/audio/House/full-cast/field expansion.",
+    "newExternalAssets": false,
+    "newExternalAIProcessing": false,
+    "newSpendingUSD": 0,
+    "originalAudioFilesUnchanged": 125,
+    "currentAssetIdentity": "The new VT1 asset manifest pins current bytes without rewriting protected historical G1/R1 manifests.",
+    "rights": "Earlier Car Concept CC BY 4.0, NPC male Steve CC0 and Poly Haven map attribution remain applicable. New original geometry/maps are project authoring.",
+    "evidenceLimits": "Offline authoring and exact geometry/contact checks are separate from browser rendering, listening, device performance and owner acceptance."
+  },
+  "claranceCabinV01": {
+    "outcome": "clarance-cabin-v0.1",
+    "baselineCommit": "7cfe713d8f91c28e5cd251c7bae7ca8cef85f164",
+    "status": "AUTHORING_NOT_ACCEPTED",
+    "manifest": "assets/intro/clarance-cabin-v0.1-manifest.json",
+    "editableSource": "art/working/cornfields-clarance-cabin-v0.1.blend",
+    "sourceManifest": "art/clarance-cabin-v0.1-source-manifest.json",
+    "method": "scripts/export-clarance-cabin-v0.1.py",
+    "reconstruction": true,
+    "scope": [
+      "cast-clarence.glb",
+      "cruiser.glb approved interior nodes only"
+    ],
+    "newExternalAssets": false,
+    "newExternalAIProcessing": false,
+    "newSpendingUSD": 0,
+    "rights": "Earlier Car Concept CC BY 4.0 and NPC male Steve CC0 credits remain applicable; bounded new materials/maps/geometry are original local authoring.",
+    "evidenceLimits": "Code and numeric checks, offline authoring renders, actual-game screenshots, continuous clips, owner playtest and measured device performance are separate evidence classes. No visual or owner acceptance is implied."
+  }
+}
