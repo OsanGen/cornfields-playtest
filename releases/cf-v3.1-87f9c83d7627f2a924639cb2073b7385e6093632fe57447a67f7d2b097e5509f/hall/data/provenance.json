@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "outcome": "asylum-hall-rebuild-r2",
+  "kind": "Newly authored original-design rebuild, not recovered hall",
+  "design": "Approved v1.1 section 5 and original hall v0.2",
+  "originalArchitecture": true,
+  "sourceHouseReconstruction": false,
+  "audio": false,
+  "aiProcessing": false,
+  "importedMedia": false,
+  "dependency": {
+    "name": "three",
+    "version": "0.181.2",
+    "source": "https://registry.npmjs.org/three/-/three-0.181.2.tgz",
+    "license": "MIT"
+  },
+  "recoveredHallIdentityClaim": false,
+  "historicalPassCountsClaimed": false,
+  "leanPlaytest": {
+    "version": 1,
+    "source": "Public Pillsbury Castle renovations floorplan and salon photograph",
+    "urls": [
+      "https://www.pillsburycastle.com/renovations",
+      "https://www.pillsburycastle.com/photos"
+    ],
+    "observed": "Foyer between Grand Salon on left and Music/Living on right; salon green walls, wood beams, broad arches and fireplace.",
+    "inferred": "Dimensions and simplified original geometry. North loop connector is invented and labelled in-game.",
+    "copiedMediaShipped": false,
+    "exactReplicaClaim": false,
+    "roomZombies": "Disabled; repair and addition deferred",
+    "otherMansions": "Unbuilt; three doors remain locked",
+    "status": "Historical v1 geometry superseded by pillsburyFloorV2; retained provenance record"
+  },
+  "pillsburyFloorV2": {
+    "source": "https://www.pillsburycastle.com/renovations",
+    "image": "https://images.squarespace-cdn.com/content/v1/639b879f51791e6ade8d4b48/798b3208-844a-45d8-93da-e54e0ea5be8c/Floorplan-For-Website-02.jpg",
+    "inspectedUTC": "2026-10-12T21:16:03Z",
+    "scope": "16 labelled enclosed first-floor spaces; stairs and elevator blocked",
+    "geometry": "Relative plan proportions and projecting Music/Living bay. Metres, service connections and rectangular simplifications inferred for rough gameplay. No exact architectural reconstruction claim.",
+    "assets": "Original code geometry only; no source photographs or floorplan image distributed."
+  },
+  "currentOutcome": "pillsbury-floor-v2"
+}
