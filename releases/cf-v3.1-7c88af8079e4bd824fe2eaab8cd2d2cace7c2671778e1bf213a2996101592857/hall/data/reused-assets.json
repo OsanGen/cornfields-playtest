@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "amendment": "v3.1",
+  "storyEngine": "0.186.0",
+  "hallEngine": "0.181.2",
+  "reuse": [
+    {
+      "from": "story/src/hands.js",
+      "to": "hall/src/hands.js",
+      "sourceSHA256": "dfa72f92ba829d65ae80cc84632613727ddb32da80d0b53528c83531c103ee80",
+      "status": "ADAPTED_ASSET_URL_ONLY_SHARED_STORY_BYTES",
+      "adaptedSHA256": "1ab8756da3560ee4caec89a28f2a69e3e91d90557b7dadaa3c0d52b22a72f9b6"
+    },
+    {
+      "from": "story/src/hand-grip.js",
+      "to": "hall/src/hand-grip.js",
+      "sourceSHA256": "13f9460c9bb1b547786f9cbe5a55b5cf83614bc1a40af9805caf05d33d828a88",
+      "status": "COPIED_UNCHANGED_INITIAL"
+    },
+    {
+      "from": "story/src/viewmodel-pose.js",
+      "to": "hall/src/viewmodel-pose.js",
+      "sourceSHA256": "8eaf345add22e14d5f08b3ac0fde6646e051cbe6e8903729624f46975f77cb2d",
+      "status": "COPIED_UNCHANGED_INITIAL"
+    },
+    {
+      "from": "story/src/shot-effects.js",
+      "to": "hall/src/shot-effects.js",
+      "sourceSHA256": "e3e07c545172279fcd1495ecd548b5ce6a7fbff1282676be0d6b12d8d8f21a7e",
+      "status": "COPIED_UNCHANGED_INITIAL"
+    },
+    {
+      "from": "story/src/zombie-poses.js",
+      "to": "hall/src/zombie-poses.js",
+      "sourceSHA256": "04d4c2462f1ee4bdd01748712a23302f379892f1d2e8f919a17e14cad2ab5b0c",
+      "status": "COPIED_UNCHANGED_INITIAL"
+    },
+    {
+      "from": "story/src/zombie-animation.js",
+      "to": "hall/src/zombie-animation.js",
+      "sourceSHA256": "bc26d4f70b7473c3eb5b6417aff122b3eedbdf4a259ed9c88f62a382813d7d3c",
+      "status": "COPIED_UNCHANGED_INITIAL"
+    },
+    {
+      "from": "story/src/asset-safety.js",
+      "to": "hall/src/asset-safety.js",
+      "sourceSHA256": "3512b4ebf1a17be3d5646e9807c27ea27ae20176ffd8d2600222eab2404394eb",
+      "status": "COPIED_UNCHANGED_INITIAL"
+    }
+  ],
+  "assets": [
+    {
+      "path": "story/assets/field/player-arms.glb",
+      "bytes": 545004,
+      "sha256": "ab7a5d6dd71d27423ae130ecd86dd18f2eeef7b1e07131083efc5e778cfe302e",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/service-pistol.glb",
+      "bytes": 2550148,
+      "sha256": "009df6c833794c86f3206a11fd092d244e78ef7e04383095d340e7cf196298eb",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/handheld-flashlight.glb",
+      "bytes": 687100,
+      "sha256": "cbb713cea1fc114abf4df4fffb8770b58a66c2171525e246de2598f906d764f3",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/zombie.glb",
+      "bytes": 1389552,
+      "sha256": "e0266f171f1709717eebd9421d1ce295c1ec93e0e2e1f81ad97d52e22f45f89e",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/zombie-clips.json",
+      "bytes": 238970,
+      "sha256": "d1aeaa4e66960c331e05ae02c103a6cee42b649a335d18e32ee0c1ec90945706",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/zombie-color.jpg",
+      "bytes": 830029,
+      "sha256": "c4629d70509f78fde0fc9d9dc8fbecfb985140f133e489094c52d028537b4d95",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/zombie-normal.jpg",
+      "bytes": 181646,
+      "sha256": "6e649199ef2a45028eb0d5f0172414f98ec4f2b5347a34a61bdaf4b0120a2b5a",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/zombie-roughness.jpg",
+      "bytes": 162531,
+      "sha256": "263f0734ec17313d48546b082c9e55c9c8c18b211689190cbc9322e9767b16ec",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/LICENSES.md",
+      "bytes": 8586,
+      "sha256": "2e4e59c7d07337d7186646042e6f1d9e956a283d2c3fff79db47ae775860096a",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/sources.json",
+      "bytes": 4738,
+      "sha256": "2b8fec1443a38c9f2da3759190edd4fc6651fa310cc495a2fad4bcb202eff06d",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/player-viewmodel-source.json",
+      "bytes": 2188,
+      "sha256": "de7c5e2ea419d9fd151ce4af95863578798a18c709c256e1fb24eb26fd3652f6",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    },
+    {
+      "path": "story/assets/field/zombie-source.json",
+      "bytes": 3495,
+      "sha256": "d6a99614d62a8c9173e5c27e7bbbbe7cf6fd7b6fb0f4627ff9e1d9e3c5a58d5a",
+      "mode": "REFERENCE_EXISTING_PACKAGED_BYTES_NO_DUPLICATE"
+    }
+  ],
+  "rabbit": {
+    "path": "hall/assets/rabbit-r1.glb",
+    "sha256": "d0167e7a7a9166c5814bb7196c7bfcecd407ab61d18f718ac00538bf9f227e11",
+    "bytes": 11436284,
+    "source": "User-approved existing Rabbit R1 model; preserved unchanged"
+  },
+  "newDependencies": []
+}

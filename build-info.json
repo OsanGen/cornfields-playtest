@@ -1,1 +1,9 @@
-{"buildId":"cf-v3.1-b10470256bf9352e6b6a2ba47e850ba0f3915a3bcc96f1ac9bcbcfb49be4a91b","route":"CORNFIELDS_V4_32_BEATS","schemaVersion":1,"version":"4.0","sourceCommit":"f4fd9a48d9e5b8d134b0738111c3408ae2d93512","runtimeFiles":641,"classification":"public-playtest"}
+{
+  "buildId": "cf-v3.1-7c88af8079e4bd824fe2eaab8cd2d2cace7c2671778e1bf213a2996101592857",
+  "route": "CORNFIELDS_V4_32_BEATS",
+  "schemaVersion": 1,
+  "version": "4.0",
+  "sourceCommit": "838fb789f23c137a36e7e0e13f4b625e71d38e8b",
+  "runtimeFiles": 642,
+  "classification": "public-playtest"
+}
